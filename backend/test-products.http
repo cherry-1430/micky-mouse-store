@@ -1,0 +1,15 @@
+POST http://localhost:5000/api/products
+Content-Type: application/json
+
+{
+  "name": "Micky Mouse Premium Black Hoodie",
+  "category": "Hoodies",
+  "gender": "Men",
+  "price": 1999,
+  "description": "Premium cotton black hoodie designed for comfort, style and everyday wear.",
+  "image": "https://placehold.co/600x800",
+  "sizes": ["S", "M", "L", "XL", "XXL"],
+  "stock": 50,
+  "rating": 4.5,
+  "isFeatured": true
+}

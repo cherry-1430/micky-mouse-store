@@ -1,0 +1,287 @@
+import { Link } from "react-router-dom";
+import { useCart } from "../context/useCart";
+
+function Cart() {
+  const {
+    cart,
+    cartTotal,
+    updateQuantity,
+    removeFromCart,
+  } = useCart();
+
+  if (cart.length === 0) {
+    return (
+      <main className="empty-cart">
+
+        <div className="empty-cart-content">
+
+          <span className="empty-cart-label">
+            YOUR SHOPPING BAG
+          </span>
+
+          <div className="empty-cart-mark">
+            🛒
+          </div>
+
+          <h1>Your Cart Is Empty</h1>
+
+          <p>
+            Looks like you haven't added anything yet.
+            Discover something you love from our collection.
+          </p>
+
+          <Link
+            to="/shop"
+            className="continue-shopping"
+          >
+            CONTINUE SHOPPING →
+          </Link>
+
+        </div>
+
+      </main>
+    );
+  }
+
+  return (
+    <main className="cart-page">
+
+      {/* HEADER */}
+
+      <section className="cart-header">
+
+        <div>
+          <p>MICKEY MOUSE • YOUR SELECTION</p>
+          <h1>YOUR CART</h1>
+        </div>
+
+        <span className="cart-item-count">
+          {cart.length}{" "}
+          {cart.length === 1 ? "ITEM" : "ITEMS"}
+        </span>
+
+      </section>
+
+
+      <div className="cart-container">
+
+        {/* CART ITEMS */}
+
+        <section className="cart-items">
+
+          <div className="cart-items-heading">
+            <span>PRODUCT</span>
+            <span>{cart.length} ITEMS</span>
+          </div>
+
+
+          {cart.map((item) => (
+
+            <div
+              className="cart-item"
+              key={`${item.id}-${item.size}`}
+            >
+
+              {/* IMAGE */}
+
+              <div className="cart-item-image">
+
+                <img
+                  src={item.image}
+                  alt={item.name}
+                />
+
+              </div>
+
+
+              {/* INFORMATION */}
+
+              <div className="cart-item-info">
+
+                <div className="cart-item-top">
+
+                  <div>
+
+                    <p className="cart-category">
+                      MICKY MOUSE • {item.category || "COLLECTION"}
+                    </p>
+
+                    <h3>
+                      {item.name}
+                    </h3>
+
+                  </div>
+
+                  <button
+                    className="remove-button"
+                    onClick={() =>
+                      removeFromCart(
+                        item.id,
+                        item.size
+                      )
+                    }
+                  >
+                    REMOVE ×
+                  </button>
+
+                </div>
+
+
+                <div className="cart-item-details">
+
+                  <div>
+                    <span>SIZE</span>
+                    <strong>{item.size}</strong>
+                  </div>
+
+                  <div>
+                    <span>UNIT PRICE</span>
+                    <strong>
+                      ₹{item.price.toLocaleString("en-IN")}
+                    </strong>
+                  </div>
+
+                </div>
+
+
+                <div className="cart-actions">
+
+                  <div className="quantity-control">
+
+                    <button
+                      onClick={() =>
+                        updateQuantity(
+                          item.id,
+                          item.size,
+                          item.quantity - 1
+                        )
+                      }
+                      disabled={item.quantity <= 1}
+                      aria-label="Decrease quantity"
+                    >
+                      −
+                    </button>
+
+                    <span>
+                      {item.quantity}
+                    </span>
+
+                    <button
+                      onClick={() =>
+                        updateQuantity(
+                          item.id,
+                          item.size,
+                          item.quantity + 1
+                        )
+                      }
+                      aria-label="Increase quantity"
+                    >
+                      +
+                    </button>
+
+                  </div>
+
+
+                  <strong className="cart-item-total">
+                    ₹
+                    {(
+                      item.price * item.quantity
+                    ).toLocaleString("en-IN")}
+                  </strong>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          ))}
+
+        </section>
+
+
+        {/* SUMMARY */}
+
+        <aside className="cart-summary">
+
+          <p className="summary-label">
+            YOUR ORDER
+          </p>
+
+          <h2>
+            ORDER SUMMARY
+          </h2>
+
+
+          <div className="summary-row">
+
+            <span>Subtotal</span>
+
+            <span>
+              ₹{cartTotal.toLocaleString("en-IN")}
+            </span>
+
+          </div>
+
+
+          <div className="summary-row">
+
+            <span>Shipping</span>
+
+            <span>FREE</span>
+
+          </div>
+
+
+          <div className="summary-note">
+            Free shipping is included on your order.
+          </div>
+
+
+          <div className="summary-divider"></div>
+
+
+          <div className="summary-total">
+
+            <span>TOTAL</span>
+
+            <strong>
+              ₹{cartTotal.toLocaleString("en-IN")}
+            </strong>
+
+          </div>
+
+
+          <Link
+            to="/checkout"
+            className="checkout-button"
+          >
+            PROCEED TO CHECKOUT
+            <span>→</span>
+          </Link>
+
+
+          <Link
+            to="/shop"
+            className="continue-shopping"
+          >
+            ← CONTINUE SHOPPING
+          </Link>
+
+
+          <div className="cart-trust">
+
+            <span>🔒 SECURE CHECKOUT</span>
+            <span>✓ EASY RETURNS</span>
+
+          </div>
+
+        </aside>
+
+      </div>
+
+    </main>
+  );
+}
+
+export default Cart;

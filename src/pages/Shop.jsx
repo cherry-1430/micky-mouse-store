@@ -1,0 +1,524 @@
+import { useEffect, useState } from "react";
+import { useSearchParams, Link } from "react-router-dom";
+
+import { getProducts } from "../api/productApi";
+import { useWishlist } from "../context/useWishlist";
+import { useCart } from "../context/useCart";
+
+function Shop() {
+  const { toggleWishlist, isInWishlist } = useWishlist();
+  const { addToCart } = useCart();
+
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const initialSearch = searchParams.get("search") || "";
+
+   const [search, setSearch] = useState(initialSearch);
+
+  const initialCategory = searchParams.get("category");
+
+  const [category, setCategory] = useState(
+    initialCategory
+      ? initialCategory.charAt(0).toUpperCase() +
+        initialCategory.slice(1)
+      : "All"
+  );
+
+  const [maxPrice, setMaxPrice] = useState(5000);
+  const [sort, setSort] = useState("default");
+
+  const categories = [
+    "All",
+    "Hoodies",
+    "Shirts",
+    "Pants",
+    "T-Shirts",
+     "New",
+  ];
+
+  useEffect(() => {
+    async function loadProducts() {
+      try {
+        const data = await getProducts();
+        setProducts(data);
+      } catch (error) {
+        setError("Failed to load products");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadProducts();
+  }, []);
+  useEffect(() => {
+  const urlSearch = searchParams.get("search") || "";
+  const urlCategory = searchParams.get("category");
+
+  setSearch(urlSearch);
+
+  setCategory(
+    urlCategory
+      ? urlCategory.charAt(0).toUpperCase() +
+        urlCategory.slice(1)
+      : "All"
+  );
+}, [searchParams]);
+
+  const handleCategoryChange = (selectedCategory) => {
+    setCategory(selectedCategory);
+
+    if (selectedCategory === "All") {
+      setSearchParams({});
+    } else {
+      setSearchParams({
+        category: selectedCategory.toLowerCase(),
+      });
+    }
+  };
+
+  const filteredProducts = products
+    .filter((product) => {
+      const matchesSearch = product.name
+        .toLowerCase()
+        .includes(search.toLowerCase());
+
+      const matchesCategory =
+        category === "All" ||
+        product.category === category;
+
+      const matchesPrice =
+        product.price <= maxPrice;
+
+      return (
+        matchesSearch &&
+        matchesCategory &&
+        matchesPrice
+      );
+    })
+    .sort((a, b) => {
+      if (sort === "low-high") {
+        return a.price - b.price;
+      }
+
+      if (sort === "high-low") {
+        return b.price - a.price;
+      }
+
+      return 0;
+    });
+
+  if (loading) {
+    return (
+      <main className="shop-page">
+        <div className="shop-loading">
+          <span>PLEASE WAIT</span>
+          <h2>Loading Products...</h2>
+        </div>
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main className="shop-page">
+        <div className="shop-error">
+          <span>ERROR</span>
+          <h2>{error}</h2>
+          <p>Please try again later.</p>
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="shop-page">
+
+      {/* SHOP HEADER */}
+
+      <section className="shop-header">
+
+        <div className="shop-header-content">
+
+          <p>MICKEY MOUSE • PREMIUM COLLECTION</p>
+
+          <h1>SHOP</h1>
+
+          <span>
+            Discover premium clothing designed for
+            everyday comfort and effortless style.
+          </span>
+
+        </div>
+
+        <div className="shop-header-mark">
+          <span>MM</span>
+        </div>
+
+      </section>
+
+
+      {/* SHOP TOOLBAR */}
+
+      <section className="shop-toolbar">
+
+        <div className="search-box">
+
+          <span className="search-icon">⌕</span>
+
+          <input
+  type="text"
+  placeholder="Search products..."
+  value={search}
+  onChange={(e) => {
+    const value = e.target.value;
+    setSearch(value);
+
+    if (value.trim()) {
+      setSearchParams({
+        search: value,
+      });
+    } else {
+      setSearchParams({});
+    }
+  }}
+/>
+          {search && (
+            <button
+              className="clear-search"
+              onClick={() => setSearch("")}
+              aria-label="Clear search"
+            >
+              ×
+            </button>
+          )}
+
+        </div>
+
+
+        <div className="sort-box">
+
+          <span>SORT</span>
+
+          <select
+            value={sort}
+            onChange={(e) =>
+              setSort(e.target.value)
+            }
+          >
+            <option value="default">
+              Featured
+            </option>
+
+            <option value="low-high">
+              Price: Low to High
+            </option>
+
+            <option value="high-low">
+              Price: High to Low
+            </option>
+          </select>
+
+        </div>
+
+      </section>
+
+
+      {/* SHOP CONTENT */}
+
+      <section className="shop-content">
+
+        {/* SIDEBAR */}
+
+        <aside className="shop-sidebar">
+
+          <div className="filter-heading">
+            <span>FILTERS</span>
+            <span className="filter-line"></span>
+          </div>
+
+
+          <div className="filter-group">
+
+            <h3>CATEGORIES</h3>
+
+            <div className="category-filter">
+
+              {categories.map((item) => (
+                <button
+                  key={item}
+                  className={
+                    category === item
+                      ? "active-category"
+                      : ""
+                  }
+                  onClick={() =>
+                    handleCategoryChange(item)
+                  }
+                >
+                  <span>{item}</span>
+
+                  {category === item && (
+                    <span>→</span>
+                  )}
+                </button>
+              ))}
+
+            </div>
+
+          </div>
+
+
+          <div className="price-filter">
+
+            <div className="price-heading">
+
+              <h3>MAX PRICE</h3>
+
+              <span>
+                ₹{maxPrice.toLocaleString("en-IN")}
+              </span>
+
+            </div>
+
+            <input
+              type="range"
+              min="500"
+              max="5000"
+              step="100"
+              value={maxPrice}
+              onChange={(e) =>
+                setMaxPrice(Number(e.target.value))
+              }
+            />
+
+            <div className="price-range-labels">
+              <span>₹500</span>
+              <span>₹5,000</span>
+            </div>
+
+          </div>
+
+        </aside>
+
+
+        {/* PRODUCTS */}
+
+        <div className="shop-products">
+
+          <div className="products-count">
+
+            <span>
+              {filteredProducts.length}{" "}
+              {filteredProducts.length === 1
+                ? "PRODUCT"
+                : "PRODUCTS"}
+            </span>
+
+            {category !== "All" && (
+              <span className="active-filter">
+                {category}
+              </span>
+            )}
+
+          </div>
+
+
+          {filteredProducts.length === 0 ? (
+
+            <div className="no-products">
+
+              <span>NO RESULTS</span>
+
+              <h2>No products found</h2>
+
+              <p>
+                Try changing your search or filters.
+              </p>
+
+              <button
+                onClick={() => {
+                  setSearch("");
+                  setCategory("All");
+                  setMaxPrice(5000);
+                  setSort("default");
+                  setSearchParams({});
+                }}
+              >
+                CLEAR ALL FILTERS →
+              </button>
+
+            </div>
+
+          ) : (
+
+            <div className="shop-product-grid">
+
+              {filteredProducts.map((product, index) => (
+
+                <Link
+                  to={`/product/${product._id}`}
+                  className="shop-product-card"
+                  key={product._id}
+                >
+
+                  <div className="shop-product-image">
+
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                    />
+
+                    <span className="product-index">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+
+
+                    <button
+                      className="shop-wishlist"
+                      aria-label={
+                        isInWishlist(product._id)
+                          ? "Remove from wishlist"
+                          : "Add to wishlist"
+                      }
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        toggleWishlist(product);
+                      }}
+                    >
+                      {isInWishlist(product._id)
+                        ? "♥"
+                        : "♡"}
+                    </button>
+
+
+                    {product.originalPrice >
+                      product.price && (
+                      <span className="sale-badge">
+                        SALE
+                      </span>
+                    )}
+
+                  </div>
+
+
+                  <div className="shop-product-info">
+
+                    <p className="shop-category">
+                      {product.category}
+                    </p>
+
+                    <h3>
+                      {product.name}
+                    </h3>
+
+
+                    <div className="rating">
+
+                      <span className="rating-stars">
+                        {"★".repeat(
+                          Math.round(product.rating || 0)
+                        )}
+
+                        {"☆".repeat(
+                          5 -
+                            Math.round(
+                              product.rating || 0
+                            )
+                        )}
+                      </span>
+
+                      <span className="rating-count">
+                        {product.rating || 0} (
+                        {product.reviewCount || 0})
+                      </span>
+
+                    </div>
+
+
+                    <div className="shop-product-price">
+
+                      <span className="current-price">
+                        ₹
+                        {product.price.toLocaleString(
+                          "en-IN"
+                        )}
+                      </span>
+
+                      {product.originalPrice >
+                        product.price && (
+                        <>
+                          <span className="original-price">
+                            ₹
+                            {product.originalPrice.toLocaleString(
+                              "en-IN"
+                            )}
+                          </span>
+
+                          <span className="discount">
+                            {Math.round(
+                              ((product.originalPrice -
+                                product.price) /
+                                product.originalPrice) *
+                                100
+                            )}
+                            % OFF
+                          </span>
+                        </>
+                      )}
+
+                    </div>
+
+
+                    <button
+                      className="shop-cart-button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        const size =
+                          product.sizes?.[0];
+
+                        if (!size) {
+                          alert("No size available");
+                          return;
+                        }
+
+                        addToCart(
+                          product,
+                          size,
+                          1
+                        );
+
+                        alert(
+                          `${product.name} added to cart`
+                        );
+                      }}
+                    >
+                      ADD TO CART →
+                    </button>
+
+                  </div>
+
+                </Link>
+
+              ))}
+
+            </div>
+
+          )}
+
+        </div>
+
+      </section>
+
+    </main>
+  );
+}
+
+export default Shop;
