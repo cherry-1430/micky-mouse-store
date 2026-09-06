@@ -56,6 +56,40 @@ router.post("/", authMiddleware, adminMiddleware, async (req, res) => {
   }
 });
 
+// UPDATE product
+router.patch(
+  "/:id",
+  authMiddleware,
+  adminMiddleware,
+  async (req, res) => {
+    try {
+      const updatedProduct = await Product.findByIdAndUpdate(
+        req.params.id,
+        req.body,
+        {
+          new: true,
+          runValidators: true,
+        }
+      );
+
+      if (!updatedProduct) {
+        return res.status(404).json({
+          message: "Product not found",
+        });
+      }
+
+      res.json(updatedProduct);
+    } catch (error) {
+      console.error("Update product error:", error);
+
+      res.status(400).json({
+        message: "Failed to update product",
+        error: error.message,
+      });
+    }
+  }
+);
+
 // DELETE product
 router.delete(
   "/:id",
