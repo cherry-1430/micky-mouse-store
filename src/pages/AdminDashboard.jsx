@@ -11,6 +11,8 @@ function AdminDashboard() {
   const [productLoading, setProductLoading] = useState(true);
   const [showProductForm, setShowProductForm] = useState(false);
   const [productImage, setProductImage] = useState(null);
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [showEditForm, setShowEditForm] = useState(false);
 
   const [productForm, setProductForm] = useState({
   name: "",
@@ -35,6 +37,135 @@ const handleProductChange = (e) => {
   }));
 };
 
+const handleEditProduct = (product) => {
+  setEditingProduct({
+    ...product,
+
+    sizes: product.sizes?.join(", ") || "",
+    colors: product.colors?.join(", ") || "",
+
+    price: product.price ?? "",
+    originalPrice: product.originalPrice ?? "",
+    stock: product.stock ?? "",
+
+    isFeatured: product.isFeatured ?? false,
+    isActive: product.isActive ?? true,
+  });
+
+  setShowEditForm(true);
+};
+const handleUpdateProduct = async (e) => {
+  e.preventDefault();
+
+  if (!editingProduct) {
+    return;
+  }
+
+  try {
+    const token = localStorage.getItem("token");
+
+    const productData = {
+      name: editingProduct.name,
+      category: editingProduct.category,
+      gender: editingProduct.gender,
+
+      price: Number(editingProduct.price),
+      originalPrice: Number(editingProduct.originalPrice),
+
+      description: editingProduct.description,
+
+      sizes: editingProduct.sizes
+        .split(",")
+        .map((size) => size.trim())
+        .filter(Boolean),
+
+      colors: editingProduct.colors
+        .split(",")
+        .map((color) => color.trim())
+        .filter(Boolean),
+
+      stock: Number(editingProduct.stock),
+
+      isFeatured: editingProduct.isFeatured,
+      isActive: editingProduct.isActive,
+    };
+
+    const response = await fetch(
+      `${API_URL}/api/products/${editingProduct._id}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(productData),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.message || "Failed to update product"
+      );
+    }
+
+    setProducts((current) =>
+      current.map((product) =>
+        product._id === data._id ? data : product
+      )
+    );
+
+    setEditingProduct(null);
+    setShowEditForm(false);
+
+    alert("Product updated successfully!");
+  } catch (error) {
+    console.error("Update product error:", error);
+    alert(error.message);
+  }
+};
+const handleDeleteProduct = async (productId) => {
+  const confirmed = window.confirm(
+    "Are you sure you want to delete this product?"
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+    const token = localStorage.getItem("token");
+
+    const response = await fetch(
+      `${API_URL}/api/products/${productId}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.message || "Failed to delete product"
+      );
+    }
+
+    setProducts((current) =>
+      current.filter((product) => product._id !== productId)
+    );
+
+    alert("Product deleted successfully!");
+  } catch (error) {
+    console.error("Delete product error:", error);
+    alert(error.message);
+  }
+};
+
 const uploadProductImage = async () => {
   if (!productImage) {
     throw new Error("Please select a product image");
@@ -43,14 +174,18 @@ const uploadProductImage = async () => {
   const formData = new FormData();
 
   formData.append("image", productImage);
+  const token = localStorage.getItem("token");
 
   const response = await fetch(
-    `${API_URL}/api/uploads/product-image`,
-    {
-      method: "POST",
-      body: formData,
-    }
-  );
+  `${API_URL}/api/uploads/product-image`,
+  {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  }
+);
 
   const data = await response.json();
 
@@ -707,6 +842,177 @@ const deliveredOrders = orders.filter(
   </form>
 )}
 
+{showEditForm && editingProduct && (
+  <form
+    className="admin-product-form admin-edit-product-form"
+    onSubmit={handleUpdateProduct}
+  >
+    <div className="admin-edit-form-header">
+      <div>
+        <p>PRODUCT MANAGEMENT</p>
+        <h3>EDIT PRODUCT</h3>
+      </div>
+
+      <button
+        type="button"
+        className="admin-close-form-button"
+        onClick={() => {
+          setEditingProduct(null);
+          setShowEditForm(false);
+        }}
+      >
+        ×
+      </button>
+    </div>
+
+    <input
+      type="text"
+      value={editingProduct.name}
+      onChange={(e) =>
+        setEditingProduct({
+          ...editingProduct,
+          name: e.target.value,
+        })
+      }
+      placeholder="Product name"
+    />
+
+    <input
+      type="text"
+      value={editingProduct.category}
+      onChange={(e) =>
+        setEditingProduct({
+          ...editingProduct,
+          category: e.target.value,
+        })
+      }
+      placeholder="Category"
+    />
+
+    <select
+      value={editingProduct.gender}
+      onChange={(e) =>
+        setEditingProduct({
+          ...editingProduct,
+          gender: e.target.value,
+        })
+      }
+    >
+      <option value="Men">Men</option>
+      <option value="Women">Women</option>
+      <option value="Kids">Kids</option>
+    </select>
+
+    <input
+      type="number"
+      value={editingProduct.price}
+      onChange={(e) =>
+        setEditingProduct({
+          ...editingProduct,
+          price: e.target.value,
+        })
+      }
+      placeholder="Price"
+    />
+
+    <input
+      type="number"
+      value={editingProduct.originalPrice}
+      onChange={(e) =>
+        setEditingProduct({
+          ...editingProduct,
+          originalPrice: e.target.value,
+        })
+      }
+      placeholder="Original price"
+    />
+
+    <textarea
+      value={editingProduct.description}
+      onChange={(e) =>
+        setEditingProduct({
+          ...editingProduct,
+          description: e.target.value,
+        })
+      }
+      placeholder="Product description"
+    />
+
+    <input
+      type="text"
+      value={editingProduct.sizes}
+      onChange={(e) =>
+        setEditingProduct({
+          ...editingProduct,
+          sizes: e.target.value,
+        })
+      }
+      placeholder="Sizes: S, M, L, XL"
+    />
+
+    <input
+      type="text"
+      value={editingProduct.colors}
+      onChange={(e) =>
+        setEditingProduct({
+          ...editingProduct,
+          colors: e.target.value,
+        })
+      }
+      placeholder="Colors: Black, White"
+    />
+
+    <input
+      type="number"
+      min="0"
+      value={editingProduct.stock}
+      onChange={(e) =>
+        setEditingProduct({
+          ...editingProduct,
+          stock: e.target.value,
+        })
+      }
+      placeholder="Stock quantity"
+    />
+
+    <label>
+      <input
+        type="checkbox"
+        checked={editingProduct.isFeatured}
+        onChange={(e) =>
+          setEditingProduct({
+            ...editingProduct,
+            isFeatured: e.target.checked,
+          })
+        }
+      />
+
+      Featured product
+    </label>
+
+    <label>
+      <input
+        type="checkbox"
+        checked={editingProduct.isActive}
+        onChange={(e) =>
+          setEditingProduct({
+            ...editingProduct,
+            isActive: e.target.checked,
+          })
+        }
+      />
+
+      Active product
+    </label>
+
+    <button
+      type="submit"
+      className="admin-save-product-button"
+    >
+      SAVE CHANGES
+    </button>
+  </form>
+)}  
 
       {productLoading ? (
 
@@ -759,9 +1065,54 @@ const deliveredOrders = orders.filter(
                   ₹{product.price.toLocaleString("en-IN")}
                 </strong>
 
-                <p>
-                  Stock: {product.stock}
-                </p>
+                <div className="admin-stock-status">
+  {product.stock === 0 ? (
+    <span className="stock-out">
+      OUT OF STOCK
+    </span>
+  ) : product.stock <= 5 ? (
+    <span className="stock-low">
+      ONLY {product.stock} LEFT
+    </span>
+  ) : (
+    <span className="stock-in">
+      IN STOCK · {product.stock}
+    </span>
+  )}
+</div>
+
+<div className="admin-product-badges">
+
+  {product.isFeatured && (
+    <span className="admin-badge admin-badge-featured">
+      FEATURED
+    </span>
+  )}
+
+  {!product.isActive && (
+    <span className="admin-badge admin-badge-inactive">
+      INACTIVE
+    </span>
+  )}
+
+</div>
+<div>
+    <button
+    type="button"
+    className="admin-edit-product-button"
+    onClick={() => handleEditProduct(product)}
+  >
+    EDIT
+  </button>
+
+                <button
+  type="button"
+  className="admin-delete-product-button"
+  onClick={() => handleDeleteProduct(product._id)}
+>
+  DELETE
+</button>
+</div>
 
               </div>
 

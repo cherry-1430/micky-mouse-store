@@ -7118,3 +7118,643 @@
   }
 
 }
+
+/* ============================= */
+/* ADMIN DASHBOARD */
+/* ============================= */
+
+.admin-dashboard {
+  min-height: 100vh;
+  padding: 50px 6%;
+  background: #f7f7f7;
+  box-sizing: border-box;
+}
+
+.admin-dashboard-header {
+  margin-bottom: 40px;
+}
+
+.admin-dashboard-header p {
+  margin: 0 0 8px;
+  color: #777777;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+}
+
+.admin-dashboard-header h1 {
+  margin: 0;
+  color: #111111;
+  font-size: 32px;
+  font-weight: 700;
+}
+
+
+/* ============================= */
+/* ADMIN SECTIONS */
+/* ============================= */
+
+.admin-orders-section,
+.admin-products-section {
+  margin-bottom: 35px;
+  padding: 28px;
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  box-sizing: border-box;
+}
+
+.admin-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 25px;
+}
+
+.admin-section-heading p {
+  margin: 0 0 6px;
+  color: #888888;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+}
+
+.admin-section-heading h2 {
+  margin: 0;
+  color: #111111;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.admin-section-heading > div:last-child {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.admin-section-heading span {
+  color: #666666;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+
+/* ============================= */
+/* ADD PRODUCT BUTTON */
+/* ============================= */
+
+.admin-add-product-button {
+  padding: 11px 18px;
+
+  border: none;
+  border-radius: 7px;
+
+  background: #111111;
+  color: #ffffff;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.admin-add-product-button:hover {
+  background: #333333;
+  transform: translateY(-1px);
+}
+
+
+/* ============================= */
+/* PRODUCT FORM */
+/* ============================= */
+
+.admin-product-form {
+  margin-bottom: 30px;
+  padding: 25px;
+
+  background: #fafafa;
+
+  border: 1px solid #e5e5e5;
+  border-radius: 10px;
+
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+}
+
+.admin-product-form h3 {
+  grid-column: 1 / -1;
+
+  margin: 0 0 5px;
+
+  color: #111111;
+
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.admin-product-form input,
+.admin-product-form select,
+.admin-product-form textarea {
+  width: 100%;
+  padding: 12px 13px;
+
+  box-sizing: border-box;
+
+  border: 1px solid #dddddd;
+  border-radius: 7px;
+
+  background: #ffffff;
+  color: #222222;
+
+  font-family: inherit;
+  font-size: 13px;
+
+  outline: none;
+
+  transition: border-color 0.2s ease;
+}
+
+.admin-product-form input:focus,
+.admin-product-form select:focus,
+.admin-product-form textarea:focus {
+  border-color: #111111;
+}
+
+.admin-product-form textarea {
+  min-height: 100px;
+  resize: vertical;
+
+  grid-column: 1 / -1;
+}
+
+
+/* ============================= */
+/* IMAGE INPUT */
+/* ============================= */
+
+.admin-product-form input[type="file"] {
+  padding: 10px;
+  cursor: pointer;
+  background: #ffffff;
+}
+
+
+/* ============================= */
+/* CHECKBOXES */
+/* ============================= */
+
+.admin-product-form label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  color: #444444;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.admin-product-form input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+
+  margin: 0;
+
+  cursor: pointer;
+}
+
+
+/* ============================= */
+/* SAVE PRODUCT */
+/* ============================= */
+
+.admin-save-product-button {
+  grid-column: 1 / -1;
+
+  padding: 13px 20px;
+
+  border: none;
+  border-radius: 7px;
+
+  background: #111111;
+  color: #ffffff;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.admin-save-product-button:hover {
+  background: #333333;
+  transform: translateY(-1px);
+}
+
+
+/* ============================= */
+/* PRODUCT LIST */
+/* ============================= */
+
+.admin-products-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.admin-product-item {
+  display: grid;
+  grid-template-columns: 70px 1.5fr 1fr 120px 100px 90px;
+  align-items: center;
+  gap: 20px;
+
+  padding: 14px;
+
+  border: 1px solid #eeeeee;
+  border-radius: 9px;
+
+  background: #ffffff;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.admin-product-item:hover {
+  border-color: #dddddd;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+}
+
+
+/* ============================= */
+/* PRODUCT IMAGE */
+/* ============================= */
+
+.admin-product-image {
+  display: block;
+
+  width: 100%;
+  height: 300px;
+
+  object-fit: cover;
+
+  background: #f3f3f3;
+}
+
+
+/* ============================= */
+/* PRODUCT INFORMATION */
+/* ============================= */
+
+.admin-product-info {
+  padding: 18px;
+}
+
+.admin-product-info > span {
+  display: block;
+
+  margin-bottom: 7px;
+
+  color: #888888;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.admin-product-info h3 {
+  margin: 0 0 10px;
+
+  color: #111111;
+
+  font-size: 16px;
+  line-height: 1.4;
+  font-weight: 700;
+}
+
+.admin-product-info strong {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: #111111;
+
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.admin-product-info p {
+  margin: 0 0 15px;
+
+  color: #666666;
+
+  font-size: 13px;
+}
+.admin-product-name {
+  color: #111111;
+
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.admin-product-category {
+  margin-top: 4px;
+
+  color: #888888;
+
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.admin-product-price {
+  color: #111111;
+
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.admin-product-stock {
+  color: #555555;
+
+  font-size: 12px;
+  font-weight: 600;
+}
+/* ============================= */
+/* PRODUCT CARD */
+/* ============================= */
+
+.admin-product-card {
+  overflow: hidden;
+
+  background: #ffffff;
+
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.admin-product-card:hover {
+  transform: translateY(-3px);
+
+  border-color: #d5d5d5;
+
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.07);
+}
+
+
+
+/* ============================= */
+/* DELETE BUTTON */
+/* ============================= */
+
+.admin-delete-product-button {
+  width: 100%;
+
+  padding: 10px 14px;
+
+  border: 1px solid #dddddd;
+  border-radius: 7px;
+
+  background: #ffffff;
+  color: #d62828;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.admin-delete-product-button:hover {
+  background: #d62828;
+
+  border-color: #d62828;
+
+  color: #ffffff;
+}
+
+
+/* ============================= */
+/* RESPONSIVE ADMIN DASHBOARD */
+/* ============================= */
+
+@media (max-width: 1000px) {
+  .admin-products-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .admin-product-image {
+    height: 280px;
+  }
+}
+
+
+@media (max-width: 600px) {
+  .admin-products-list {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-product-image {
+    height: 350px;
+  }
+}
+
+/* ============================= */
+/* ADMIN PRODUCT ACTIONS */
+/* ============================= */
+
+.admin-product-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 15px;
+}
+
+.admin-edit-product-button,
+.admin-delete-product-button {
+  padding: 10px 12px;
+
+  border-radius: 7px;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.admin-edit-product-button {
+  border: 1px solid #111111;
+
+  background: #111111;
+  color: #ffffff;
+}
+
+.admin-edit-product-button:hover {
+  background: #333333;
+  border-color: #333333;
+}
+
+.admin-delete-product-button {
+  width: 100%;
+
+  border: 1px solid #dddddd;
+
+  background: #ffffff;
+  color: #d62828;
+}
+
+.admin-delete-product-button:hover {
+  background: #d62828;
+  border-color: #d62828;
+  color: #ffffff;
+}
+
+
+/* ============================= */
+/* STOCK STATUS */
+/* ============================= */
+
+.admin-stock-status {
+  margin-top: 5px;
+}
+
+.stock-in,
+.stock-low,
+.stock-out {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.stock-in {
+  color: #26734d;
+}
+
+.stock-low {
+  color: #b36b00;
+}
+
+.stock-out {
+  color: #d62828;
+}
+
+
+/* ============================= */
+/* PRODUCT BADGES */
+/* ============================= */
+
+.admin-product-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+
+  margin-top: 10px;
+}
+
+.admin-badge {
+  display: inline-block;
+
+  padding: 5px 8px;
+
+  border-radius: 5px;
+
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.admin-badge-featured {
+  background: #111111;
+  color: #ffffff;
+}
+
+.admin-badge-inactive {
+  background: #eeeeee;
+  color: #666666;
+}
+
+
+/* ============================= */
+/* EDIT FORM HEADER */
+/* ============================= */
+
+.admin-edit-form-header {
+  grid-column: 1 / -1;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.admin-edit-form-header p {
+  margin: 0 0 5px;
+
+  color: #888888;
+
+  font-size: 10px;
+  font-weight: 700;
+
+  letter-spacing: 1px;
+}
+
+.admin-edit-form-header h3 {
+  margin: 0;
+}
+
+.admin-close-form-button {
+  width: 34px;
+  height: 34px;
+
+  border: 1px solid #dddddd;
+  border-radius: 50%;
+
+  background: #ffffff;
+  color: #333333;
+
+  font-size: 20px;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+.admin-close-form-button:hover {
+  background: #111111;
+  color: #ffffff;
+}
+
+
+/* ============================= */
+/* EDIT FORM */
+/* ============================= */
+
+.admin-edit-product-form {
+  border: 1px solid #dcdcdc;
+
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+}
