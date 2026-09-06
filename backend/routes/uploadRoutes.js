@@ -1,6 +1,8 @@
 const express = require("express");
 const multer = require("multer");
 const cloudinary = require("../config/cloudinary");
+const authMiddleware = require("../middleware/authMiddleware");
+const adminMiddleware = require("../middleware/adminMiddleware");
 
 const router = express.Router();
 
@@ -8,7 +10,12 @@ const upload = multer({
   storage: multer.memoryStorage(),
 });
 
-router.post("/product-image", upload.single("image"), async (req, res) => {
+router.post(
+  "/product-image",
+  authMiddleware,
+  adminMiddleware,
+  upload.single("image"),
+  async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({
