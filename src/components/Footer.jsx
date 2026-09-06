@@ -46,16 +46,41 @@ function Footer() {
 
         {/* Customer Service */}
 
-        <div className="footer-column">
+        {/* Customer Service */}
 
-          <h3>CUSTOMER SERVICE</h3>
+<div className="footer-column">
 
-          <Link to="/contact">Contact Us</Link>
-          <Link to="/shipping">Shipping</Link>
-          <Link to="/returns">Returns</Link>
-          <Link to="/faq">FAQ</Link>
+  <h3>CUSTOMER SERVICE</h3>
 
-        </div>
+  <Link to="/contact">Contact Us</Link>
+  <Link to="/shipping">Shipping</Link>
+  <Link to="/returns">Returns</Link>
+  <Link to="/faq">FAQ</Link>
+
+  <a href="tel:+918688243239">
+    📞 8688243239
+  </a>
+
+  <a href="mailto:mickymouse14@gmail.com">
+    ✉ mickymouse14@gmail.com
+  </a>
+  <a
+  href="https://wa.me/918688243239?text=Hello%2C%20I%20need%20help%20with%20my%20order."
+  target="_blank"
+  rel="noopener noreferrer"
+>
+  💬 WhatsApp
+</a>
+
+<p className="footer-contact-info">
+  📍 Anakapalle, Tarak Rama Colony
+</p>
+
+<p className="footer-contact-info">
+  🕒 Open 24/7
+</p>
+
+</div>
 
 
         {/* Social */}

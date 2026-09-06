@@ -1,6 +1,9 @@
 const express = require("express");
 const Product = require("../models/Product");
 
+const authMiddleware = require("../middleware/authMiddleware");
+const adminMiddleware = require("../middleware/adminMiddleware");
+
 const router = express.Router();
 
 // GET all products
@@ -37,7 +40,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // POST new product
-router.post("/", async (req, res) => {
+router.post("/", authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const product = new Product(req.body);
 
@@ -74,38 +77,5 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-// ADD new product
-
-router.post("/", async (req, res) => {
-
-  try {
-
-    const product = new Product({
-      name: req.body.name,
-      category: req.body.category,
-      gender: req.body.gender,
-      price: req.body.price,
-      description: req.body.description,
-      image: req.body.image,
-      sizes: req.body.sizes,
-      stock: req.body.stock,
-      rating: req.body.rating,
-      isFeatured: req.body.isFeatured,
-    });
-
-    const savedProduct = await product.save();
-
-    res.status(201).json(savedProduct);
-
-  } catch (error) {
-
-    res.status(500).json({
-      message: "Failed to add product",
-      error: error.message,
-    });
-
-  }
-
-});
 
 module.exports = router;

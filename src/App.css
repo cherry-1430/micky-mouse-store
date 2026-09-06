@@ -1654,6 +1654,12 @@
   letter-spacing: 1.5px;
   color: #444444;
 }
+.footer-contact-info {
+  margin: 0 0 14px;
+  color: #777777;
+  font-size: 12px;
+  line-height: 1.6;
+}
 
 /* RESPONSIVE */
 

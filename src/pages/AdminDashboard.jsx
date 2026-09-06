@@ -1,10 +1,147 @@
 import { useEffect, useState } from "react";
 import API_URL from "../api/apiConfig";
 
+
 function AdminDashboard() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const [products, setProducts] = useState([]);
+  const [productLoading, setProductLoading] = useState(true);
+  const [showProductForm, setShowProductForm] = useState(false);
+  const [productImage, setProductImage] = useState(null);
+
+  const [productForm, setProductForm] = useState({
+  name: "",
+  category: "",
+  gender: "Men",
+  price: "",
+  originalPrice: "",
+  description: "",
+  sizes: "",
+  colors: "",
+  stock: "",
+  isFeatured: false,
+  isActive: true,
+});
+
+const handleProductChange = (e) => {
+  const { name, value, type, checked } = e.target;
+
+  setProductForm((current) => ({
+    ...current,
+    [name]: type === "checkbox" ? checked : value,
+  }));
+};
+
+const uploadProductImage = async () => {
+  if (!productImage) {
+    throw new Error("Please select a product image");
+  }
+
+  const formData = new FormData();
+
+  formData.append("image", productImage);
+
+  const response = await fetch(
+    `${API_URL}/api/uploads/product-image`,
+    {
+      method: "POST",
+      body: formData,
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data.message || "Image upload failed"
+    );
+  }
+
+  return data.imageUrl;
+};
+
+const handleAddProduct = async (e) => {
+  e.preventDefault();
+
+  try {
+    const token = localStorage.getItem("token");
+
+    // Upload image to Cloudinary
+    const imageUrl = await uploadProductImage();
+
+    // Prepare product data
+    const productData = {
+      ...productForm,
+
+      price: Number(productForm.price),
+      originalPrice: Number(productForm.originalPrice),
+      stock: Number(productForm.stock),
+
+      sizes: productForm.sizes
+        .split(",")
+        .map((size) => size.trim())
+        .filter(Boolean),
+
+      colors: productForm.colors
+        .split(",")
+        .map((color) => color.trim())
+        .filter(Boolean),
+
+      image: imageUrl,
+    };
+
+    // Save product to MongoDB
+    const response = await fetch(
+      `${API_URL}/api/products`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(productData),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.message || "Failed to create product"
+      );
+    }
+
+    // Add new product to the screen
+    setProducts((current) => [data, ...current]);
+
+    // Reset form
+    setProductForm({
+      name: "",
+      category: "",
+      gender: "Men",
+      price: "",
+      originalPrice: "",
+      description: "",
+      sizes: "",
+      colors: "",
+      stock: "",
+      isFeatured: false,
+      isActive: true,
+    });
+
+    setProductImage(null);
+    setShowProductForm(false);
+
+    alert("Product added successfully!");
+
+  } catch (error) {
+    console.error("Add product error:", error);
+    alert(error.message);
+  }
+};
 
 
   const updateOrderStatus = async (orderId, status) => {
@@ -80,6 +217,32 @@ function AdminDashboard() {
 
     fetchOrders();
   }, []);
+
+  useEffect(() => {
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch(
+        `${API_URL}/api/products`
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Failed to fetch products"
+        );
+      }
+
+      setProducts(data);
+    } catch (error) {
+      console.error("Admin products error:", error);
+    } finally {
+      setProductLoading(false);
+    }
+  };
+
+  fetchProducts();
+}, []);
 
   if (loading) {
     return (
@@ -385,6 +548,220 @@ const deliveredOrders = orders.filter(
                   </p>
 
                 </div>
+
+              </div>
+
+            </article>
+
+          ))}
+
+        </div>
+
+      )}
+
+    </section>
+
+        {/* PRODUCTS */}
+
+    <section className="admin-products-section">
+
+      <div className="admin-section-heading">
+
+  <div>
+    <p>PRODUCT MANAGEMENT</p>
+
+    <h2>ALL PRODUCTS</h2>
+  </div>
+
+  <div>
+    <span>
+      {products.length}{" "}
+      {products.length === 1 ? "PRODUCT" : "PRODUCTS"}
+    </span>
+
+    <button
+  type="button"
+  className="admin-add-product-button"
+  onClick={() => setShowProductForm(true)}
+>
+  + ADD PRODUCT
+</button>
+  </div>
+
+</div>
+
+{showProductForm && (
+  <form
+    className="admin-product-form"
+    onSubmit={handleAddProduct}
+    > 
+    <h3>ADD NEW PRODUCT</h3>
+
+    <input
+      type="text"
+      name="name"
+      placeholder="Product name"
+      value={productForm.name}
+      onChange={handleProductChange}
+    />
+
+    <input
+      type="text"
+      name="category"
+      placeholder="Category"
+      value={productForm.category}
+      onChange={handleProductChange}
+    />
+
+    <select
+      name="gender"
+      value={productForm.gender}
+      onChange={handleProductChange}
+    >
+      <option value="Men">Men</option>
+      <option value="Women">Women</option>
+      <option value="Kids">Kids</option>
+    </select>
+
+    <input
+      type="number"
+      name="price"
+      placeholder="Price"
+      value={productForm.price}
+      onChange={handleProductChange}
+    />
+
+    <input
+      type="number"
+      name="originalPrice"
+      placeholder="Original price"
+      value={productForm.originalPrice}
+      onChange={handleProductChange}
+    />
+
+    <textarea
+      name="description"
+      placeholder="Product description"
+      value={productForm.description}
+      onChange={handleProductChange}
+    />
+
+    <input
+    type="file"
+    accept="image/*"
+    onChange={(e) => setProductImage(e.target.files[0])}
+   />
+
+    <input
+      type="text"
+      name="sizes"
+      placeholder="Sizes (example: S, M, L, XL)"
+      value={productForm.sizes}
+      onChange={handleProductChange}
+    />
+
+    <input
+      type="text"
+      name="colors"
+      placeholder="Colors (example: Black, White)"
+      value={productForm.colors}
+      onChange={handleProductChange}
+    />
+
+    <input
+      type="number"
+      name="stock"
+      placeholder="Stock quantity"
+      value={productForm.stock}
+      onChange={handleProductChange}
+    />
+
+    <label>
+      <input
+        type="checkbox"
+        name="isFeatured"
+        checked={productForm.isFeatured}
+        onChange={handleProductChange}
+      />
+
+      Featured product
+    </label>
+
+    <label>
+      <input
+        type="checkbox"
+        name="isActive"
+        checked={productForm.isActive}
+        onChange={handleProductChange}
+      />
+
+      Active product
+    </label>
+    <button
+  type="submit"
+  className="admin-save-product-button"
+>
+  SAVE PRODUCT
+</button>
+
+  </form>
+)}
+
+
+      {productLoading ? (
+
+        <div className="admin-empty-state">
+          <p>Loading products...</p>
+        </div>
+
+      ) : products.length === 0 ? (
+
+        <div className="admin-empty-state">
+
+          <span>NO PRODUCTS</span>
+
+          <h2>No products found</h2>
+
+          <p>
+            Products added to the store will appear here.
+          </p>
+
+        </div>
+
+      ) : (
+
+        <div className="admin-products-list">
+
+          {products.map((product) => (
+
+            <article
+              className="admin-product-card"
+              key={product._id}
+            >
+
+              <img
+                src={product.image}
+                alt={product.name}
+                className="admin-product-image"
+              />
+
+              <div className="admin-product-info">
+
+                <span>
+                  {product.category}
+                </span>
+
+                <h3>
+                  {product.name}
+                </h3>
+
+                <strong>
+                  ₹{product.price.toLocaleString("en-IN")}
+                </strong>
+
+                <p>
+                  Stock: {product.stock}
+                </p>
 
               </div>
 
