@@ -5,7 +5,7 @@ import { getProducts } from "../api/productApi";
 import { useWishlist } from "../context/useWishlist";
 import { useCart } from "../context/useCart";
 
-  function ProductSection() {
+function ProductSection() {
   const { toggleWishlist, isInWishlist } = useWishlist();
   const { addToCart } = useCart();
 
@@ -17,11 +17,11 @@ import { useCart } from "../context/useCart";
       try {
         const data = await getProducts();
 
-const featuredProducts = data
-  .filter((product) => product.isFeatured)
-  .slice(0, 4);
+        const featuredProducts = data
+          .filter((product) => product.isFeatured)
+          .slice(0, 4);
 
-setProducts(featuredProducts);
+        setProducts(featuredProducts);
       } catch (error) {
         console.error("Failed to load featured products:", error);
       } finally {
@@ -45,101 +45,133 @@ setProducts(featuredProducts);
         </span>
       </div>
 
-      <div className="product-grid">
+      {loading ? (
+        <div className="product-grid">
+          {[1, 2, 3, 4].map((item) => (
+            <div className="product-card product-skeleton" key={item}>
+              <div className="product-image skeleton-image"></div>
 
-        {products.map((product, index) => (
-          <div className="product-card" key={product._id}>
-
-            {/* Image */}
-            <div className="product-image">
-
-              <img
-                src={product.image}
-                alt={product.name}
-              />
-
-              <div className="product-number">
-                0{index + 1}
+              <div className="product-info">
+                <div className="skeleton-line short"></div>
+                <div className="skeleton-line"></div>
+                <div className="skeleton-line price"></div>
               </div>
-
-              <button
-  className="wishlist-button"
-  aria-label={
-    isInWishlist(product._id)
-      ? "Remove from wishlist"
-      : "Add to wishlist"
-  }
-  onClick={(e) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    toggleWishlist(product);
-  }}
->
-  {isInWishlist(product._id) ? "♥" : "♡"}
-</button>
-              <div className="product-overlay">
-                <Link
-                   to={`/product/${product._id}`}
-                >
-                  VIEW COLLECTION →
-                </Link>
-              </div>
-
             </div>
+          ))}
+        </div>
+      ) : products.length === 0 ? (
+        <div className="product-empty">
+          <h3>NO FEATURED PRODUCTS</h3>
+          <p>
+            Check back soon for our latest collection.
+          </p>
 
-            {/* Information */}
-            <div className="product-info">
+          <Link to="/shop">
+            SHOP ALL PRODUCTS →
+          </Link>
+        </div>
+      ) : (
+        <div className="product-grid">
 
-              <p className="product-category">
-                {product.category}
-              </p>
+          {products.map((product, index) => (
+            <div className="product-card" key={product._id}>
 
-              <h3>{product.name}</h3>
+              <div className="product-image">
 
-              <div className="product-bottom">
+                <img
+                  src={product.image}
+                  alt={product.name}
+                />
 
-                <p className="product-price">
-                  ₹{product.price.toLocaleString("en-IN")}
-                </p>
+                <div className="product-number">
+                  0{index + 1}
+                </div>
 
                 <button
-  className="add-cart-button"
-  onClick={(e) => {
-    e.preventDefault();
-    e.stopPropagation();
+                  className="wishlist-button"
+                  aria-label={
+                    isInWishlist(product._id)
+                      ? "Remove from wishlist"
+                      : "Add to wishlist"
+                  }
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
 
-    const size = product.sizes?.[0];
+                    toggleWishlist(product);
+                  }}
+                >
+                  {isInWishlist(product._id) ? "♥" : "♡"}
+                </button>
 
-    if (!size) {
-      alert("No size available");
-      return;
-    }
+                <div className="product-overlay">
+                  <Link to={`/product/${product._id}`}>
+                    VIEW PRODUCT →
+                  </Link>
+                </div>
 
-    addToCart(product, size, 1);
+              </div>
 
-    alert(`${product.name} added to cart`);
-  }}
->
-  ADD TO CART
-</button>
+              <div className="product-info">
+
+                <p className="product-category">
+                  {product.category}
+                </p>
+
+                <h3>{product.name}</h3>
+
+                <div className="product-bottom">
+
+                  <p className="product-price">
+                    ₹
+                    {Number(product.price).toLocaleString(
+                      "en-IN"
+                    )}
+                  </p>
+
+                  <button
+                    className="add-cart-button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+
+                      const size = product.sizes?.[0];
+
+                      if (!size) {
+                        alert("No size available");
+                        return;
+                      }
+
+                      addToCart(product, size, 1);
+
+                      alert(
+                        `${product.name} added to cart`
+                      );
+                    }}
+                  >
+                    ADD TO CART
+                  </button>
+
+                </div>
 
               </div>
 
             </div>
+          ))}
 
-          </div>
-        ))}
+        </div>
+      )}
 
-      </div>
-
-      <div className="product-section-footer">
-
-        <Link to="/shop" className="view-all-products">
-          VIEW ALL PRODUCTS →
-        </Link>
-
-      </div>
+      {!loading && products.length > 0 && (
+        <div className="product-section-footer">
+          <Link
+            to="/shop"
+            className="view-all-products"
+          >
+            VIEW ALL PRODUCTS →
+          </Link>
+        </div>
+      )}
 
     </section>
   );

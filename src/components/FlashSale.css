@@ -1,0 +1,215 @@
+.flash-sale-section {
+  max-width: 1400px;
+  margin: 70px auto;
+  padding: 45px 35px;
+  background: #111;
+  color: #fff;
+}
+
+.flash-sale-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 30px;
+  margin-bottom: 35px;
+}
+
+.flash-sale-eyebrow {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  margin-bottom: 8px;
+  opacity: 0.65;
+}
+
+.flash-sale-header h2 {
+  margin: 0;
+  font-size: 36px;
+  letter-spacing: 2px;
+  font-weight: 900;
+}
+
+.flash-sale-header p {
+  margin: 10px 0 0;
+  color: #aaa;
+  font-size: 13px;
+}
+
+.flash-sale-badge {
+  border: 1px solid #555;
+  padding: 10px 15px;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.flash-sale-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.flash-sale-card {
+  text-decoration: none;
+  color: #fff;
+  min-width: 0;
+}
+
+.flash-sale-image {
+  position: relative;
+  aspect-ratio: 1 / 1.1;
+  overflow: hidden;
+  background: #222;
+}
+
+.flash-sale-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.45s ease;
+}
+
+.flash-sale-card:hover .flash-sale-image img {
+  transform: scale(1.05);
+}
+
+.flash-sale-discount {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 2;
+  background: #fff;
+  color: #111;
+  padding: 7px 9px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.flash-sale-info {
+  padding-top: 15px;
+}
+
+.flash-sale-category {
+  display: block;
+  color: #888;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 6px;
+}
+
+.flash-sale-info h3 {
+  margin: 0 0 10px;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.flash-sale-prices {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.flash-sale-prices strong {
+  font-size: 17px;
+}
+
+.flash-sale-prices del {
+  color: #777;
+  font-size: 12px;
+}
+
+.flash-sale-countdown {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid #333;
+}
+
+.flash-sale-countdown > span {
+  display: block;
+  font-size: 8px;
+  letter-spacing: 2px;
+  color: #888;
+  margin-bottom: 9px;
+}
+
+.countdown-boxes {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.countdown-boxes div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 35px;
+}
+
+.countdown-boxes strong {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.countdown-boxes small {
+  margin-top: 4px;
+  font-size: 7px;
+  color: #777;
+  letter-spacing: 0.5px;
+}
+
+.countdown-boxes b {
+  color: #555;
+  font-size: 13px;
+}
+
+@media (max-width: 1000px) {
+  .flash-sale-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .flash-sale-section {
+    margin: 45px 16px;
+    padding: 30px 18px;
+  }
+
+  .flash-sale-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .flash-sale-header h2 {
+    font-size: 28px;
+  }
+
+  .flash-sale-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .flash-sale-info h3 {
+    font-size: 13px;
+  }
+
+  .flash-sale-prices strong {
+    font-size: 14px;
+  }
+
+  .countdown-boxes {
+    gap: 3px;
+  }
+
+  .countdown-boxes div {
+    min-width: 27px;
+  }
+
+  .countdown-boxes strong {
+    font-size: 13px;
+  }
+}

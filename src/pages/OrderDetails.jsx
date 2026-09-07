@@ -209,83 +209,105 @@ const [cancelError, setCancelError] = useState("");
 
         {/* STATUS */}
 
-        <div className="order-status-panel">
+       {/* STATUS */}
 
-          <div className="order-status-heading">
-            <div>
-              <span>ORDER PROGRESS</span>
-              <h2>YOUR ORDER STATUS</h2>
-            </div>
+<div className="order-status-panel">
 
-            <span
-              className={`details-status-badge status-${order.orderStatus}`}
-            >
-              {order.orderStatus}
-            </span>
-          </div>
+  <div className="order-status-heading">
+    <div>
+      <span>ORDER PROGRESS</span>
+      <h2>YOUR ORDER STATUS</h2>
+    </div>
 
+    <span
+      className={`details-status-badge status-${order.orderStatus}`}
+    >
+      {order.orderStatus}
+    </span>
+  </div>
 
-          <div className="order-progress">
+  {order.orderStatus === "cancelled" ? (
+    <div className="order-cancelled-status">
+      <div className="cancelled-icon">×</div>
 
-            <div
-              className={`progress-step ${
-                [
-                  "confirmed",
-                  "processing",
-                  "shipped",
-                  "delivered",
-                ].includes(order.orderStatus)
-                  ? "completed"
-                  : ""
-              }`}
-            >
-              <span>01</span>
-              <strong>CONFIRMED</strong>
-            </div>
+      <div>
+        <strong>ORDER CANCELLED</strong>
+        <p>
+          This order has been cancelled and will not be processed.
+        </p>
+      </div>
+    </div>
+  ) : (
+    <div className="order-progress">
 
-            <div
-              className={`progress-step ${
-                [
-                  "processing",
-                  "shipped",
-                  "delivered",
-                ].includes(order.orderStatus)
-                  ? "completed"
-                  : ""
-              }`}
-            >
-              <span>02</span>
-              <strong>PROCESSING</strong>
-            </div>
+      <div
+        className={`progress-step ${
+          ["confirmed", "processing", "shipped", "delivered"].includes(
+            order.orderStatus
+          )
+            ? "completed"
+            : ""
+        }`}
+      >
+        <span>01</span>
+        <strong>CONFIRMED</strong>
+      </div>
 
-            <div
-              className={`progress-step ${
-                [
-                  "shipped",
-                  "delivered",
-                ].includes(order.orderStatus)
-                  ? "completed"
-                  : ""
-              }`}
-            >
-              <span>03</span>
-              <strong>SHIPPED</strong>
-            </div>
+      <div
+        className={`progress-step ${
+  ["confirmed", "processing", "shipped", "delivered"].includes(
+    order.orderStatus
+  )
+    ? "completed"
+    : ""
+} ${
+  order.orderStatus === "confirmed" ? "current" : ""
+}`}
+      >
+        <span>02</span>
+        <strong>PROCESSING</strong>
+      </div>
 
-            <div
-              className={`progress-step ${
-                order.orderStatus === "delivered"
-                  ? "completed"
-                  : ""
-              }`}
-            >
-              <span>04</span>
-              <strong>DELIVERED</strong>
-            </div>
+      <div
+        className={`progress-step ${
+  ["processing", "shipped", "delivered"].includes(
+    order.orderStatus
+  )
+    ? "completed"
+    : ""
+} ${
+  order.orderStatus === "processing" ? "current" : ""
+}`}
+      >
+        <span>03</span>
+        <strong>SHIPPED</strong>
+      </div>
 
-          </div>
+      <div
+       className={`progress-step ${
+  ["shipped", "delivered"].includes(order.orderStatus)
+    ? "completed"
+    : ""
+} ${
+  order.orderStatus === "shipped" ? "current" : ""
+}`}
+      >
+        <span>04</span>
+        <strong>DELIVERED</strong>
+  <div className={`progress-step ${
+  order.orderStatus === "delivered"
+    ? "completed"
+    : ""
+} ${
+  order.orderStatus === "delivered" ? "current" : ""
+}`}>
+      </div>
 
-        </div>
+    </div>
+    </div>
+  )}
+
+</div>
 
 
         {/* MAIN GRID */}

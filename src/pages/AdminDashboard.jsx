@@ -28,6 +28,206 @@ function AdminDashboard() {
   isActive: true,
 });
 
+const [coupons, setCoupons] = useState([]);
+const [couponLoading, setCouponLoading] = useState(true);
+const [showCouponForm, setShowCouponForm] = useState(false);
+
+const [couponForm, setCouponForm] = useState({
+  code: "",
+  discountType: "percentage",
+  discountValue: "",
+  minimumOrderAmount: "",
+  maximumDiscount: "",
+  usageLimit: "",
+  expiryDate: "",
+  isActive: true,
+});
+
+const handleCouponChange = (e) => {
+  const { name, value, type, checked } = e.target;
+
+  setCouponForm((current) => ({
+    ...current,
+    [name]: type === "checkbox" ? checked : value,
+  }));
+};
+
+useEffect(() => {
+  const fetchCoupons = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(
+        `${API_URL}/api/coupons`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Failed to fetch coupons"
+        );
+      }
+
+      setCoupons(data);
+    } catch (error) {
+      console.error("Admin coupons error:", error);
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  fetchCoupons();
+}, []);
+
+const handleAddCoupon = async (e) => {
+  e.preventDefault();
+
+  try {
+    const token = localStorage.getItem("token");
+
+    const response = await fetch(
+      `${API_URL}/api/coupons`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          code: couponForm.code,
+          discountType: couponForm.discountType,
+          discountValue: Number(couponForm.discountValue),
+          minimumOrderAmount:
+            Number(couponForm.minimumOrderAmount) || 0,
+          maximumDiscount:
+            couponForm.maximumDiscount === ""
+              ? null
+              : Number(couponForm.maximumDiscount),
+          usageLimit:
+            couponForm.usageLimit === ""
+              ? null
+              : Number(couponForm.usageLimit),
+          expiryDate: couponForm.expiryDate,
+          isActive: couponForm.isActive,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.message || "Failed to create coupon"
+      );
+    }
+
+    setCoupons((current) => [
+      data.coupon,
+      ...current,
+    ]);
+
+    setCouponForm({
+      code: "",
+      discountType: "percentage",
+      discountValue: "",
+      minimumOrderAmount: "",
+      maximumDiscount: "",
+      usageLimit: "",
+      expiryDate: "",
+      isActive: true,
+    });
+
+    setShowCouponForm(false);
+
+    alert("Coupon created successfully!");
+  } catch (error) {
+    console.error("Create coupon error:", error);
+    alert(error.message);
+  }
+};
+
+const handleToggleCoupon = async (couponId) => {
+  try {
+    const token = localStorage.getItem("token");
+
+    const response = await fetch(
+      `${API_URL}/api/coupons/${couponId}/toggle`,
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.message || "Failed to update coupon"
+      );
+    }
+
+    setCoupons((current) =>
+      current.map((coupon) =>
+        coupon._id === couponId
+          ? data.coupon
+          : coupon
+      )
+    );
+  } catch (error) {
+    console.error("Toggle coupon error:", error);
+    alert(error.message);
+  }
+};
+
+const handleDeleteCoupon = async (couponId) => {
+  const confirmed = window.confirm(
+    "Are you sure you want to delete this coupon?"
+  );
+
+  if (!confirmed) return;
+
+  try {
+    const token = localStorage.getItem("token");
+
+    const response = await fetch(
+      `${API_URL}/api/coupons/${couponId}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.message || "Failed to delete coupon"
+      );
+    }
+
+    setCoupons((current) =>
+      current.filter(
+        (coupon) => coupon._id !== couponId
+      )
+    );
+
+    alert("Coupon deleted successfully!");
+  } catch (error) {
+    console.error("Delete coupon error:", error);
+    alert(error.message);
+  }
+};
+
 const handleProductChange = (e) => {
   const { name, value, type, checked } = e.target;
 
@@ -50,10 +250,21 @@ const handleEditProduct = (product) => {
 
     isFeatured: product.isFeatured ?? false,
     isActive: product.isActive ?? true,
+
+    salePrice: product.salePrice ?? "",
+    saleStart: product.saleStart
+      ? new Date(product.saleStart).toISOString().slice(0, 16)
+      : "",
+    saleEnd: product.saleEnd
+      ? new Date(product.saleEnd).toISOString().slice(0, 16)
+      : "",
+    isFlashSale: product.isFlashSale ?? false,
   });
 
   setShowEditForm(true);
 };
+
+
 const handleUpdateProduct = async (e) => {
   e.preventDefault();
 
@@ -88,6 +299,18 @@ const handleUpdateProduct = async (e) => {
 
       isFeatured: editingProduct.isFeatured,
       isActive: editingProduct.isActive,
+
+      salePrice: Number(editingProduct.salePrice) || 0,
+
+saleStart: editingProduct.saleStart
+  ? new Date(editingProduct.saleStart)
+  : null,
+
+saleEnd: editingProduct.saleEnd
+  ? new Date(editingProduct.saleEnd)
+  : null,
+
+isFlashSale: editingProduct.isFlashSale,
     };
 
     const response = await fetch(
@@ -409,6 +632,47 @@ const deliveredOrders = orders.filter(
   (order) => order.orderStatus === "delivered"
 ).length;
 
+const confirmedOrders = orders.filter(
+  (order) => order.orderStatus === "confirmed"
+).length;
+
+const processingOrders = orders.filter(
+  (order) => order.orderStatus === "processing"
+).length;
+
+const shippedOrders = orders.filter(
+  (order) => order.orderStatus === "shipped"
+).length;
+
+const cancelledOrders = orders.filter(
+  (order) => order.orderStatus === "cancelled"
+).length;
+
+const paidOrders = orders.filter(
+  (order) => order.paymentStatus === "paid"
+);
+
+const totalRevenue = paidOrders.reduce(
+  (total, order) => total + Number(order.totalAmount || 0),
+  0
+);
+
+const totalProducts = products.length;
+
+const activeProducts = products.filter(
+  (product) => product.isActive !== false
+).length;
+
+const lowStockProducts = products.filter(
+  (product) =>
+    Number(product.stock || 0) > 0 &&
+    Number(product.stock || 0) <= 5
+);
+
+const outOfStockProducts = products.filter(
+  (product) => Number(product.stock || 0) === 0
+);
+
  return (
   <main className="admin-page">
 
@@ -433,73 +697,245 @@ const deliveredOrders = orders.filter(
       </div>
 
     </section>
+  <section className="admin-stats-grid">
+
+  <div className="admin-stat-card">
+    <span>REVENUE</span>
+    <strong>
+      ₹{totalRevenue.toLocaleString("en-IN")}
+    </strong>
+    <small>FROM PAID ORDERS</small>
+  </div>
+
+  <div className="admin-stat-card">
+    <span>TOTAL ORDERS</span>
+    <strong>{orders.length}</strong>
+    <small>ALL ORDERS</small>
+  </div>
+
+  <div className="admin-stat-card">
+    <span>PRODUCTS</span>
+    <strong>{totalProducts}</strong>
+    <small>{activeProducts} ACTIVE</small>
+  </div>
+
+  <div className="admin-stat-card">
+    <span>OUT OF STOCK</span>
+    <strong>{outOfStockProducts.length}</strong>
+    <small>PRODUCTS</small>
+  </div>
+
+</section>
 
 
-    {/* STATISTICS */}
 
-    <section className="admin-stats">
+    <section className="admin-order-overview">
 
-      <div className="admin-stat-card">
-        <span className="admin-stat-label">
-          TOTAL ORDERS
-        </span>
+  <div className="admin-section-heading">
+    <div>
+      <span>ORDER ACTIVITY</span>
+      <h2>ORDER OVERVIEW</h2>
+    </div>
+  </div>
 
-        <strong>
-          {orders.length}
-        </strong>
+  <div className="admin-order-stats">
 
-        <p>
-          All orders received
-        </p>
-      </div>
+    <div>
+      <span>PENDING</span>
+      <strong>{pendingOrders}</strong>
+    </div>
 
+    <div>
+      <span>CONFIRMED</span>
+      <strong>{confirmedOrders}</strong>
+    </div>
 
-      <div className="admin-stat-card">
-        <span className="admin-stat-label">
-          TOTAL SALES
-        </span>
+    <div>
+      <span>PROCESSING</span>
+      <strong>{processingOrders}</strong>
+    </div>
 
-        <strong>
-          ₹{totalSales.toLocaleString("en-IN")}
-        </strong>
+    <div>
+      <span>SHIPPED</span>
+      <strong>{shippedOrders}</strong>
+    </div>
 
-        <p>
-          Revenue from orders
-        </p>
-      </div>
+    <div>
+      <span>DELIVERED</span>
+      <strong>{deliveredOrders}</strong>
+    </div>
 
+    <div>
+      <span>CANCELLED</span>
+      <strong>{cancelledOrders}</strong>
+    </div>
 
-      <div className="admin-stat-card">
-        <span className="admin-stat-label">
-          PENDING
-        </span>
+  </div>
 
-        <strong>
-          {pendingOrders}
-        </strong>
+</section>
 
-        <p>
-          Awaiting processing
-        </p>
-      </div>
+<section className="admin-recent-section">
 
+  <div className="admin-section-heading">
+    <div>
+      <span>LATEST ACTIVITY</span>
+      <h2>RECENT ORDERS</h2>
+    </div>
 
-      <div className="admin-stat-card">
-        <span className="admin-stat-label">
-          DELIVERED
-        </span>
+    <button
+      className="admin-view-all-button"
+      onClick={() =>
+        document
+          .querySelector(".admin-orders-section")
+          ?.scrollIntoView({ behavior: "smooth" })
+      }
+    >
+      VIEW ALL →
+    </button>
+  </div>
 
-        <strong>
-          {deliveredOrders}
-        </strong>
+  {orders.length === 0 ? (
+    <div className="admin-empty-state">
+      No orders yet.
+    </div>
+  ) : (
+    <div className="admin-recent-orders">
 
-        <p>
-          Successfully delivered
-        </p>
-      </div>
+      {[...orders]
+        .sort(
+          (a, b) =>
+            new Date(b.createdAt || 0) -
+            new Date(a.createdAt || 0)
+        )
+        .slice(0, 5)
+        .map((order) => (
 
-    </section>
+          <div
+            className="admin-recent-order"
+            key={order._id}
+          >
 
+            <div className="recent-order-main">
+              <span>ORDER</span>
+
+              <strong>
+                #{order._id.slice(-8).toUpperCase()}
+              </strong>
+            </div>
+
+            <div className="recent-order-customer">
+              <span>CUSTOMER</span>
+
+              <strong>
+                {order.customer?.name ||
+                  order.userId?.name ||
+                  "Customer"}
+              </strong>
+            </div>
+
+            <div className="recent-order-total">
+              <span>TOTAL</span>
+
+              <strong>
+                ₹
+                {Number(
+                  order.totalAmount || 0
+                ).toLocaleString("en-IN")}
+              </strong>
+            </div>
+
+            <div className="recent-order-status">
+              <span
+                className={`admin-status-badge ${
+                  order.orderStatus || "pending"
+                }`}
+              >
+                {(
+                  order.orderStatus ||
+                  "pending"
+                ).toUpperCase()}
+              </span>
+            </div>
+
+            <div className="recent-order-date">
+              {order.createdAt
+                ? new Date(
+                    order.createdAt
+                  ).toLocaleDateString("en-IN")
+                : "—"}
+            </div>
+
+          </div>
+
+        ))}
+
+    </div>
+  )}
+
+</section>
+
+<section className="admin-quick-section">
+
+  <div className="admin-section-heading">
+    <div>
+      <span>SHORTCUTS</span>
+      <h2>QUICK ACTIONS</h2>
+    </div>
+  </div>
+
+  <div className="admin-quick-actions">
+
+    <button
+      onClick={() =>
+        document
+          .querySelector(".admin-add-product-section")
+          ?.scrollIntoView({ behavior: "smooth" })
+      }
+    >
+      <span>01</span>
+      <strong>ADD PRODUCT</strong>
+      <small>CREATE A NEW PRODUCT →</small>
+    </button>
+
+    <button
+      onClick={() =>
+        document
+          .querySelector(".admin-orders-section")
+          ?.scrollIntoView({ behavior: "smooth" })
+      }
+    >
+      <span>02</span>
+      <strong>MANAGE ORDERS</strong>
+      <small>VIEW CUSTOMER ORDERS →</small>
+    </button>
+
+    <button
+      onClick={() =>
+        document
+          .querySelector(".admin-coupons-section")
+          ?.scrollIntoView({ behavior: "smooth" })
+      }
+    >
+      <span>03</span>
+      <strong>COUPONS</strong>
+      <small>MANAGE DISCOUNT CODES →</small>
+    </button>
+
+    <button
+      onClick={() =>
+        document
+          .querySelector(".admin-products-section")
+          ?.scrollIntoView({ behavior: "smooth" })
+      }
+    >
+      <span>04</span>
+      <strong>PRODUCTS</strong>
+      <small>MANAGE INVENTORY →</small>
+    </button>
+
+  </div>
+
+</section>
 
     {/* ORDERS */}
 
@@ -1005,6 +1441,84 @@ const deliveredOrders = orders.filter(
       Active product
     </label>
 
+<div className="admin-flash-sale-box">
+  <div className="admin-flash-sale-header">
+    <div>
+      <span>LIMITED TIME</span>
+      <h4>FLASH SALE</h4>
+    </div>
+
+    <label className="admin-flash-toggle">
+      <input
+        type="checkbox"
+        checked={editingProduct.isFlashSale ?? false}
+        onChange={(e) =>
+          setEditingProduct({
+            ...editingProduct,
+            isFlashSale: e.target.checked,
+          })
+        }
+      />
+
+      <span>ENABLE</span>
+    </label>
+  </div>
+
+  {editingProduct.isFlashSale && (
+    <div className="admin-flash-sale-fields">
+
+      <input
+        type="number"
+        min="1"
+        value={editingProduct.salePrice ?? ""}
+        onChange={(e) =>
+          setEditingProduct({
+            ...editingProduct,
+            salePrice: e.target.value,
+          })
+        }
+        placeholder="Flash sale price"
+      />
+
+      <div className="admin-date-field">
+        <label>SALE START</label>
+
+        <input
+          type="datetime-local"
+          value={editingProduct.saleStart ?? ""}
+          onChange={(e) =>
+            setEditingProduct({
+              ...editingProduct,
+              saleStart: e.target.value,
+            })
+          }
+        />
+      </div>
+
+      <div className="admin-date-field">
+        <label>SALE END</label>
+
+        <input
+          type="datetime-local"
+          value={editingProduct.saleEnd ?? ""}
+          onChange={(e) =>
+            setEditingProduct({
+              ...editingProduct,
+              saleEnd: e.target.value,
+            })
+          }
+        />
+      </div>
+
+      <p className="admin-flash-sale-help">
+        The product will appear in Flash Sale only during
+        the selected period.
+      </p>
+
+    </div>
+  )}
+</div>
+
     <button
       type="submit"
       className="admin-save-product-button"
@@ -1125,6 +1639,255 @@ const deliveredOrders = orders.filter(
       )}
 
     </section>
+
+    <section className="admin-low-stock">
+
+  <div className="admin-section-heading">
+    <div>
+      <span>INVENTORY ALERT</span>
+      <h2>LOW STOCK PRODUCTS</h2>
+    </div>
+  </div>
+
+  {lowStockProducts.length === 0 ? (
+    <div className="admin-no-alert">
+      ✓ All products have healthy stock levels.
+    </div>
+  ) : (
+    <div className="admin-low-stock-list">
+
+      {lowStockProducts.map((product) => (
+        <div
+          className="admin-low-stock-item"
+          key={product._id}
+        >
+          <img
+            src={product.image}
+            alt={product.name}
+          />
+
+          <div>
+            <strong>{product.name}</strong>
+            <span>{product.category}</span>
+          </div>
+
+          <b>
+            ONLY {product.stock} LEFT
+          </b>
+        </div>
+      ))}
+
+    </div>
+  )}
+
+</section>
+
+    {/* ==================== COUPON MANAGEMENT ==================== */}
+<section className="admin-section coupon-management">
+  <div className="section-header">
+    <div>
+      <h2>Coupon Management</h2>
+      <p>Create and manage discount coupons</p>
+    </div>
+
+    <button
+      className="admin-btn primary"
+      onClick={() => setShowCouponForm((current) => !current)}
+    >
+      {showCouponForm ? "Close Form" : "+ Add Coupon"}
+    </button>
+  </div>
+
+  {showCouponForm && (
+    <form className="coupon-form" onSubmit={handleAddCoupon}>
+      <div className="form-grid">
+
+        <div className="form-group">
+          <label>Coupon Code</label>
+          <input
+            type="text"
+            name="code"
+            value={couponForm.code}
+            onChange={handleCouponChange}
+            placeholder="e.g. MM10"
+            required
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Discount Type</label>
+          <select
+            name="discountType"
+            value={couponForm.discountType}
+            onChange={handleCouponChange}
+          >
+            <option value="percentage">Percentage (%)</option>
+            <option value="fixed">Fixed Amount (₹)</option>
+          </select>
+        </div>
+
+        <div className="form-group">
+          <label>Discount Value</label>
+          <input
+            type="number"
+            name="discountValue"
+            value={couponForm.discountValue}
+            onChange={handleCouponChange}
+            placeholder="e.g. 10"
+            min="1"
+            required
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Minimum Order Amount</label>
+          <input
+            type="number"
+            name="minimumOrderAmount"
+            value={couponForm.minimumOrderAmount}
+            onChange={handleCouponChange}
+            placeholder="e.g. 500"
+            min="0"
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Maximum Discount</label>
+          <input
+            type="number"
+            name="maximumDiscount"
+            value={couponForm.maximumDiscount}
+            onChange={handleCouponChange}
+            placeholder="Optional"
+            min="0"
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Usage Limit</label>
+          <input
+            type="number"
+            name="usageLimit"
+            value={couponForm.usageLimit}
+            onChange={handleCouponChange}
+            placeholder="Unlimited if empty"
+            min="1"
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Expiry Date</label>
+          <input
+            type="datetime-local"
+            name="expiryDate"
+            value={couponForm.expiryDate}
+            onChange={handleCouponChange}
+            required
+          />
+        </div>
+
+        <div className="form-group checkbox-group">
+          <label>
+            <input
+              type="checkbox"
+              name="isActive"
+              checked={couponForm.isActive}
+              onChange={handleCouponChange}
+            />
+            Active Coupon
+          </label>
+        </div>
+
+      </div>
+
+      <button type="submit" className="admin-btn primary">
+        Create Coupon
+      </button>
+    </form>
+  )}
+
+  {/* Coupon List */}
+  <div className="coupon-list">
+    {couponLoading ? (
+      <p>Loading coupons...</p>
+    ) : coupons.length === 0 ? (
+      <p className="empty-message">
+        No coupons created yet.
+      </p>
+    ) : (
+      coupons.map((coupon) => (
+        <div className="coupon-card" key={coupon._id}>
+          <div className="coupon-info">
+            <div className="coupon-code">
+              {coupon.code}
+            </div>
+
+            <div className="coupon-discount">
+              {coupon.discountType === "percentage"
+                ? `${coupon.discountValue}% OFF`
+                : `₹${coupon.discountValue} OFF`}
+            </div>
+
+            <div className="coupon-details">
+              <span>
+                Min Order: ₹{coupon.minimumOrderAmount}
+              </span>
+
+              <span>
+                {coupon.maximumDiscount !== null
+                  ? `Max Discount: ₹${coupon.maximumDiscount}`
+                  : "No max discount"}
+              </span>
+
+              <span>
+                {coupon.usageLimit !== null
+                  ? `Used: ${coupon.usedCount}/${coupon.usageLimit}`
+                  : `Used: ${coupon.usedCount}`}
+              </span>
+
+              <span>
+                Expires:{" "}
+                {new Date(coupon.expiryDate).toLocaleString()}
+              </span>
+            </div>
+          </div>
+
+          <div className="coupon-actions">
+            <span
+              className={
+                coupon.isActive
+                  ? "coupon-status active"
+                  : "coupon-status inactive"
+              }
+            >
+              {coupon.isActive ? "Active" : "Inactive"}
+            </span>
+
+            <button
+              className="admin-btn secondary"
+              onClick={() =>
+                handleToggleCoupon(coupon._id)
+              }
+            >
+              {coupon.isActive
+                ? "Deactivate"
+                : "Activate"}
+            </button>
+
+            <button
+              className="admin-btn danger"
+              onClick={() =>
+                handleDeleteCoupon(coupon._id)
+              }
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      ))
+    )}
+  </div>
+</section>
 
   </main>
 );

@@ -339,4 +339,34 @@ router.delete(
 );
 
 
+// ================================
+// GET REWARD POINTS
+// ================================
+
+router.get("/reward-points", authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId).select(
+      "rewardPoints"
+    );
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      rewardPoints: user.rewardPoints || 0,
+    });
+  } catch (error) {
+    console.error("Get reward points error:", error);
+
+    res.status(500).json({
+      message: "Failed to fetch reward points",
+      error: error.message,
+    });
+  }
+});
+
+
 module.exports = router;

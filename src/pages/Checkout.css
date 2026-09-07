@@ -430,3 +430,272 @@
     font-size: 19px;
   }
 }
+
+/* ================================
+   COUPON
+================================ */
+
+.checkout-coupon {
+  margin: 20px 0;
+  padding: 18px;
+  border: 1px solid #e5e5e5;
+  background: #fafafa;
+}
+
+.checkout-coupon-heading {
+  margin-bottom: 12px;
+}
+
+.checkout-coupon-heading span {
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  font-weight: 700;
+}
+
+.checkout-coupon-heading p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #777;
+}
+
+.coupon-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.coupon-input-row input {
+  flex: 1;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #ccc;
+  background: #fff;
+  font-size: 14px;
+  text-transform: uppercase;
+}
+
+.coupon-input-row input:focus {
+  outline: none;
+  border-color: #111;
+}
+
+.coupon-input-row button {
+  padding: 12px 18px;
+  border: none;
+  background: #111;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.coupon-input-row button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.coupon-error {
+  margin: 8px 0 0;
+  color: #d32f2f;
+  font-size: 12px;
+}
+
+.applied-coupon {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid #ddd;
+}
+
+.applied-coupon > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.applied-coupon strong {
+  font-size: 15px;
+  letter-spacing: 1px;
+}
+
+.applied-coupon span {
+  font-size: 12px;
+  color: #555;
+}
+
+.applied-coupon button {
+  border: none;
+  background: transparent;
+  text-decoration: underline;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.coupon-discount-row {
+  color: #198754;
+}
+
+/* ================================
+   REWARD POINTS
+================================ */
+
+.checkout-rewards {
+  margin: 20px 0;
+  padding: 18px;
+  border: 1px solid #e5e5e5;
+  background: #fafafa;
+}
+
+.checkout-rewards-heading {
+  margin-bottom: 12px;
+}
+
+.checkout-rewards-heading span {
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  font-weight: 700;
+}
+
+.checkout-rewards-heading p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #777;
+}
+
+.reward-balance {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.reward-balance strong {
+  font-size: 22px;
+}
+
+.reward-balance span {
+  font-size: 12px;
+  color: #777;
+}
+
+.reward-input-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.reward-input-row input {
+  width: 150px;
+  padding: 11px;
+  border: 1px solid #ccc;
+  background: #fff;
+  font-size: 14px;
+}
+
+.reward-input-row input:focus {
+  outline: none;
+  border-color: #111;
+}
+
+.reward-input-row span {
+  font-size: 12px;
+  color: #777;
+}
+
+.reward-applied {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: #198754;
+}
+
+.no-rewards {
+  margin: 0;
+  font-size: 12px;
+  color: #777;
+}
+
+.reward-discount-row {
+  color: #7b2cbf;
+}
+/* =====================================================
+   CHECKOUT FINAL POLISH
+===================================================== */
+
+.checkout-summary {
+  position: sticky;
+  top: 25px;
+}
+
+.checkout-product-image {
+  overflow: hidden;
+}
+
+.checkout-product-image img {
+  transition: transform 0.35s ease;
+}
+
+.checkout-product:hover .checkout-product-image img {
+  transform: scale(1.05);
+}
+
+.coupon-input-row button,
+.place-order-button {
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.coupon-input-row button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.place-order-button:hover {
+  transform: translateY(-2px);
+}
+
+.place-order-button:active {
+  transform: translateY(0);
+}
+
+.place-order-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.checkout-coupon,
+.checkout-rewards {
+  transition: border-color 0.2s ease;
+}
+
+.checkout-coupon:focus-within,
+.checkout-rewards:focus-within {
+  border-color: #111;
+}
+
+@media (max-width: 520px) {
+  .coupon-input-row {
+    flex-direction: column;
+  }
+
+  .coupon-input-row button {
+    min-height: 44px;
+  }
+
+  .reward-input-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .reward-input-row input {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .checkout-summary {
+    position: static;
+  }
+}

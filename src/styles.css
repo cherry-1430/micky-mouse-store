@@ -421,3 +421,1110 @@
 .admin-order-card {
   border-radius: 0;
 }
+
+.admin-flash-sale-box {
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px solid #ddd;
+  background: #fafafa;
+}
+
+.admin-flash-sale-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.admin-flash-sale-header span {
+  display: block;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: #888;
+  font-weight: 700;
+}
+
+.admin-flash-sale-header h4 {
+  margin: 5px 0 0;
+  font-size: 18px;
+  letter-spacing: 1px;
+}
+
+.admin-flash-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  letter-spacing: 1px;
+  font-weight: 700;
+}
+
+.admin-flash-toggle input {
+  width: auto;
+}
+
+.admin-flash-sale-fields {
+  margin-top: 20px;
+  display: grid;
+  gap: 14px;
+}
+
+.admin-flash-sale-fields input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.admin-date-field {
+  display: grid;
+  gap: 6px;
+}
+
+.admin-date-field label {
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  font-weight: 700;
+  color: #777;
+}
+
+.admin-flash-sale-help {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #777;
+}
+
+/* ==================== COUPON MANAGEMENT ==================== */
+
+.coupon-management {
+  margin-top: 30px;
+}
+
+.coupon-form {
+  background: #fff;
+  padding: 24px;
+  border-radius: 12px;
+  margin: 20px 0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.form-group label {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.form-group input,
+.form-group select {
+  padding: 11px 12px;
+  border: 1px solid #ddd;
+  border-radius: 7px;
+  font-size: 14px;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #333;
+}
+
+.checkbox-group {
+  justify-content: center;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.checkbox-group input {
+  width: auto;
+}
+
+.coupon-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.coupon-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #eee;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.coupon-code {
+  display: inline-block;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: #f1f1f1;
+}
+
+.coupon-discount {
+  font-size: 17px;
+  font-weight: 700;
+  margin-top: 8px;
+}
+
+.coupon-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 10px;
+  font-size: 13px;
+  color: #666;
+}
+
+.coupon-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.coupon-status {
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.coupon-status.active {
+  background: #e7f7ed;
+  color: #198754;
+}
+
+.coupon-status.inactive {
+  background: #f8e7e7;
+  color: #dc3545;
+}
+
+.empty-message {
+  padding: 30px;
+  text-align: center;
+  color: #777;
+}
+
+.admin-btn.danger {
+  background: #dc3545;
+  color: #fff;
+  border: none;
+}
+
+.admin-btn.secondary {
+  background: #eee;
+  color: #333;
+  border: none;
+}
+
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .coupon-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .coupon-actions {
+    justify-content: flex-start;
+  }
+}
+
+.admin-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin: 35px 0;
+}
+
+.admin-stat-card {
+  padding: 25px;
+  border: 1px solid #e5e5e5;
+  background: #fff;
+}
+
+.admin-stat-card span,
+.admin-stat-card small {
+  display: block;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  color: #888;
+}
+
+.admin-stat-card strong {
+  display: block;
+  margin: 12px 0;
+  font-size: 28px;
+  font-weight: 900;
+}
+
+.admin-order-overview,
+.admin-low-stock {
+  margin-top: 45px;
+}
+
+.admin-section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 22px;
+}
+
+.admin-section-heading span {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #888;
+}
+
+.admin-section-heading h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.admin-order-stats {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  border: 1px solid #e5e5e5;
+}
+
+.admin-order-stats > div {
+  padding: 22px 15px;
+  border-right: 1px solid #e5e5e5;
+  background: #fff;
+}
+
+.admin-order-stats > div:last-child {
+  border-right: none;
+}
+
+.admin-order-stats span {
+  display: block;
+  font-size: 8px;
+  letter-spacing: 1px;
+  color: #888;
+}
+
+.admin-order-stats strong {
+  display: block;
+  margin-top: 9px;
+  font-size: 22px;
+}
+
+.admin-low-stock-list {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-low-stock-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 12px;
+  border: 1px solid #e5e5e5;
+  background: #fff;
+}
+
+.admin-low-stock-item img {
+  width: 55px;
+  height: 65px;
+  object-fit: cover;
+}
+
+.admin-low-stock-item div {
+  flex: 1;
+}
+
+.admin-low-stock-item strong {
+  display: block;
+  font-size: 13px;
+}
+
+.admin-low-stock-item span {
+  display: block;
+  margin-top: 4px;
+  font-size: 9px;
+  color: #888;
+  text-transform: uppercase;
+}
+
+.admin-low-stock-item b {
+  font-size: 9px;
+  letter-spacing: 1px;
+}
+
+.admin-no-alert {
+  padding: 25px;
+  border: 1px solid #e5e5e5;
+  font-size: 11px;
+}
+
+@media (max-width: 900px) {
+  .admin-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .admin-order-stats {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .admin-order-stats > div {
+    border-bottom: 1px solid #e5e5e5;
+  }
+}
+
+@media (max-width: 600px) {
+  .admin-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-order-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .admin-low-stock-item b {
+    font-size: 8px;
+  }
+}
+
+
+/* =========================================================
+   ADMIN DASHBOARD — FINAL POLISH
+========================================================= */
+
+.admin-page {
+  max-width: 1450px;
+  margin: 0 auto;
+  padding: 40px 32px 80px;
+}
+
+/* HEADER */
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.admin-header h1 {
+  margin: 6px 0 8px;
+  font-size: 36px;
+  font-weight: 900;
+  letter-spacing: -1px;
+}
+
+.admin-header span {
+  color: #777;
+  font-size: 13px;
+}
+
+.admin-eyebrow {
+  margin: 0;
+  font-size: 10px !important;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #777 !important;
+}
+
+.admin-header-mark {
+  width: 58px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ddd;
+  border-radius: 50%;
+}
+
+.admin-header-mark span {
+  font-size: 15px !important;
+  font-weight: 900;
+  color: #111 !important;
+}
+
+
+/* =========================================================
+   OVERVIEW CARDS
+========================================================= */
+
+.admin-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 38px;
+}
+
+.admin-stats-grid .admin-stat-card {
+  min-height: 125px;
+  padding: 24px;
+  border: 1px solid #e4e4e4;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.admin-stats-grid .admin-stat-card > span {
+  display: block;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #888;
+}
+
+.admin-stats-grid .admin-stat-card strong {
+  display: block;
+  margin: 14px 0 8px;
+  font-size: 28px;
+  line-height: 1;
+  font-weight: 900;
+}
+
+.admin-stats-grid .admin-stat-card small {
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: #999;
+}
+
+
+/* =========================================================
+   SECTION HEADINGS
+========================================================= */
+
+.admin-section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 18px;
+}
+
+.admin-section-heading p,
+.admin-section-heading > div > span {
+  margin: 0 0 6px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #888;
+}
+
+.admin-section-heading h2 {
+  margin: 0;
+  font-size: 25px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+}
+
+
+/* =========================================================
+   ORDER OVERVIEW
+========================================================= */
+
+.admin-order-overview {
+  margin-bottom: 42px;
+}
+
+.admin-order-stats {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  border: 1px solid #e1e1e1;
+  background: #fff;
+}
+
+.admin-order-stats > div {
+  min-height: 90px;
+  padding: 20px;
+  border-right: 1px solid #e1e1e1;
+  box-sizing: border-box;
+}
+
+.admin-order-stats > div:last-child {
+  border-right: none;
+}
+
+.admin-order-stats span {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #888;
+}
+
+.admin-order-stats strong {
+  font-size: 25px;
+  font-weight: 900;
+}
+
+
+/* =========================================================
+   ORDERS
+========================================================= */
+
+.admin-orders-section {
+  margin-bottom: 50px;
+}
+
+.admin-orders-list {
+  display: grid;
+  gap: 12px;
+}
+
+.admin-order-card {
+  padding: 22px;
+  border: 1px solid #e4e4e4;
+  background: #fff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-order-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+}
+
+.admin-order-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #eee;
+}
+
+.admin-order-label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 8px;
+  letter-spacing: 1.5px;
+  color: #999;
+}
+
+.admin-order-top h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.admin-order-date {
+  text-align: right;
+}
+
+.admin-order-date span {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 8px;
+  letter-spacing: 1px;
+  color: #999;
+}
+
+.admin-order-date strong {
+  font-size: 11px;
+}
+
+.admin-order-details {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1.2fr;
+  gap: 20px;
+  padding-top: 20px;
+}
+
+.admin-detail span {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.3px;
+  color: #999;
+}
+
+.admin-detail strong {
+  display: block;
+  font-size: 13px;
+}
+
+.admin-detail p {
+  margin: 5px 0 0;
+  font-size: 10px;
+  color: #999;
+}
+
+.admin-status-select {
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid #ddd;
+  background: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+
+/* =========================================================
+   PRODUCTS
+========================================================= */
+
+.admin-products-section {
+  margin-bottom: 50px;
+}
+
+.admin-products-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.admin-product-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e4e4e4;
+  background: #fff;
+  overflow: hidden;
+}
+
+.admin-product-image {
+  width: 100%;
+  height: 260px;
+  object-fit: cover;
+}
+
+.admin-product-info {
+  padding: 18px;
+}
+
+.admin-product-info > span {
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: #999;
+}
+
+.admin-product-info h3 {
+  margin: 7px 0;
+  font-size: 15px;
+}
+
+.admin-product-info > strong {
+  font-size: 16px;
+}
+
+.admin-stock-status {
+  margin-top: 12px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.stock-in {
+  color: #777;
+}
+
+.stock-low {
+  color: #b06b00;
+}
+
+.stock-out {
+  color: #b00020;
+}
+
+.admin-product-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.admin-badge {
+  padding: 5px 7px;
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  border: 1px solid #ddd;
+}
+
+.admin-product-card > .admin-product-info > div:last-child {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.admin-edit-product-button,
+.admin-delete-product-button {
+  flex: 1;
+  padding: 9px;
+  border: 1px solid #ddd;
+  background: #fff;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  cursor: pointer;
+  color:black;
+}
+
+.admin-edit-product-button:hover {
+  background: #111;
+  color: #fff;
+}
+
+.admin-delete-product-button:hover {
+  background: red;
+  color: #fff;
+}
+
+
+/* =========================================================
+   LOW STOCK
+========================================================= */
+
+.admin-low-stock {
+  margin-bottom: 50px;
+}
+
+.admin-low-stock-list {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-low-stock-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 12px;
+  border: 1px solid #e4e4e4;
+  background: #fff;
+}
+
+.admin-low-stock-item img {
+  width: 55px;
+  height: 65px;
+  object-fit: cover;
+}
+
+.admin-low-stock-item div {
+  flex: 1;
+}
+
+.admin-low-stock-item strong {
+  display: block;
+  font-size: 12px;
+}
+
+.admin-low-stock-item span {
+  display: block;
+  margin-top: 4px;
+  font-size: 8px;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.admin-low-stock-item b {
+  font-size: 9px;
+  letter-spacing: 1px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1000px) {
+
+  .admin-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .admin-order-stats {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .admin-order-stats > div:nth-child(3) {
+    border-right: none;
+  }
+
+  .admin-products-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .admin-order-details {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+
+@media (max-width: 650px) {
+
+  .admin-page {
+    padding: 25px 15px 60px;
+  }
+
+  .admin-header {
+    align-items: flex-start;
+  }
+
+  .admin-header h1 {
+    font-size: 27px;
+  }
+
+  .admin-header-mark {
+    width: 45px;
+    height: 45px;
+  }
+
+  .admin-stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .admin-stats-grid .admin-stat-card {
+    min-height: 105px;
+    padding: 16px;
+  }
+
+  .admin-stats-grid .admin-stat-card strong {
+    font-size: 22px;
+  }
+
+  .admin-order-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .admin-order-stats > div {
+    border-right: 1px solid #e1e1e1;
+  }
+
+  .admin-order-stats > div:nth-child(even) {
+    border-right: none;
+  }
+
+  .admin-order-details {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .admin-products-list {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-product-image {
+    height: 300px;
+  }
+
+  .admin-section-heading h2 {
+    font-size: 21px;
+  }
+}
+
+/* =========================================================
+   RECENT ORDERS
+========================================================= */
+
+.admin-recent-section {
+  margin-bottom: 45px;
+}
+
+.admin-view-all-button {
+  border: none;
+  background: transparent;
+  padding: 5px 0;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+}
+
+.admin-view-all-button:hover {
+  text-decoration: underline;
+}
+
+.admin-recent-orders {
+  display: grid;
+  border-top: 1px solid #e4e4e4;
+}
+
+.admin-recent-order {
+  display: grid;
+  grid-template-columns: 1.2fr 1.5fr 1fr 1fr 100px;
+  align-items: center;
+  gap: 20px;
+  padding: 17px 20px;
+  border: 1px solid #e4e4e4;
+  border-top: none;
+  background: #fff;
+}
+
+.admin-recent-order span {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: #999;
+}
+
+.admin-recent-order strong {
+  font-size: 11px;
+}
+
+.recent-order-date {
+  text-align: right;
+  font-size: 9px;
+  color: #888;
+}
+
+.admin-status-badge {
+  display: inline-block;
+  padding: 6px 8px;
+  font-size: 7px !important;
+  font-weight: 800;
+  letter-spacing: 1px;
+  border: 1px solid #ddd;
+  color: #111 !important;
+}
+
+.admin-status-badge.pending {
+  border-style: dashed;
+}
+
+.admin-status-badge.cancelled {
+  text-decoration: line-through;
+}
+
+.admin-status-badge.delivered {
+  font-weight: 900;
+}
+
+
+/* =========================================================
+   QUICK ACTIONS
+========================================================= */
+
+.admin-quick-section {
+  margin-bottom: 50px;
+}
+
+.admin-quick-actions {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.admin-quick-actions button {
+  min-height: 130px;
+  padding: 20px;
+  border: 1px solid #e4e4e4;
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.admin-quick-actions button:hover {
+  background: #111;
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+.admin-quick-actions button span {
+  display: block;
+  margin-bottom: 25px;
+  font-size: 8px;
+  letter-spacing: 1.5px;
+  color: #999;
+}
+
+.admin-quick-actions button strong {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
+.admin-quick-actions button small {
+  font-size: 7px;
+  letter-spacing: 1px;
+  color: #999;
+}
+
+.admin-quick-actions button:hover span,
+.admin-quick-actions button:hover small {
+  color: #aaa;
+}
+
+
+/* =========================================================
+   EMPTY STATE
+========================================================= */
+
+.admin-empty-state {
+  padding: 30px;
+  border: 1px solid #e4e4e4;
+  text-align: center;
+  font-size: 10px;
+  color: #999;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 900px) {
+
+  .admin-recent-order {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .recent-order-date {
+    text-align: left;
+  }
+
+  .admin-quick-actions {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+
+  .admin-recent-order {
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+  }
+
+  .admin-recent-order > div:nth-child(2) {
+    display: none;
+  }
+
+  .admin-quick-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-quick-actions button {
+    min-height: 105px;
+  }
+}

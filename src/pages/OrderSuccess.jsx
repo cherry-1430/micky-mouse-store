@@ -6,19 +6,17 @@ function OrderSuccess() {
   const order = location.state?.order;
   const payment = location.state?.payment;
 
+  const orderId = order?._id;
+
   return (
     <main className="order-success-page">
-
       <div className="order-success-container">
 
-        {/* SUCCESS ICON */}
+        {/* SUCCESS */}
 
         <div className="success-icon">
           ✓
         </div>
-
-
-        {/* HEADER */}
 
         <p className="success-label">
           MICKEY MOUSE • ORDER CONFIRMED
@@ -29,31 +27,41 @@ function OrderSuccess() {
         </h1>
 
         <p className="success-message">
-          Your order has been successfully placed
-          and your payment has been confirmed.
+          Your order has been successfully placed.
+          <br />
+          Your payment has been confirmed.
         </p>
 
 
-        {/* ORDER INFORMATION */}
+        {/* ORDER CARD */}
 
-        {order?._id && (
+        {order && (
           <div className="success-order-card">
 
             <div className="success-card-heading">
-              <span>ORDER DETAILS</span>
-              <span>✓ PAID</span>
+              <div>
+                <span>YOUR PURCHASE</span>
+                <h2>ORDER CONFIRMED</h2>
+              </div>
+
+              <span className="success-paid-badge">
+                ✓ PAID
+              </span>
             </div>
 
 
             <div className="success-order-info">
 
-              <div>
+              <div className="success-info-item">
                 <span>ORDER ID</span>
-                <strong>{order._id}</strong>
+                <strong>
+                  #{order._id.slice(-8).toUpperCase()}
+                </strong>
               </div>
 
+
               {payment?.razorpay_payment_id && (
-                <div>
+                <div className="success-info-item">
                   <span>PAYMENT ID</span>
                   <strong>
                     {payment.razorpay_payment_id}
@@ -61,19 +69,25 @@ function OrderSuccess() {
                 </div>
               )}
 
-              <div>
-                <span>ORDER STATUS</span>
-                <strong>
+
+              <div className="success-info-item">
+                <span>STATUS</span>
+                <strong className="success-confirmed">
                   {order.orderStatus || "CONFIRMED"}
                 </strong>
               </div>
 
-              <div>
-                <span>TOTAL</span>
-                <strong>
+
+              <div className="success-info-item">
+                <span>TOTAL PAID</span>
+                <strong className="success-total">
                   ₹
-                  {order.totalAmount?.toLocaleString(
-                    "en-IN"
+                  {Number(order.totalAmount || 0).toLocaleString(
+                    "en-IN",
+                    {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    }
                   )}
                 </strong>
               </div>
@@ -89,10 +103,20 @@ function OrderSuccess() {
         {order?.shippingAddress && (
           <div className="success-delivery">
 
-            <div>
+            <div className="success-delivery-icon">
+              →
+            </div>
+
+            <div className="success-delivery-content">
+
               <span className="success-section-label">
                 DELIVERY ADDRESS
               </span>
+
+              <strong>
+                {order.customer?.firstName}{" "}
+                {order.customer?.lastName}
+              </strong>
 
               <p>
                 {order.shippingAddress.address}
@@ -102,7 +126,37 @@ function OrderSuccess() {
                 <br />
                 PIN: {order.shippingAddress.pincode}
               </p>
+
             </div>
+
+          </div>
+        )}
+
+
+        {/* NEXT STEP */}
+
+        {orderId && (
+          <div className="success-next-step">
+
+            <span>
+              WHAT'S NEXT?
+            </span>
+
+            <h3>
+              WE'LL KEEP YOU UPDATED.
+            </h3>
+
+            <p>
+              Track your order anytime and follow its
+              progress from confirmation to delivery.
+            </p>
+
+            <Link
+              to={`/orders/${orderId}`}
+              className="success-track-button"
+            >
+              TRACK MY ORDER →
+            </Link>
 
           </div>
         )}
@@ -139,12 +193,11 @@ function OrderSuccess() {
         {/* FOOTNOTE */}
 
         <p className="success-note">
-          A confirmation of your order has been
-          recorded in your Micky Mouse account.
+          Your order has been securely recorded in your
+          Micky Mouse account.
         </p>
 
       </div>
-
     </main>
   );
 }

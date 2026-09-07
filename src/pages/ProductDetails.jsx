@@ -3,6 +3,8 @@ import { useParams, Link } from "react-router-dom";
 import { useWishlist } from "../context/useWishlist";
 import { useCart } from "../context/useCart";
 import { getProduct } from "../api/productApi";
+import ProductReviews from "../components/ProductReviews";
+import RecommendedProducts from "../components/RecommendedProducts";
 
 function ProductDetails() {
   const { toggleWishlist, isInWishlist } = useWishlist();
@@ -12,6 +14,37 @@ function ProductDetails() {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const saveRecentlyViewed = (product) => {
+  try {
+    const existing =
+      JSON.parse(localStorage.getItem("recentlyViewed")) || [];
+
+    const filtered = existing.filter(
+      (item) => item._id !== product._id
+    );
+
+    const updated = [
+      {
+        _id: product._id,
+        name: product.name,
+        image: product.image,
+        price: product.price,
+        originalPrice: product.originalPrice,
+        category: product.category,
+        rating: product.rating || 0,
+        reviewCount: product.reviewCount || 0,
+      },
+      ...filtered,
+    ].slice(0, 8);
+
+    localStorage.setItem(
+      "recentlyViewed",
+      JSON.stringify(updated)
+    );
+  } catch (error) {
+    console.error("Recently viewed error:", error);
+  }
+};
 
   const [selectedSize, setSelectedSize] = useState("");
   const [quantity, setQuantity] = useState(1);
@@ -21,6 +54,8 @@ function ProductDetails() {
       try {
         const data = await getProduct(id);
         setProduct(data);
+
+        saveRecentlyViewed(data);
 
         if (data.sizes?.length > 0) {
           setSelectedSize(data.sizes[0]);
@@ -311,6 +346,9 @@ function ProductDetails() {
         </div>
 
       </div>
+
+      <ProductReviews productId={product._id} />
+      <RecommendedProducts productId={product._id} />
 
     </main>
   );

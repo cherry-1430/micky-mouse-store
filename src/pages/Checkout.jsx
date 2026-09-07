@@ -29,6 +29,15 @@ function Checkout() {
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [addressLoading, setAddressLoading] = useState(true);
   const [selectedAddressId, setSelectedAddressId] = useState("");
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponError, setCouponError] = useState("");
+  const [rewardPoints, setRewardPoints] = useState(0);
+  const [rewardPointsUsed, setRewardPointsUsed] = useState(0);
+  const [rewardDiscount, setRewardDiscount] = useState(0);
+  const [rewardLoading, setRewardLoading] = useState(true);
 
   useEffect(() => {
   const fetchSavedAddresses = async () => {
@@ -72,6 +81,39 @@ function Checkout() {
   fetchSavedAddresses();
 }, []);
 
+useEffect(() => {
+  const fetchRewardPoints = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(
+        `${API_URL}/api/users/reward-points`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Failed to fetch reward points"
+        );
+      }
+
+      setRewardPoints(data.rewardPoints || 0);
+    } catch (error) {
+      console.error("Reward points error:", error);
+    } finally {
+      setRewardLoading(false);
+    }
+  };
+
+  fetchRewardPoints();
+}, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -99,6 +141,89 @@ function Checkout() {
     pincode: address.pincode || "",
   }));
 };
+
+const handleApplyCoupon = async () => {
+  if (!couponCode.trim()) {
+    setCouponError("Please enter a coupon code");
+    return;
+  }
+
+  setCouponLoading(true);
+  setCouponError("");
+
+  try {
+    const token = localStorage.getItem("token");
+
+    const response = await fetch(
+      `${API_URL}/api/coupons/validate`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          code: couponCode.trim(),
+          orderAmount: cartTotal,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.message || "Failed to apply coupon"
+      );
+    }
+
+    setAppliedCoupon(data.coupon);
+    setCouponDiscount(data.discount);
+    setCouponError("");
+  } catch (error) {
+    console.error("Coupon error:", error);
+
+    setAppliedCoupon(null);
+    setCouponDiscount(0);
+    setCouponError(error.message);
+  } finally {
+    setCouponLoading(false);
+  }
+};
+
+const handleRemoveCoupon = () => {
+  setCouponCode("");
+  setAppliedCoupon(null);
+  setCouponDiscount(0);
+  setCouponError("");
+};
+
+const handleRewardPointsChange = (e) => {
+  const requestedPoints = Number(e.target.value) || 0;
+
+  const amountAfterCoupon = Math.max(
+    0,
+    cartTotal - couponDiscount
+  );
+
+  const maximumUsablePoints = Math.min(
+    rewardPoints,
+    Math.floor(amountAfterCoupon)
+  );
+
+  const pointsToUse = Math.min(
+    Math.max(0, requestedPoints),
+    maximumUsablePoints
+  );
+
+  setRewardPointsUsed(pointsToUse);
+  setRewardDiscount(pointsToUse);
+};
+
+const finalTotal = Math.max(
+  0,
+  cartTotal - couponDiscount - rewardDiscount
+);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -128,9 +253,22 @@ function Checkout() {
           quantity: item.quantity,
         })),
 
-        totalAmount: cartTotal,
+        subtotal: cartTotal,
 
-        paymentMethod: "online",
+couponCode: appliedCoupon
+  ? appliedCoupon.code
+  : null,
+
+  couponDiscount,
+
+rewardPointsUsed,
+
+rewardDiscount,
+
+
+totalAmount: finalTotal,
+
+paymentMethod: "online",
       };
 
       const response = await fetch(
@@ -686,12 +824,12 @@ function Checkout() {
 
 
             <button
-              type="submit"
-              className="place-order-button"
-            >
-              CONTINUE TO SECURE PAYMENT
-              <span>→</span>
-            </button>
+  type="submit"
+  className="place-order-button"
+>
+  <span>CONTINUE TO SECURE PAYMENT</span>
+  <span className="payment-arrow">→</span>
+</button>
 
           </form>
 
@@ -757,6 +895,125 @@ function Checkout() {
             ))}
 
           </div>
+          {/* COUPON */}
+
+<div className="checkout-coupon">
+  <div className="checkout-coupon-heading">
+    <span>HAVE A COUPON?</span>
+    <p>APPLY YOUR DISCOUNT</p>
+  </div>
+
+  {!appliedCoupon ? (
+    <>
+      <div className="coupon-input-row">
+        <input
+          type="text"
+          placeholder="Enter coupon code"
+          value={couponCode}
+          onChange={(e) =>
+            setCouponCode(e.target.value.toUpperCase())
+          }
+        />
+
+        <button
+          type="button"
+          onClick={handleApplyCoupon}
+          disabled={couponLoading}
+        >
+          {couponLoading ? "CHECKING..." : "APPLY"}
+        </button>
+      </div>
+
+      {couponError && (
+        <p className="coupon-error">
+          {couponError}
+        </p>
+      )}
+    </>
+  ) : (
+    <div className="applied-coupon">
+      <div>
+        <strong>{appliedCoupon.code}</strong>
+
+        <span>
+          {appliedCoupon.discountType === "percentage"
+            ? `${appliedCoupon.discountValue}% OFF`
+            : `₹${appliedCoupon.discountValue} OFF`}
+        </span>
+      </div>
+
+      <button
+        type="button"
+        onClick={handleRemoveCoupon}
+      >
+        REMOVE
+      </button>
+    </div>
+  )}
+</div>
+
+{couponDiscount > 0 && (
+  <div className="summary-row coupon-discount-row">
+    <span>Coupon Discount</span>
+
+    <span>
+      -₹{couponDiscount.toLocaleString("en-IN")}
+    </span>
+  </div>
+)}
+{rewardDiscount > 0 && (
+  <div className="summary-row reward-discount-row">
+    <span>Reward Points</span>
+
+    <span>
+      -₹{rewardDiscount.toLocaleString("en-IN")}
+    </span>
+  </div>
+)}
+
+{/* REWARD POINTS */}
+
+<div className="checkout-rewards">
+  <div className="checkout-rewards-heading">
+    <span>REWARD POINTS</span>
+    <p>USE YOUR POINTS TO SAVE MORE</p>
+  </div>
+
+  {rewardLoading ? (
+    <p>Loading reward points...</p>
+  ) : rewardPoints > 0 ? (
+    <>
+      <div className="reward-balance">
+        <strong>{rewardPoints}</strong>
+        <span>points available</span>
+      </div>
+
+      <div className="reward-input-row">
+        <input
+          type="number"
+          min="0"
+          max={rewardPoints}
+          value={rewardPointsUsed}
+          onChange={handleRewardPointsChange}
+          placeholder="Points to use"
+        />
+
+        <span>1 point = ₹1</span>
+      </div>
+
+      {rewardDiscount > 0 && (
+        <p className="reward-applied">
+          ✓ ₹{rewardDiscount.toLocaleString("en-IN")} reward
+          discount applied
+        </p>
+      )}
+    </>
+  ) : (
+    <p className="no-rewards">
+      You don't have any reward points yet.
+    </p>
+  )}
+</div>
 
 
           <div className="summary-divider"></div>
@@ -785,15 +1042,13 @@ function Checkout() {
           <div className="summary-divider"></div>
 
 
-          <div className="summary-total">
+<div className="summary-total">
+  <span>TOTAL</span>
 
-            <span>TOTAL</span>
-
-            <strong>
-              ₹{cartTotal.toLocaleString("en-IN")}
-            </strong>
-
-          </div>
+  <strong>
+    ₹{finalTotal.toLocaleString("en-IN")}
+  </strong>
+</div>
 
 
           <div className="secure-note">

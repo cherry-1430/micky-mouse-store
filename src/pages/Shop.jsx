@@ -5,6 +5,8 @@ import { getProducts } from "../api/productApi";
 import { useWishlist } from "../context/useWishlist";
 import { useCart } from "../context/useCart";
 
+import FlashSale from "../components/FlashSale";
+
 function Shop() {
   const { toggleWishlist, isInWishlist } = useWishlist();
   const { addToCart } = useCart();
@@ -28,8 +30,10 @@ function Shop() {
       : "All"
   );
 
-  const [maxPrice, setMaxPrice] = useState(5000);
-  const [sort, setSort] = useState("default");
+ const [maxPrice, setMaxPrice] = useState(5000);
+ const [sort, setSort] = useState("default");
+ const [gender, setGender] = useState("All");
+ const [minRating, setMinRating] = useState(0);
 
   const categories = [
     "All",
@@ -39,6 +43,13 @@ function Shop() {
     "T-Shirts",
      "New",
   ];
+
+  const genders = [
+  "All",
+  "Men",
+  "Women",
+  "Unisex",
+];
 
   useEffect(() => {
     async function loadProducts() {
@@ -81,35 +92,73 @@ function Shop() {
   };
 
   const filteredProducts = products
-    .filter((product) => {
-      const matchesSearch = product.name
-        .toLowerCase()
-        .includes(search.toLowerCase());
+  .filter((product) => {
+    const matchesSearch = product.name
+      .toLowerCase()
+      .includes(search.toLowerCase());
 
-      const matchesCategory =
-        category === "All" ||
-        product.category === category;
+    const matchesCategory =
+      category === "All" ||
+      product.category === category;
 
-      const matchesPrice =
-        product.price <= maxPrice;
+    const matchesPrice =
+      product.price <= maxPrice;
 
+    const matchesGender =
+      gender === "All" ||
+      product.gender === gender;
+
+    const matchesRating =
+      Number(product.rating || 0) >= minRating;
+
+    return (
+      matchesSearch &&
+      matchesCategory &&
+      matchesPrice &&
+      matchesGender &&
+      matchesRating
+    );
+  })
+  .sort((a, b) => {
+    if (sort === "low-high") {
+      return a.price - b.price;
+    }
+
+    if (sort === "high-low") {
+      return b.price - a.price;
+    }
+
+    if (sort === "rating") {
+      return (b.rating || 0) - (a.rating || 0);
+    }
+
+    if (sort === "newest") {
       return (
-        matchesSearch &&
-        matchesCategory &&
-        matchesPrice
+        new Date(b.createdAt || 0) -
+        new Date(a.createdAt || 0)
       );
-    })
-    .sort((a, b) => {
-      if (sort === "low-high") {
-        return a.price - b.price;
-      }
+    }
 
-      if (sort === "high-low") {
-        return b.price - a.price;
-      }
+    if (sort === "discount") {
+      const discountA =
+        a.originalPrice > a.price
+          ? ((a.originalPrice - a.price) /
+              a.originalPrice) *
+            100
+          : 0;
 
-      return 0;
-    });
+      const discountB =
+        b.originalPrice > b.price
+          ? ((b.originalPrice - b.price) /
+              b.originalPrice) *
+            100
+          : 0;
+
+      return discountB - discountA;
+    }
+
+    return 0;
+  });
 
   if (loading) {
     return (
@@ -220,6 +269,17 @@ function Shop() {
             <option value="high-low">
               Price: High to Low
             </option>
+            <option value="rating">
+  Highest Rated
+</option>
+
+<option value="newest">
+  Newest Arrivals
+</option>
+
+<option value="discount">
+  Biggest Discount
+</option>
           </select>
 
         </div>
@@ -271,7 +331,63 @@ function Shop() {
 
           </div>
 
+          <div className="filter-group">
 
+  <h3>GENDER</h3>
+
+  <div className="category-filter">
+    {genders.map((item) => (
+      <button
+        key={item}
+        className={
+          gender === item
+            ? "active-category"
+            : ""
+        }
+        onClick={() => setGender(item)}
+      >
+        <span>{item}</span>
+
+        {gender === item && (
+          <span>→</span>
+        )}
+      </button>
+    ))}
+  </div>
+
+</div>
+
+<div className="filter-group">
+
+  <h3>MINIMUM RATING</h3>
+
+  <div className="rating-filter">
+
+    {[0, 4, 3, 2].map((rating) => (
+      <button
+        key={rating}
+        className={
+          minRating === rating
+            ? "active-rating"
+            : ""
+        }
+        onClick={() => setMinRating(rating)}
+      >
+        {rating === 0 ? (
+          "All Ratings"
+        ) : (
+          <>
+            {"★".repeat(rating)}
+            {"☆".repeat(5 - rating)}
+            <span>& up</span>
+          </>
+        )}
+      </button>
+    ))}
+
+  </div>
+
+</div>
           <div className="price-filter">
 
             <div className="price-heading">
@@ -304,28 +420,51 @@ function Shop() {
 
         </aside>
 
+              <FlashSale />
+
 
         {/* PRODUCTS */}
 
         <div className="shop-products">
 
-          <div className="products-count">
+      <div className="products-count">
 
-            <span>
-              {filteredProducts.length}{" "}
-              {filteredProducts.length === 1
-                ? "PRODUCT"
-                : "PRODUCTS"}
-            </span>
+  <span>
+    {filteredProducts.length}{" "}
+    {filteredProducts.length === 1
+      ? "PRODUCT"
+      : "PRODUCTS"}
+  </span>
 
-            {category !== "All" && (
-              <span className="active-filter">
-                {category}
-              </span>
-            )}
+  <div className="active-filters">
 
-          </div>
+    {category !== "All" && (
+      <span className="active-filter">
+        {category}
+      </span>
+    )}
 
+    {gender !== "All" && (
+      <span className="active-filter">
+        {gender}
+      </span>
+    )}
+
+    {minRating > 0 && (
+      <span className="active-filter">
+        ★ {minRating}+
+      </span>
+    )}
+
+    {maxPrice < 5000 && (
+      <span className="active-filter">
+        ≤ ₹{maxPrice.toLocaleString("en-IN")}
+      </span>
+    )}
+
+  </div>
+
+</div>
 
           {filteredProducts.length === 0 ? (
 
@@ -345,6 +484,8 @@ function Shop() {
                   setCategory("All");
                   setMaxPrice(5000);
                   setSort("default");
+                  setGender("All");
+                  setMinRating(0);
                   setSearchParams({});
                 }}
               >

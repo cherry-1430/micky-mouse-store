@@ -1,6 +1,8 @@
 const express = require("express");
 const Order = require("../models/Order");
 const Product = require("../models/Product");
+const Coupon = require("../models/Coupon");
+const User = require("../models/User");
 
 const authMiddleware = require("../middleware/authMiddleware");
 const Razorpay = require("razorpay");
@@ -14,25 +16,227 @@ const razorpay = new Razorpay({
 });
 
 // Create new order
+// Create new order
+// Create new order
 router.post("/", authMiddleware, async (req, res) => {
   try {
     const {
       customer,
       shippingAddress,
       items,
-      totalAmount,
+      subtotal,
+      couponCode,
+      rewardPointsUsed,
       paymentMethod,
     } = req.body;
 
-    const order = new Order({
-  userId: req.user.userId,
+    if (
+      !customer ||
+      !shippingAddress ||
+      !items ||
+      items.length === 0
+    ) {
+      return res.status(400).json({
+        message:
+          "Customer, shipping address and items are required",
+      });
+    }
 
-  customer,
-  shippingAddress,
-  items,
-  totalAmount,
-  paymentMethod: paymentMethod || "online",
-});
+    // ================================
+    // CALCULATE SUBTOTAL
+    // ================================
+
+    const calculatedSubtotal = Number(
+      items
+        .reduce(
+          (total, item) =>
+            total +
+            Number(item.price) * Number(item.quantity),
+          0
+        )
+        .toFixed(2)
+    );
+
+    if (
+      subtotal !== undefined &&
+      Number(subtotal).toFixed(2) !==
+        calculatedSubtotal.toFixed(2)
+    ) {
+      return res.status(400).json({
+        message: "Invalid subtotal",
+      });
+    }
+
+    // ================================
+    // COUPON
+    // ================================
+
+    let couponDiscount = 0;
+    let appliedCouponCode = null;
+
+    if (couponCode) {
+      const normalizedCode = couponCode
+        .toUpperCase()
+        .trim();
+
+      const coupon = await Coupon.findOne({
+        code: normalizedCode,
+      });
+
+      if (!coupon) {
+        return res.status(400).json({
+          message: "Invalid coupon code",
+        });
+      }
+
+      if (!coupon.isActive) {
+        return res.status(400).json({
+          message: "This coupon is inactive",
+        });
+      }
+
+      if (new Date(coupon.expiryDate) <= new Date()) {
+        return res.status(400).json({
+          message: "This coupon has expired",
+        });
+      }
+
+      if (
+        coupon.usageLimit !== null &&
+        coupon.usedCount >= coupon.usageLimit
+      ) {
+        return res.status(400).json({
+          message:
+            "This coupon has reached its usage limit",
+        });
+      }
+
+      if (
+        calculatedSubtotal <
+        coupon.minimumOrderAmount
+      ) {
+        return res.status(400).json({
+          message: `Minimum order amount is ₹${coupon.minimumOrderAmount}`,
+        });
+      }
+
+      if (coupon.discountType === "percentage") {
+        couponDiscount =
+          (calculatedSubtotal *
+            coupon.discountValue) /
+          100;
+
+        if (
+          coupon.maximumDiscount !== null &&
+          couponDiscount > coupon.maximumDiscount
+        ) {
+          couponDiscount =
+            coupon.maximumDiscount;
+        }
+      } else {
+        couponDiscount = coupon.discountValue;
+      }
+
+      couponDiscount = Math.min(
+        couponDiscount,
+        calculatedSubtotal
+      );
+
+      couponDiscount = Number(
+        couponDiscount.toFixed(2)
+      );
+
+      appliedCouponCode = coupon.code;
+    }
+
+    // ================================
+    // REWARD POINTS
+    // ================================
+
+    let usedRewardPoints = Number(
+      rewardPointsUsed
+    ) || 0;
+
+    if (usedRewardPoints < 0) {
+      usedRewardPoints = 0;
+    }
+
+    usedRewardPoints = Math.floor(
+      usedRewardPoints
+    );
+
+    const amountAfterCoupon = Math.max(
+      0,
+      calculatedSubtotal - couponDiscount
+    );
+
+    const user = await User.findById(
+      req.user.userId
+    ).select("rewardPoints");
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    // Cannot use more points than the user owns
+    if (usedRewardPoints > (user.rewardPoints || 0)) {
+      return res.status(400).json({
+        message: "You do not have enough reward points",
+      });
+    }
+
+    // Cannot use more points than the remaining order amount
+    const maximumUsablePoints = Math.floor(
+      amountAfterCoupon
+    );
+
+    if (
+      usedRewardPoints >
+      maximumUsablePoints
+    ) {
+      usedRewardPoints =
+        maximumUsablePoints;
+    }
+
+    const rewardDiscount = Number(
+      usedRewardPoints.toFixed(2)
+    );
+
+    // ================================
+    // FINAL TOTAL
+    // ================================
+
+    const finalAmount = Number(
+      Math.max(
+        0,
+        amountAfterCoupon - rewardDiscount
+      ).toFixed(2)
+    );
+
+    const order = new Order({
+      userId: req.user.userId,
+
+      customer,
+      shippingAddress,
+      items,
+
+      subtotal: calculatedSubtotal,
+
+      couponCode: appliedCouponCode,
+      couponDiscount,
+
+      rewardPointsUsed: usedRewardPoints,
+      rewardDiscount,
+
+      rewardPointsEarned: 0,
+
+      totalAmount: finalAmount,
+
+      paymentMethod:
+        paymentMethod || "online",
+    });
 
     const savedOrder = await order.save();
 
@@ -41,7 +245,10 @@ router.post("/", authMiddleware, async (req, res) => {
       order: savedOrder,
     });
   } catch (error) {
-    console.error("Order creation error:", error);
+    console.error(
+      "Order creation error:",
+      error
+    );
 
     res.status(500).json({
       message: "Failed to create order",
@@ -244,15 +451,89 @@ router.post(
       }
 
       // Mark inventory as deducted
-      order.inventoryDeducted = true;
+      // Mark inventory as deducted
+order.inventoryDeducted = true;
 
-      // Mark payment as successful
-      order.paymentStatus = "paid";
+// ==================================
+// REWARD POINTS + COUPON
+// ==================================
 
-      // Confirm the order
-      order.orderStatus = "confirmed";
+const user = await User.findById(
+  order.userId
+);
 
-      await order.save();
+if (!user) {
+  return res.status(404).json({
+    message: "User not found",
+  });
+}
+
+// Deduct reward points actually used
+if (order.rewardPointsUsed > 0) {
+  if (
+    (user.rewardPoints || 0) <
+    order.rewardPointsUsed
+  ) {
+    return res.status(400).json({
+      message:
+        "Insufficient reward points",
+    });
+  }
+
+  user.rewardPoints -=
+    order.rewardPointsUsed;
+}
+
+// Earn 1 point for every ₹100 actually spent
+const earnedPoints = Math.floor(
+  order.totalAmount / 100
+);
+
+order.rewardPointsEarned =
+  earnedPoints;
+
+// Add newly earned points
+user.rewardPoints += earnedPoints;
+
+await user.save();
+
+// ==================================
+// INCREMENT COUPON USAGE
+// ==================================
+
+if (order.couponCode) {
+  await Coupon.findOneAndUpdate(
+    {
+      code: order.couponCode,
+      $or: [
+        { usageLimit: null },
+        {
+          $expr: {
+            $lt: [
+              "$usedCount",
+              "$usageLimit",
+            ],
+          },
+        },
+      ],
+    },
+    {
+      $inc: {
+        usedCount: 1,
+      },
+    }
+  );
+}
+
+// ==================================
+// COMPLETE ORDER
+// ==================================
+order.razorpayPaymentId = razorpay_payment_id;
+
+order.paymentStatus = "paid";
+order.orderStatus = "confirmed";
+
+await order.save();
 
       res.status(200).json({
         message:
@@ -277,68 +558,179 @@ router.post(
 // CANCEL ORDER
 // ================================
 
-router.patch("/:id/cancel", async (req, res) => {
-  try {
-    const order = await Order.findById(req.params.id);
+// ================================
+// CANCEL ORDER
+// ================================
 
-    if (!order) {
-      return res.status(404).json({
-        message: "Order not found",
+router.post(
+  "/:id/cancel",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const order = await Order.findOne({
+        _id: req.params.id,
+        userId: req.user.userId,
       });
-    }
 
-    // Only allow cancellation for these statuses
-    if (
-      !["pending", "confirmed", "processing"].includes(
-        order.orderStatus
-      )
-    ) {
-      return res.status(400).json({
-        message: "This order cannot be cancelled now",
-      });
-    }
+      if (!order) {
+        return res.status(404).json({
+          message: "Order not found",
+        });
+      }
 
-    // Prevent restoring inventory twice
-    if (!order.inventoryDeducted) {
+      // Only these statuses can be cancelled
+      if (
+        ![
+          "pending",
+          "confirmed",
+          "processing",
+        ].includes(order.orderStatus)
+      ) {
+        return res.status(400).json({
+          message:
+            "This order cannot be cancelled now",
+        });
+      }
+
+      // ==================================
+      // REFUND PAID ORDER
+      // ==================================
+
+      if (
+        order.paymentStatus === "paid" &&
+        order.razorpayPaymentId
+      ) {
+        try {
+          const refund =
+            await razorpay.payments.refund(
+              order.razorpayPaymentId,
+              {
+                amount: Math.round(
+                  order.totalAmount * 100
+                ),
+                speed: "normal",
+              }
+            );
+
+          console.log(
+            "Razorpay refund created:",
+            refund.id
+          );
+        } catch (refundError) {
+          console.error(
+            "Razorpay refund error:",
+            refundError
+          );
+
+          return res.status(500).json({
+            message:
+              "Refund could not be initiated. Order was not cancelled.",
+            error: refundError.message,
+          });
+        }
+      }
+
+      // ==================================
+      // RESTORE INVENTORY
+      // ==================================
+
+      if (order.inventoryDeducted) {
+        for (const item of order.items) {
+          const product =
+            await Product.findById(
+              item.productId
+            );
+
+          if (product) {
+            product.stock += item.quantity;
+
+            await product.save();
+          }
+        }
+
+        order.inventoryDeducted = false;
+      }
+
+      // ==================================
+      // RESTORE REWARD POINTS USED
+      // ==================================
+
+      const user = await User.findById(
+        order.userId
+      );
+
+      if (!user) {
+        return res.status(404).json({
+          message: "User not found",
+        });
+      }
+
+      if (order.rewardPointsUsed > 0) {
+        user.rewardPoints +=
+          order.rewardPointsUsed;
+      }
+
+      // Remove points earned from this order
+      if (order.rewardPointsEarned > 0) {
+        user.rewardPoints = Math.max(
+          0,
+          user.rewardPoints -
+            order.rewardPointsEarned
+        );
+      }
+
+      await user.save();
+
+      // ==================================
+      // RESTORE COUPON USAGE
+      // ==================================
+
+      if (order.couponCode) {
+        await Coupon.findOneAndUpdate(
+          {
+            code: order.couponCode,
+            usedCount: { $gt: 0 },
+          },
+          {
+            $inc: {
+              usedCount: -1,
+            },
+          }
+        );
+      }
+
+      // ==================================
+      // UPDATE ORDER
+      // ==================================
+
       order.orderStatus = "cancelled";
+
+      if (order.paymentStatus === "paid") {
+        order.paymentStatus = "refunded";
+      }
 
       await order.save();
 
-      return res.status(200).json({
-        message: "Order cancelled successfully",
+      res.status(200).json({
+        message:
+          order.paymentStatus === "refunded"
+            ? "Order cancelled and refund initiated successfully"
+            : "Order cancelled successfully",
         order,
       });
+    } catch (error) {
+      console.error(
+        "Cancel order error:",
+        error
+      );
+
+      res.status(500).json({
+        message:
+          "Failed to cancel order",
+        error: error.message,
+      });
     }
-
-    // Restore product stock
-    for (const item of order.items) {
-      const Product = require("../models/Product");
-
-      const product = await Product.findById(item.productId);
-
-      if (product) {
-        product.stock += item.quantity;
-        await product.save();
-      }
-    }
-
-    order.orderStatus = "cancelled";
-    order.inventoryDeducted = false;
-
-    await order.save();
-
-    res.status(200).json({
-      message: "Order cancelled successfully",
-      order,
-    });
-  } catch (error) {
-    console.error("Cancel order error:", error);
-
-    res.status(500).json({
-      message: "Failed to cancel order",
-      error: error.message,
-    });
   }
-});
+);
 
 module.exports = router;

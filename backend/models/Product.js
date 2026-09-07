@@ -77,6 +77,25 @@ const productSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    salePrice: {
+  type: Number,
+  default: 0,
+},
+
+saleStart: {
+  type: Date,
+  default: null,
+},
+
+saleEnd: {
+  type: Date,
+  default: null,
+},
+
+isFlashSale: {
+  type: Boolean,
+  default: false,
+},
   },
   {
     timestamps: true,

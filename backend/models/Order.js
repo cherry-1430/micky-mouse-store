@@ -85,20 +85,68 @@ const orderSchema = new mongoose.Schema(
       },
     ],
 
-    totalAmount: {
-      type: Number,
-      required: true,
-    },
+    subtotal: {
+  type: Number,
+  required: true,
+},
+
+couponCode: {
+  type: String,
+  default: null,
+  trim: true,
+},
+
+couponDiscount: {
+  type: Number,
+  default: 0,
+  min: 0,
+},
+
+rewardPointsUsed: {
+  type: Number,
+  default: 0,
+  min: 0,
+},
+
+rewardDiscount: {
+  type: Number,
+  default: 0,
+  min: 0,
+},
+rewardPointsEarned: {
+  type: Number,
+  default: 0,
+  min: 0,
+},
+
+totalAmount: {
+  type: Number,
+  required: true,
+},
 
     paymentMethod: {
       type: String,
       default: "online",
     },
 
-    paymentStatus: {
-      type: String,
-      default: "pending",
-    },
+   paymentStatus: {
+  type: String,
+  enum: [
+    "pending",
+    "paid",
+    "refunded",
+  ],
+  default: "pending",
+},
+    razorpayOrderId: {
+  type: String,
+  default: null,
+},
+
+razorpayPaymentId: {
+  type: String,
+  default: null,
+},
     inventoryDeducted: {
   type: Boolean,
   default: false,

@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { useCart } from "../context/useCart";
 
+import "./Cart.css";
+
 function Cart() {
   const {
     cart,
@@ -136,9 +138,9 @@ function Cart() {
 
                   <div>
                     <span>UNIT PRICE</span>
-                    <strong>
-                      ₹{item.price.toLocaleString("en-IN")}
-                    </strong>
+                  <strong>
+  ₹{Number(item.price || 0).toLocaleString("en-IN")}
+</strong>
                   </div>
 
                 </div>
@@ -184,9 +186,9 @@ function Cart() {
 
                   <strong className="cart-item-total">
                     ₹
-                    {(
-                      item.price * item.quantity
-                    ).toLocaleString("en-IN")}
+{(
+  Number(item.price || 0) * Number(item.quantity || 0)
+).toLocaleString("en-IN")}
                   </strong>
 
                 </div>
