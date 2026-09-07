@@ -4,9 +4,9 @@ import { useAuth } from "../context/AuthContext";
 function ProtectedRoute({ children, adminOnly = false }) {
   const { user, isLoggedIn } = useAuth();
 
- if (!isLoggedIn) {
-  return <Navigate to="/register" replace />;
-}
+  if (!isLoggedIn) {
+    return <Navigate to="/login" replace />;
+  }
 
   if (adminOnly && user.role !== "admin") {
     return <Navigate to="/" replace />;

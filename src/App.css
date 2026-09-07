@@ -9217,3 +9217,33 @@
 
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
 }
+
+/* ============================= */
+/* LOGIN / REGISTER FOOTER LINK */
+/* ============================= */
+
+.page-container > p {
+  margin-top: 22px;
+  text-align: center;
+  font-size: 14px;
+  color: #777;
+}
+
+.page-container > p button {
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin-left: 5px;
+
+  font-size: 14px;
+  font-weight: 700;
+  color: #111;
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+.page-container > p button:hover {
+  color: #777;
+  text-decoration: underline;
+}

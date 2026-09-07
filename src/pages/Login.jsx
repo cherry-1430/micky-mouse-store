@@ -57,37 +57,48 @@ function Login() {
     }
   };
 
-  return (
-    <div className="page-container">
-      <h1>Login</h1>
+ return (
+  <div className="page-container">
+    <h1>Login</h1>
 
-      {error && <p>{error}</p>}
+    {error && <p>{error}</p>}
 
-      <form onSubmit={handleSubmit}>
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={formData.email}
-          onChange={handleChange}
-          required
-        />
+    <form onSubmit={handleSubmit}>
+      <input
+        type="email"
+        name="email"
+        placeholder="Email"
+        value={formData.email}
+        onChange={handleChange}
+        required
+      />
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={formData.password}
-          onChange={handleChange}
-          required
-        />
+      <input
+        type="password"
+        name="password"
+        placeholder="Password"
+        value={formData.password}
+        onChange={handleChange}
+        required
+      />
 
-        <button type="submit" disabled={loading}>
-          {loading ? "LOGGING IN..." : "LOGIN"}
-        </button>
-      </form>
-    </div>
-  );
+      <button type="submit" disabled={loading}>
+        {loading ? "LOGGING IN..." : "LOGIN"}
+      </button>
+    </form>
+
+    {/* REGISTER LINK */}
+    <p>
+      Don't have an account?{" "}
+      <button
+        type="button"
+        onClick={() => navigate("/register")}
+      >
+        REGISTER
+      </button>
+    </p>
+  </div>
+);
 }
 
 export default Login;
