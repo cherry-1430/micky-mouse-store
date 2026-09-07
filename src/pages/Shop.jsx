@@ -286,6 +286,8 @@ function Shop() {
 
       </section>
 
+      <FlashSale />
+
 
       {/* SHOP CONTENT */}
 
@@ -420,7 +422,7 @@ function Shop() {
 
         </aside>
 
-              <FlashSale />
+            
 
 
         {/* PRODUCTS */}
