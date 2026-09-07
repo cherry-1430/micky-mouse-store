@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { useCart } from "../context/useCart";
 
 import API_URL from "../api/apiConfig";
+
+import "./Checkout.css";
 
 function Checkout() {
   const {
@@ -24,6 +26,51 @@ function Checkout() {
     state: "",
     pincode: "",
   });
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [addressLoading, setAddressLoading] = useState(true);
+  const [selectedAddressId, setSelectedAddressId] = useState("");
+
+  useEffect(() => {
+  const fetchSavedAddresses = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(
+        `${API_URL}/api/users/addresses`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Failed to fetch saved addresses"
+        );
+      }
+
+      setSavedAddresses(data);
+
+      // Automatically select the default address
+      const defaultAddress = data.find(
+        (address) => address.isDefault
+      );
+
+      if (defaultAddress) {
+        setSelectedAddressId(defaultAddress._id);
+      }
+    } catch (error) {
+      console.error("Saved addresses error:", error);
+    } finally {
+      setAddressLoading(false);
+    }
+  };
+
+  fetchSavedAddresses();
+}, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -33,6 +80,25 @@ function Checkout() {
       [name]: value,
     });
   };
+  const handleSavedAddressSelect = (address) => {
+  setSelectedAddressId(address._id);
+
+  const nameParts = address.fullName.trim().split(" ");
+
+  const firstName = nameParts[0] || "";
+  const lastName = nameParts.slice(1).join(" ");
+
+  setFormData((previous) => ({
+    ...previous,
+    firstName,
+    lastName,
+    phone: address.phone || "",
+    address: address.address || "",
+    city: address.city || "",
+    state: address.state || "",
+    pincode: address.pincode || "",
+  }));
+};
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -403,18 +469,80 @@ function Checkout() {
 
             <div className="checkout-section">
 
-              <div className="checkout-section-title">
+              {/* SAVED ADDRESSES */}
 
-                <span>02</span>
+{!addressLoading && savedAddresses.length > 0 && (
+  <div className="saved-addresses-checkout">
 
-                <div>
-                  <p>WHERE TO?</p>
-                  <h2>
-                    DELIVERY ADDRESS
-                  </h2>
-                </div>
+    <div className="saved-addresses-checkout-heading">
+      <span>SAVED ADDRESSES</span>
+      <p>SELECT AN ADDRESS</p>
+    </div>
 
-              </div>
+    <div className="saved-addresses-checkout-list">
+
+      {savedAddresses.map((address) => (
+
+        <button
+          type="button"
+          key={address._id}
+          className={`saved-address-checkout-card ${
+            selectedAddressId === address._id
+              ? "selected"
+              : ""
+          }`}
+          onClick={() =>
+            handleSavedAddressSelect(address)
+          }
+        >
+
+          <div className="saved-address-checkout-top">
+
+            <strong>
+              {address.label}
+            </strong>
+
+            {address.isDefault && (
+              <span>★ DEFAULT</span>
+            )}
+
+          </div>
+
+          <p>
+            {address.fullName}
+          </p>
+
+          <p>
+            {address.address}
+          </p>
+
+          <p>
+            {address.city}, {address.state}
+          </p>
+
+          <p>
+            PIN: {address.pincode}
+          </p>
+
+          <span className="saved-address-select">
+            {selectedAddressId === address._id
+              ? "✓ SELECTED"
+              : "USE THIS ADDRESS →"}
+          </span>
+
+        </button>
+
+      ))}
+
+    </div>
+
+    <p className="saved-address-note">
+      You can edit the selected address below before
+      placing your order.
+    </p>
+
+  </div>
+)}
 
 
               <div className="form-group">

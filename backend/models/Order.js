@@ -99,6 +99,10 @@ const orderSchema = new mongoose.Schema(
       type: String,
       default: "pending",
     },
+    inventoryDeducted: {
+  type: Boolean,
+  default: false,
+},
 
     orderStatus: {
   type: String,

@@ -8,6 +8,8 @@ function OrderDetails() {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [cancelling, setCancelling] = useState(false);
+const [cancelError, setCancelError] = useState("");
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -40,6 +42,48 @@ function OrderDetails() {
 
     fetchOrder();
   }, [id]);
+
+  const handleCancelOrder = async () => {
+  const confirmed = window.confirm(
+    "Are you sure you want to cancel this order?"
+  );
+
+  if (!confirmed) return;
+
+  try {
+    setCancelling(true);
+    setCancelError("");
+
+    const token = localStorage.getItem("token");
+
+    const response = await fetch(
+      `${API_URL}/api/orders/${id}/cancel`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.message || "Failed to cancel order"
+      );
+    }
+
+    setOrder(data.order);
+
+    alert("Order cancelled successfully.");
+  } catch (error) {
+    console.error("Cancel order error:", error);
+    setCancelError(error.message);
+  } finally {
+    setCancelling(false);
+  }
+};
 
   if (loading) {
     return (
@@ -461,23 +505,42 @@ function OrderDetails() {
 
         {/* FOOTER ACTIONS */}
 
+        {cancelError && (
+  <p className="order-cancel-error">
+    {cancelError}
+  </p>
+)}
+
         <div className="order-details-actions">
 
-          <Link
-            to="/my-orders"
-            className="order-details-orders-button"
-          >
-            ← MY ORDERS
-          </Link>
+  <Link
+    to="/my-orders"
+    className="order-details-orders-button"
+  >
+    ← MY ORDERS
+  </Link>
 
-          <Link
-            to="/shop"
-            className="order-details-shop-button"
-          >
-            CONTINUE SHOPPING →
-          </Link>
+  {["pending", "confirmed", "processing"].includes(
+    order.orderStatus
+  ) && (
+    <button
+      type="button"
+      className="cancel-order-button"
+      onClick={handleCancelOrder}
+      disabled={cancelling}
+    >
+      {cancelling ? "CANCELLING..." : "CANCEL ORDER"}
+    </button>
+  )}
 
-        </div>
+  <Link
+    to="/shop"
+    className="order-details-shop-button"
+  >
+    CONTINUE SHOPPING →
+  </Link>
+
+</div>
 
       </section>
 

@@ -1,0 +1,578 @@
+/* =====================================================
+   SAVED ADDRESSES
+===================================================== */
+
+.profile-address-section {
+  margin-top: 32px;
+  padding: 32px;
+  background: #ffffff;
+  border: 1px solid #e7e7e7;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.06);
+}
+
+
+/* =====================================================
+   SECTION HEADING
+===================================================== */
+
+.profile-card-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-bottom: 22px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.profile-card-heading span:first-child {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #777;
+}
+
+.profile-card-heading h2 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: #111;
+}
+
+.profile-card-heading > span:last-child {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #aaa;
+}
+
+
+/* =====================================================
+   LOADING
+===================================================== */
+
+.profile-address-loading {
+  padding: 45px 20px;
+  text-align: center;
+  font-size: 13px;
+  color: #777;
+  letter-spacing: 1px;
+}
+
+
+/* =====================================================
+   ADDRESS GRID
+===================================================== */
+
+.profile-address-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+
+/* =====================================================
+   ADDRESS CARD
+===================================================== */
+
+.profile-address-card {
+  position: relative;
+  padding: 24px;
+  background: #fafafa;
+  border: 1px solid #e5e5e5;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.profile-address-card:hover {
+  transform: translateY(-4px);
+  border-color: #111;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.09);
+}
+
+
+/* =====================================================
+   DEFAULT ADDRESS
+===================================================== */
+
+.profile-address-default {
+  border: 1.5px solid #111;
+  background: #fff;
+}
+
+.profile-address-default::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 5px;
+  height: 100%;
+  background: #111;
+}
+
+
+/* =====================================================
+   ADDRESS TOP
+===================================================== */
+
+.profile-address-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 22px;
+}
+
+.profile-address-label {
+  display: inline-block;
+  padding: 6px 11px;
+  background: #111;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.profile-default-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 6px 9px;
+  background: #eeeeee;
+  color: #111;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.profile-address-icon {
+  font-size: 22px;
+  line-height: 1;
+  color: #111;
+}
+
+
+/* =====================================================
+   ADDRESS INFORMATION
+===================================================== */
+
+.profile-address-info {
+  min-height: 155px;
+}
+
+.profile-address-info strong {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 17px;
+  font-weight: 800;
+  color: #111;
+}
+
+.profile-address-info p {
+  margin: 7px 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #666;
+}
+
+.profile-address-info p:last-child {
+  margin-top: 12px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #999;
+}
+
+
+/* =====================================================
+   ADDRESS ACTIONS
+===================================================== */
+
+.profile-address-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 18px;
+  border-top: 1px solid #e5e5e5;
+}
+
+.profile-address-actions button {
+  padding: 10px 13px;
+  border: 1px solid #d8d8d8;
+  background: #fff;
+  color: #111;
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.profile-address-actions button:hover {
+  background: #111;
+  border-color: #111;
+  color: #fff;
+}
+
+.profile-address-actions button:last-child {
+  margin-left: auto;
+}
+
+
+/* =====================================================
+   NO ADDRESS
+===================================================== */
+
+.profile-no-address {
+  padding: 55px 25px;
+  text-align: center;
+  border: 1px dashed #d8d8d8;
+  background: #fafafa;
+}
+
+.profile-no-address span {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #333;
+}
+
+.profile-no-address p {
+  max-width: 420px;
+  margin: 0 auto;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #888;
+}
+
+
+/* =====================================================
+   ADD NEW ADDRESS BUTTON
+===================================================== */
+
+.profile-add-address-button {
+  width: 100%;
+  margin-top: 22px;
+  padding: 17px 20px;
+  border: 1px solid #111;
+  background: #111;
+  color: #fff;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  transition:
+    background 0.25s ease,
+    color 0.25s ease,
+    transform 0.25s ease;
+}
+
+.profile-add-address-button:hover {
+  background: #fff;
+  color: #111;
+  transform: translateY(-2px);
+}
+
+
+/* =====================================================
+   ADDRESS FORM
+===================================================== */
+
+.profile-address-form {
+  margin-top: 30px;
+  padding: 30px;
+  background: #f8f8f8;
+  border: 1px solid #e2e2e2;
+}
+
+
+/* =====================================================
+   FORM HEADING
+===================================================== */
+
+.profile-address-form-heading {
+  margin-bottom: 28px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #ddd;
+}
+
+.profile-address-form-heading span {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #777;
+}
+
+.profile-address-form-heading h3 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 800;
+  color: #111;
+}
+
+
+/* =====================================================
+   FORM GRID
+===================================================== */
+
+.profile-address-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.profile-form-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-form-full {
+  grid-column: 1 / -1;
+}
+
+
+/* =====================================================
+   FORM LABEL
+===================================================== */
+
+.profile-form-field label {
+  margin-bottom: 8px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: #555;
+}
+
+
+/* =====================================================
+   INPUTS
+===================================================== */
+
+.profile-form-field input,
+.profile-form-field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px 15px;
+  border: 1px solid #d7d7d7;
+  outline: none;
+  background: #fff;
+  color: #111;
+  font-family: inherit;
+  font-size: 13px;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.profile-form-field input {
+  height: 48px;
+}
+
+.profile-form-field textarea {
+  resize: vertical;
+  min-height: 90px;
+}
+
+.profile-form-field input:focus,
+.profile-form-field textarea:focus {
+  border-color: #111;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.06);
+}
+
+.profile-form-field input::placeholder,
+.profile-form-field textarea::placeholder {
+  color: #aaa;
+}
+
+
+/* =====================================================
+   DEFAULT CHECKBOX
+===================================================== */
+
+.profile-default-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 22px;
+  cursor: pointer;
+  font-size: 12px;
+  color: #555;
+}
+
+.profile-default-checkbox input {
+  width: 17px;
+  height: 17px;
+  accent-color: #111;
+  cursor: pointer;
+}
+
+
+/* =====================================================
+   FORM ACTIONS
+===================================================== */
+
+.profile-address-form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px solid #ddd;
+}
+
+.profile-save-address-button {
+  padding: 14px 22px;
+  border: 1px solid #111;
+  background: #111;
+  color: #fff;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  transition: all 0.25s ease;
+}
+
+.profile-save-address-button:hover {
+  background: #fff;
+  color: #111;
+}
+
+.profile-save-address-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+
+.profile-address-form-actions button[type="button"] {
+  padding: 14px 22px;
+  border: 1px solid #ccc;
+  background: #fff;
+  color: #333;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  transition: all 0.2s ease;
+}
+
+.profile-address-form-actions button[type="button"]:hover {
+  border-color: #111;
+  color: #111;
+}
+
+
+/* =====================================================
+   SUCCESS / ERROR
+===================================================== */
+
+.profile-success-message {
+  margin: 18px 0 0;
+  padding: 13px 15px;
+  border-left: 3px solid #111;
+  background: #f5f5f5;
+  color: #333;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.profile-error-message {
+  margin: 18px 0 0;
+  padding: 13px 15px;
+  border-left: 3px solid #111;
+  background: #f5f5f5;
+  color: #333;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+
+/* =====================================================
+   RESPONSIVE — TABLET
+===================================================== */
+
+@media (max-width: 800px) {
+
+  .profile-address-section {
+    padding: 24px;
+  }
+
+  .profile-address-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-address-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-form-full {
+    grid-column: auto;
+  }
+}
+
+
+/* =====================================================
+   RESPONSIVE — MOBILE
+===================================================== */
+
+@media (max-width: 520px) {
+
+  .profile-address-section {
+    margin-top: 20px;
+    padding: 18px;
+  }
+
+  .profile-card-heading h2 {
+    font-size: 21px;
+  }
+
+  .profile-card-heading {
+    align-items: center;
+  }
+
+  .profile-address-card {
+    padding: 19px;
+  }
+
+  .profile-address-info {
+    min-height: auto;
+  }
+
+  .profile-address-actions {
+    flex-direction: column;
+  }
+
+  .profile-address-actions button {
+    width: 100%;
+    margin-left: 0 !important;
+  }
+
+  .profile-address-form {
+    padding: 20px;
+  }
+
+  .profile-address-form-heading h3 {
+    font-size: 20px;
+  }
+
+  .profile-address-form-actions {
+    flex-direction: column;
+  }
+
+  .profile-address-form-actions button {
+    width: 100%;
+  }
+
+  .profile-default-checkbox {
+    align-items: flex-start;
+    line-height: 1.5;
+  }
+}
