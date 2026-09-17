@@ -7,6 +7,21 @@ const router = express.Router();
 
 /*
 ========================================
+DEVELOPMENT OTP STORAGE
+========================================
+
+OTP is stored temporarily in server memory.
+
+IMPORTANT:
+This is for development/testing only.
+For production, use MSG91 or another
+proper OTP provider.
+*/
+
+const otpStore = new Map();
+
+/*
+========================================
 HELPER: NORMALIZE INDIAN PHONE NUMBER
 ========================================
 */
@@ -21,7 +36,7 @@ const normalizePhone = (phone) => {
     cleaned = `91${cleaned}`;
   }
 
-  // +91XXXXXXXXXX becomes 91XXXXXXXXXX
+  // 12 digit Indian number starting with 91
   if (
     cleaned.length === 12 &&
     cleaned.startsWith("91")
@@ -60,7 +75,11 @@ REGISTER
 
 router.post("/register", async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const {
+      name,
+      email,
+      password,
+    } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({
@@ -70,7 +89,7 @@ router.post("/register", async (req, res) => {
     }
 
     const existingUser = await User.findOne({
-      email,
+      email: email.trim().toLowerCase(),
     });
 
     if (existingUser) {
@@ -79,14 +98,12 @@ router.post("/register", async (req, res) => {
       });
     }
 
-    const hashedPassword = await bcrypt.hash(
-      password,
-      10
-    );
+    const hashedPassword =
+      await bcrypt.hash(password, 10);
 
     const user = new User({
-      name,
-      email,
+      name: name.trim(),
+      email: email.trim().toLowerCase(),
       password: hashedPassword,
     });
 
@@ -136,7 +153,7 @@ router.post("/login", async (req, res) => {
     }
 
     const user = await User.findOne({
-      email,
+      email: email.trim().toLowerCase(),
     });
 
     if (!user) {
@@ -189,7 +206,14 @@ router.post("/login", async (req, res) => {
 
 /*
 ========================================
-SEND OTP USING MSG91
+SEND DEVELOPMENT OTP
+========================================
+
+No MSG91 required.
+
+For testing:
+OTP = 123456
+
 ========================================
 */
 
@@ -206,69 +230,61 @@ router.post("/send-otp", async (req, res) => {
       });
     }
 
-    if (!process.env.MSG91_AUTH_KEY) {
-      console.error(
-        "MSG91_AUTH_KEY is missing"
-      );
+    /*
+    ------------------------------------
+    DEVELOPMENT OTP
+    ------------------------------------
+    */
 
-      return res.status(500).json({
-        message:
-          "MSG91 is not configured on the server",
-      });
-    }
+    const otp = "123456";
 
-    if (!process.env.MSG91_TEMPLATE_ID) {
-      console.error(
-        "MSG91_TEMPLATE_ID is missing"
-      );
+    /*
+    OTP expires after 10 minutes.
+    */
 
-      return res.status(500).json({
-        message:
-          "MSG91 OTP template is not configured",
-      });
-    }
+    const expiresAt =
+      Date.now() + 10 * 60 * 1000;
 
-    const response = await fetch(
-      "https://control.msg91.com/api/v5/otp",
-      {
-        method: "POST",
+    otpStore.set(phone, {
+      otp,
+      expiresAt,
+    });
 
-        headers: {
-          authkey:
-            process.env.MSG91_AUTH_KEY,
-
-          "Content-Type":
-            "application/json",
-        },
-
-        body: JSON.stringify({
-          template_id:
-            process.env.MSG91_TEMPLATE_ID,
-
-          mobile: phone,
-
-          otp_length: 6,
-
-          otp_expiry: 10,
-        }),
-      }
-    );
-
-    const data =
-      await response.json();
+    /*
+    ------------------------------------
+    SERVER LOG
+    ------------------------------------
+    */
 
     console.log(
-      "MSG91 Send OTP response:",
-      data
+      "================================="
     );
 
-    if (!response.ok) {
-      return res.status(400).json({
-        message:
-          data.message ||
-          "Failed to send OTP",
-      });
-    }
+    console.log(
+      "DEVELOPMENT OTP GENERATED"
+    );
+
+    console.log(
+      `Phone: ${phone}`
+    );
+
+    console.log(
+      `OTP: ${otp}`
+    );
+
+    console.log(
+      "Expires in: 10 minutes"
+    );
+
+    console.log(
+      "================================="
+    );
+
+    /*
+    ------------------------------------
+    RESPONSE
+    ------------------------------------
+    */
 
     res.status(200).json({
       success: true,
@@ -277,6 +293,15 @@ router.post("/send-otp", async (req, res) => {
         "OTP sent successfully",
 
       phone,
+
+      /*
+      Development only.
+      This allows you to see the OTP
+      in the browser response too.
+      Remove this before production.
+      */
+
+      developmentOtp: otp,
     });
   } catch (error) {
     console.error(
@@ -295,7 +320,7 @@ router.post("/send-otp", async (req, res) => {
 
 /*
 ========================================
-VERIFY OTP USING MSG91
+VERIFY DEVELOPMENT OTP
 ========================================
 */
 
@@ -326,51 +351,72 @@ router.post(
         });
       }
 
-      if (!process.env.MSG91_AUTH_KEY) {
-        return res.status(500).json({
+      /*
+      ------------------------------------
+      GET STORED OTP
+      ------------------------------------
+      */
+
+      const storedOtp =
+        otpStore.get(phone);
+
+      if (!storedOtp) {
+        return res.status(400).json({
           message:
-            "MSG91 is not configured",
+            "OTP not found. Please request a new OTP.",
         });
       }
 
       /*
       ------------------------------------
-      VERIFY OTP WITH MSG91
+      CHECK EXPIRY
       ------------------------------------
       */
 
-      const verifyUrl =
-        `https://control.msg91.com/api/v5/otp/verify` +
-        `?otp=${encodeURIComponent(otp)}` +
-        `&mobile=${encodeURIComponent(phone)}`;
+      if (
+        Date.now() >
+        storedOtp.expiresAt
+      ) {
+        otpStore.delete(phone);
 
-      const response = await fetch(
-        verifyUrl,
-        {
-          method: "GET",
-
-          headers: {
-            authkey:
-              process.env.MSG91_AUTH_KEY,
-          },
-        }
-      );
-
-      const data =
-        await response.json();
-
-      console.log(
-        "MSG91 Verify OTP response:",
-        data
-      );
-
-      if (!response.ok) {
         return res.status(400).json({
           message:
-            data.message ||
-            "OTP verification failed",
+            "OTP has expired. Please request a new OTP.",
         });
       }
+
+      /*
+      ------------------------------------
+      CHECK OTP
+      ------------------------------------
+      */
+
+      if (
+        String(otp).trim() !==
+        storedOtp.otp
+      ) {
+        return res.status(400).json({
+          message:
+            "Invalid OTP. Please try again.",
+        });
+      }
+
+      /*
+      ------------------------------------
+      OTP VERIFIED
+      ------------------------------------
+      */
+
+      console.log(
+        `OTP verified successfully for ${phone}`
+      );
+
+      /*
+      Delete OTP after successful
+      verification so it cannot be reused.
+      */
+
+      otpStore.delete(phone);
 
       /*
       ------------------------------------
@@ -384,17 +430,11 @@ router.post(
 
       /*
       ------------------------------------
-      IF USER DOES NOT EXIST
-      CREATE CUSTOMER
+      CREATE USER IF NOT EXISTS
       ------------------------------------
       */
 
       if (!user) {
-        /*
-        Use supplied email if available.
-        Otherwise generate internal email.
-        */
-
         let customerEmail =
           email
             ? String(email)
@@ -413,9 +453,7 @@ router.post(
 
         if (existingEmailUser) {
           /*
-          Attach phone to existing account
-          if it doesn't already belong to
-          another account.
+          Email belongs to another phone.
           */
 
           if (
@@ -432,7 +470,11 @@ router.post(
 
           user.phone = phone;
 
-          if (name && !user.name) {
+          if (
+            name &&
+            user.name ===
+              "Micky Mouse Customer"
+          ) {
             user.name = name;
           }
 
@@ -453,9 +495,8 @@ router.post(
             phone,
 
             /*
-            OTP is the authentication method.
-            Password is only required because
-            the User schema requires it.
+            Password is required by
+            the existing User schema.
             */
 
             password:
@@ -478,11 +519,6 @@ router.post(
         ------------------------------------
         */
 
-        /*
-        Update name/email only when
-        useful and safe.
-        */
-
         if (
           name &&
           user.name ===
@@ -492,8 +528,8 @@ router.post(
         }
 
         /*
-        Do not overwrite an existing
-        real email with generated email.
+        Update generated email if the
+        customer provides a real email.
         */
 
         if (
@@ -510,6 +546,7 @@ router.post(
           const emailOwner =
             await User.findOne({
               email: normalizedEmail,
+
               _id: {
                 $ne: user._id,
               },
