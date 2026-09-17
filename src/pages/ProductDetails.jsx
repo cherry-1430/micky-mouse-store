@@ -124,8 +124,6 @@ function ProductDetails() {
     }
 
     addToCart(product, selectedSize, quantity);
-
-    alert(`${product.name} added to cart`);
   };
 
   return (

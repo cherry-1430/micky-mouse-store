@@ -7,20 +7,76 @@ const cloudinary = require("../config/cloudinary");
 
 const router = express.Router();
 
-// GET all products
+/*
+|--------------------------------------------------------------------------
+| Product Cache
+|--------------------------------------------------------------------------
+| The /api/products endpoint is requested many times during load testing.
+| Instead of querying MongoDB for every request, we temporarily keep the
+| product list in memory.
+|
+| Cache duration: 30 seconds
+|--------------------------------------------------------------------------
+*/
+
+let productsCache = null;
+let productsCacheTime = 0;
+
+const CACHE_DURATION = 30 * 1000; // 30 seconds
+
+// Clear product cache whenever product data changes
+function clearProductsCache() {
+  productsCache = null;
+  productsCacheTime = 0;
+}
+
+/*
+|--------------------------------------------------------------------------
+| GET all products
+|--------------------------------------------------------------------------
+*/
+
 router.get("/", async (req, res) => {
   try {
-    const products = await Product.find();
-    res.json(products);
+    const now = Date.now();
+
+    // Return cached data if cache is still valid
+    if (
+      productsCache !== null &&
+      now - productsCacheTime < CACHE_DURATION
+    ) {
+      return res.status(200).json(productsCache);
+    }
+
+    // Query MongoDB only when cache is empty or expired
+    const products = await Product.find({
+      isActive: true,
+    })
+      .select(
+        "name category gender price originalPrice description image images sizes colors stock rating reviewCount isFeatured isActive salePrice saleStart saleEnd isFlashSale"
+      )
+      .lean();
+
+    // Store result in cache
+    productsCache = products;
+    productsCacheTime = now;
+
+    res.status(200).json(products);
   } catch (error) {
+    console.error("Failed to fetch products:", error);
+
     res.status(500).json({
       message: "Failed to fetch products",
-      error: error.message,
     });
   }
 });
 
-// GET recommended products
+/*
+|--------------------------------------------------------------------------
+| GET recommended products
+|--------------------------------------------------------------------------
+*/
+
 router.get("/recommendations/:id", async (req, res) => {
   try {
     const currentProduct = await Product.findById(req.params.id);
@@ -41,7 +97,8 @@ router.get("/recommendations/:id", async (req, res) => {
       ],
     })
       .sort({ rating: -1, reviewCount: -1 })
-      .limit(8);
+      .limit(8)
+      .lean();
 
     // If fewer than 4 products were found,
     // fill the remaining slots with other products
@@ -56,9 +113,13 @@ router.get("/recommendations/:id", async (req, res) => {
         isActive: { $ne: false },
       })
         .sort({ rating: -1, reviewCount: -1 })
-        .limit(8 - recommendations.length);
+        .limit(8 - recommendations.length)
+        .lean();
 
-      recommendations = [...recommendations, ...fallbackProducts];
+      recommendations = [
+        ...recommendations,
+        ...fallbackProducts,
+      ];
     }
 
     res.status(200).json(recommendations);
@@ -72,7 +133,12 @@ router.get("/recommendations/:id", async (req, res) => {
   }
 });
 
-// GET active flash sale products
+/*
+|--------------------------------------------------------------------------
+| GET active flash sale products
+|--------------------------------------------------------------------------
+*/
+
 router.get("/flash-sales", async (req, res) => {
   try {
     const now = new Date();
@@ -83,7 +149,9 @@ router.get("/flash-sales", async (req, res) => {
       salePrice: { $gt: 0 },
       saleStart: { $lte: now },
       saleEnd: { $gt: now },
-    }).sort({ saleEnd: 1 });
+    })
+      .sort({ saleEnd: 1 })
+      .lean();
 
     const formattedProducts = products.map((product) => {
       const discount =
@@ -96,7 +164,7 @@ router.get("/flash-sales", async (req, res) => {
           : 0;
 
       return {
-        ...product.toObject(),
+        ...product,
         discount,
         saleRemaining: Math.max(
           0,
@@ -116,10 +184,15 @@ router.get("/flash-sales", async (req, res) => {
   }
 });
 
-// GET single product
+/*
+|--------------------------------------------------------------------------
+| GET single product
+|--------------------------------------------------------------------------
+*/
+
 router.get("/:id", async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findById(req.params.id).lean();
 
     if (!product) {
       return res.status(404).json({
@@ -127,8 +200,10 @@ router.get("/:id", async (req, res) => {
       });
     }
 
-    res.json(product);
+    res.status(200).json(product);
   } catch (error) {
+    console.error("Fetch product error:", error);
+
     res.status(500).json({
       message: "Failed to fetch product",
       error: error.message,
@@ -136,15 +211,25 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// POST new product
+/*
+|--------------------------------------------------------------------------
+| POST new product
+|--------------------------------------------------------------------------
+*/
+
 router.post("/", authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const product = new Product(req.body);
 
     const savedProduct = await product.save();
 
+    // Product list has changed
+    clearProductsCache();
+
     res.status(201).json(savedProduct);
   } catch (error) {
+    console.error("Create product error:", error);
+
     res.status(400).json({
       message: "Failed to create product",
       error: error.message,
@@ -152,7 +237,12 @@ router.post("/", authMiddleware, adminMiddleware, async (req, res) => {
   }
 });
 
-// UPDATE product
+/*
+|--------------------------------------------------------------------------
+| UPDATE product
+|--------------------------------------------------------------------------
+*/
+
 router.patch(
   "/:id",
   authMiddleware,
@@ -174,7 +264,10 @@ router.patch(
         });
       }
 
-      res.json(updatedProduct);
+      // Product list has changed
+      clearProductsCache();
+
+      res.status(200).json(updatedProduct);
     } catch (error) {
       console.error("Update product error:", error);
 
@@ -186,7 +279,12 @@ router.patch(
   }
 );
 
-// DELETE product
+/*
+|--------------------------------------------------------------------------
+| DELETE product
+|--------------------------------------------------------------------------
+*/
+
 router.delete(
   "/:id",
   authMiddleware,
@@ -202,7 +300,7 @@ router.delete(
         });
       }
 
-      // Delete the image from Cloudinary
+      // Delete image from Cloudinary
       if (product.image) {
         const imageUrl = product.image;
 
@@ -214,7 +312,8 @@ router.delete(
             uploadIndex + uploadMarker.length
           );
 
-          // Remove version part, for example: v1788709181/
+          // Remove version part
+          // Example: v1788709181/
           publicId = publicId.replace(/^v\d+\//, "");
 
           // Remove file extension
@@ -224,10 +323,13 @@ router.delete(
         }
       }
 
-      // Delete the product from MongoDB
+      // Delete product from MongoDB
       await Product.findByIdAndDelete(req.params.id);
 
-      res.json({
+      // Product list has changed
+      clearProductsCache();
+
+      res.status(200).json({
         message: "Product and image deleted successfully",
       });
     } catch (error) {
@@ -240,6 +342,5 @@ router.delete(
     }
   }
 );
-
 
 module.exports = router;

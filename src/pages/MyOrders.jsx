@@ -24,7 +24,9 @@ function MyOrders() {
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.message || "Failed to fetch orders");
+          throw new Error(
+            data.message || "Failed to fetch orders"
+          );
         }
 
         setOrders(data);
@@ -39,61 +41,9 @@ function MyOrders() {
     fetchMyOrders();
   }, []);
 
-  // ================================
-  // CANCEL ORDER
-  // ================================
-
-  const handleCancelOrder = async (orderId) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to cancel this order?"
-    );
-
-    if (!confirmed) return;
-
-    try {
-      setCancellingOrderId(orderId);
-
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(
-        `${API_URL}/api/orders/${orderId}/cancel`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.message || "Failed to cancel order"
-        );
-      }
-
-      // Update the cancelled order in the existing list
-      setOrders((previousOrders) =>
-        previousOrders.map((order) =>
-          order._id === orderId
-            ? data.order
-            : order
-        )
-      );
-
-      alert("Order cancelled successfully.");
-    } catch (error) {
-      console.error("Cancel order error:", error);
-      alert(error.message);
-    } finally {
-      setCancellingOrderId(null);
-    }
-  };
-
-  // ================================
-  // LOADING
-  // ================================
+  /* ================================
+     LOADING
+  ================================= */
 
   if (loading) {
     return (
@@ -106,9 +56,9 @@ function MyOrders() {
     );
   }
 
-  // ================================
-  // ERROR
-  // ================================
+  /* ================================
+     ERROR
+  ================================= */
 
   if (error) {
     return (
@@ -120,8 +70,15 @@ function MyOrders() {
 
           <p>{error}</p>
 
-          <Link to="/" className="orders-back-button">
+          <Link
+            to="/"
+            className="orders-back-button"
+          >
             ← BACK TO HOME
+          </Link>
+
+          <Link to="/login">
+            Return to login
           </Link>
         </div>
       </main>
@@ -231,8 +188,6 @@ function MyOrders() {
                 year: "numeric",
               });
 
-              // Orders that customers are allowed to cancel
-
               return (
 
                 <article
@@ -252,7 +207,8 @@ function MyOrders() {
                       </span>
 
                       <h3>
-                        #{order._id
+                        #
+                        {order._id
                           .slice(-8)
                           .toUpperCase()}
                       </h3>
@@ -277,9 +233,9 @@ function MyOrders() {
 
                       <strong>
                         ₹
-                        {order.totalAmount?.toLocaleString(
-                          "en-IN"
-                        )}
+                        {Number(
+                          order.totalAmount || 0
+                        ).toLocaleString("en-IN")}
                       </strong>
 
                     </div>
@@ -343,24 +299,21 @@ function MyOrders() {
                         key={item._id}
                       >
 
+                        {/* PRODUCT */}
+
                         <div className="my-order-product-name">
 
-                          {item.productId?.image && (
+                          {item.image && (
                             <img
-                              src={item.productId.image}
-                              alt={
-                                item.productId?.name ||
-                                "Product"
-                              }
+                              src={item.image}
+                              alt={item.name || "Product"}
                             />
                           )}
 
                           <div>
 
                             <strong>
-                              {item.productId?.name ||
-                                item.name ||
-                                "Product"}
+                              {item.name || "Product"}
                             </strong>
 
                             {item.size && (
@@ -374,16 +327,20 @@ function MyOrders() {
                         </div>
 
 
+                        {/* QUANTITY */}
+
                         <span>
                           ×{item.quantity}
                         </span>
 
 
+                        {/* PRICE */}
+
                         <strong>
                           ₹
                           {(
-                            item.price *
-                            item.quantity
+                            Number(item.price || 0) *
+                            Number(item.quantity || 0)
                           ).toLocaleString("en-IN")}
                         </strong>
 
@@ -414,11 +371,6 @@ function MyOrders() {
                       >
                         VIEW ORDER DETAILS →
                       </Link>
-
-
-                      {/* CANCEL BUTTON */}
-
-                     
 
                     </div>
 

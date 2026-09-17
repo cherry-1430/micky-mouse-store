@@ -19,7 +19,7 @@ function Shop() {
 
   const initialSearch = searchParams.get("search") || "";
 
-   const [search, setSearch] = useState(initialSearch);
+  const [search, setSearch] = useState(initialSearch);
 
   const initialCategory = searchParams.get("category");
 
@@ -30,10 +30,10 @@ function Shop() {
       : "All"
   );
 
- const [maxPrice, setMaxPrice] = useState(5000);
- const [sort, setSort] = useState("default");
- const [gender, setGender] = useState("All");
- const [minRating, setMinRating] = useState(0);
+  const [maxPrice, setMaxPrice] = useState(5000);
+  const [sort, setSort] = useState("default");
+  const [gender, setGender] = useState("All");
+  const [minRating, setMinRating] = useState(0);
 
   const categories = [
     "All",
@@ -41,20 +41,21 @@ function Shop() {
     "Shirts",
     "Pants",
     "T-Shirts",
-     "New",
+    "New",
   ];
 
   const genders = [
-  "All",
-  "Men",
-  "Women",
-  "Unisex",
-];
+    "All",
+    "Men",
+    "Women",
+    "Unisex",
+  ];
 
   useEffect(() => {
     async function loadProducts() {
       try {
         const data = await getProducts();
+
         setProducts(data);
       } catch (error) {
         setError("Failed to load products");
@@ -65,19 +66,20 @@ function Shop() {
 
     loadProducts();
   }, []);
+
   useEffect(() => {
-  const urlSearch = searchParams.get("search") || "";
-  const urlCategory = searchParams.get("category");
+    const urlSearch = searchParams.get("search") || "";
+    const urlCategory = searchParams.get("category");
 
-  setSearch(urlSearch);
+    setSearch(urlSearch);
 
-  setCategory(
-    urlCategory
-      ? urlCategory.charAt(0).toUpperCase() +
-        urlCategory.slice(1)
-      : "All"
-  );
-}, [searchParams]);
+    setCategory(
+      urlCategory
+        ? urlCategory.charAt(0).toUpperCase() +
+          urlCategory.slice(1)
+        : "All"
+    );
+  }, [searchParams]);
 
   const handleCategoryChange = (selectedCategory) => {
     setCategory(selectedCategory);
@@ -92,73 +94,73 @@ function Shop() {
   };
 
   const filteredProducts = products
-  .filter((product) => {
-    const matchesSearch = product.name
-      .toLowerCase()
-      .includes(search.toLowerCase());
+    .filter((product) => {
+      const matchesSearch = product.name
+        .toLowerCase()
+        .includes(search.toLowerCase());
 
-    const matchesCategory =
-      category === "All" ||
-      product.category === category;
+      const matchesCategory =
+        category === "All" ||
+        product.category === category;
 
-    const matchesPrice =
-      product.price <= maxPrice;
+      const matchesPrice =
+        product.price <= maxPrice;
 
-    const matchesGender =
-      gender === "All" ||
-      product.gender === gender;
+      const matchesGender =
+        gender === "All" ||
+        product.gender === gender;
 
-    const matchesRating =
-      Number(product.rating || 0) >= minRating;
+      const matchesRating =
+        Number(product.rating || 0) >= minRating;
 
-    return (
-      matchesSearch &&
-      matchesCategory &&
-      matchesPrice &&
-      matchesGender &&
-      matchesRating
-    );
-  })
-  .sort((a, b) => {
-    if (sort === "low-high") {
-      return a.price - b.price;
-    }
-
-    if (sort === "high-low") {
-      return b.price - a.price;
-    }
-
-    if (sort === "rating") {
-      return (b.rating || 0) - (a.rating || 0);
-    }
-
-    if (sort === "newest") {
       return (
-        new Date(b.createdAt || 0) -
-        new Date(a.createdAt || 0)
+        matchesSearch &&
+        matchesCategory &&
+        matchesPrice &&
+        matchesGender &&
+        matchesRating
       );
-    }
+    })
+    .sort((a, b) => {
+      if (sort === "low-high") {
+        return a.price - b.price;
+      }
 
-    if (sort === "discount") {
-      const discountA =
-        a.originalPrice > a.price
-          ? ((a.originalPrice - a.price) /
-              a.originalPrice) *
-            100
-          : 0;
+      if (sort === "high-low") {
+        return b.price - a.price;
+      }
 
-      const discountB =
-        b.originalPrice > b.price
-          ? ((b.originalPrice - b.price) /
-              b.originalPrice) *
-            100
-          : 0;
+      if (sort === "rating") {
+        return (b.rating || 0) - (a.rating || 0);
+      }
 
-      return discountB - discountA;
-    }
+      if (sort === "newest") {
+        return (
+          new Date(b.createdAt || 0) -
+          new Date(a.createdAt || 0)
+        );
+      }
 
-    return 0;
-  });
+      if (sort === "discount") {
+        const discountA =
+          a.originalPrice > a.price
+            ? ((a.originalPrice - a.price) /
+                a.originalPrice) *
+              100
+            : 0;
+
+        const discountB =
+          b.originalPrice > b.price
+            ? ((b.originalPrice - b.price) /
+                b.originalPrice) *
+              100
+            : 0;
+
+        return discountB - discountA;
+      }
+
+      return 0;
+    });
 
   if (loading) {
     return (
@@ -192,7 +194,9 @@ function Shop() {
 
         <div className="shop-header-content">
 
-          <p>MICKEY MOUSE • PREMIUM COLLECTION</p>
+          <p>
+            MICKEY MOUSE • PREMIUM COLLECTION
+          </p>
 
           <h1>SHOP</h1>
 
@@ -216,25 +220,29 @@ function Shop() {
 
         <div className="search-box">
 
-          <span className="search-icon">⌕</span>
+          <span className="search-icon">
+            ⌕
+          </span>
 
           <input
-  type="text"
-  placeholder="Search products..."
-  value={search}
-  onChange={(e) => {
-    const value = e.target.value;
-    setSearch(value);
+            type="text"
+            placeholder="Search products..."
+            value={search}
+            onChange={(e) => {
+              const value = e.target.value;
 
-    if (value.trim()) {
-      setSearchParams({
-        search: value,
-      });
-    } else {
-      setSearchParams({});
-    }
-  }}
-/>
+              setSearch(value);
+
+              if (value.trim()) {
+                setSearchParams({
+                  search: value,
+                });
+              } else {
+                setSearchParams({});
+              }
+            }}
+          />
+
           {search && (
             <button
               className="clear-search"
@@ -258,6 +266,7 @@ function Shop() {
               setSort(e.target.value)
             }
           >
+
             <option value="default">
               Featured
             </option>
@@ -269,24 +278,24 @@ function Shop() {
             <option value="high-low">
               Price: High to Low
             </option>
+
             <option value="rating">
-  Highest Rated
-</option>
+              Highest Rated
+            </option>
 
-<option value="newest">
-  Newest Arrivals
-</option>
+            <option value="newest">
+              Newest Arrivals
+            </option>
 
-<option value="discount">
-  Biggest Discount
-</option>
+            <option value="discount">
+              Biggest Discount
+            </option>
+
           </select>
 
         </div>
 
       </section>
-
-      <FlashSale />
 
 
       {/* SHOP CONTENT */}
@@ -298,8 +307,11 @@ function Shop() {
         <aside className="shop-sidebar">
 
           <div className="filter-heading">
+
             <span>FILTERS</span>
+
             <span className="filter-line"></span>
+
           </div>
 
 
@@ -310,6 +322,7 @@ function Shop() {
             <div className="category-filter">
 
               {categories.map((item) => (
+
                 <button
                   key={item}
                   className={
@@ -321,75 +334,102 @@ function Shop() {
                     handleCategoryChange(item)
                   }
                 >
+
                   <span>{item}</span>
 
                   {category === item && (
                     <span>→</span>
                   )}
+
                 </button>
+
               ))}
 
             </div>
 
           </div>
 
+
           <div className="filter-group">
 
-  <h3>GENDER</h3>
+            <h3>GENDER</h3>
 
-  <div className="category-filter">
-    {genders.map((item) => (
-      <button
-        key={item}
-        className={
-          gender === item
-            ? "active-category"
-            : ""
-        }
-        onClick={() => setGender(item)}
-      >
-        <span>{item}</span>
+            <div className="category-filter">
 
-        {gender === item && (
-          <span>→</span>
-        )}
-      </button>
-    ))}
-  </div>
+              {genders.map((item) => (
 
-</div>
+                <button
+                  key={item}
+                  className={
+                    gender === item
+                      ? "active-category"
+                      : ""
+                  }
+                  onClick={() =>
+                    setGender(item)
+                  }
+                >
 
-<div className="filter-group">
+                  <span>{item}</span>
 
-  <h3>MINIMUM RATING</h3>
+                  {gender === item && (
+                    <span>→</span>
+                  )}
 
-  <div className="rating-filter">
+                </button>
 
-    {[0, 4, 3, 2].map((rating) => (
-      <button
-        key={rating}
-        className={
-          minRating === rating
-            ? "active-rating"
-            : ""
-        }
-        onClick={() => setMinRating(rating)}
-      >
-        {rating === 0 ? (
-          "All Ratings"
-        ) : (
-          <>
-            {"★".repeat(rating)}
-            {"☆".repeat(5 - rating)}
-            <span>& up</span>
-          </>
-        )}
-      </button>
-    ))}
+              ))}
 
-  </div>
+            </div>
 
-</div>
+          </div>
+
+
+          <div className="filter-group">
+
+            <h3>MINIMUM RATING</h3>
+
+            <div className="rating-filter">
+
+              {[0, 4, 3, 2].map((rating) => (
+
+                <button
+                  key={rating}
+                  className={
+                    minRating === rating
+                      ? "active-rating"
+                      : ""
+                  }
+                  onClick={() =>
+                    setMinRating(rating)
+                  }
+                >
+
+                  {rating === 0 ? (
+                    "All Ratings"
+                  ) : (
+                    <>
+                      {"★".repeat(rating)}
+
+                      {"☆".repeat(
+                        5 - rating
+                      )}
+
+                      <span>
+                        & up
+                      </span>
+                    </>
+                  )}
+
+                </button>
+
+              ))}
+
+            </div>
+
+          </div>
+
+
           <div className="price-filter">
 
             <div className="price-heading">
@@ -409,64 +449,76 @@ function Shop() {
               step="100"
               value={maxPrice}
               onChange={(e) =>
-                setMaxPrice(Number(e.target.value))
+                setMaxPrice(
+                  Number(e.target.value)
+                )
               }
             />
 
             <div className="price-range-labels">
+
               <span>₹500</span>
+
               <span>₹5,000</span>
+
             </div>
 
           </div>
 
         </aside>
 
-            
+
+        <FlashSale />
 
 
         {/* PRODUCTS */}
 
         <div className="shop-products">
 
-      <div className="products-count">
+          <div className="products-count">
 
-  <span>
-    {filteredProducts.length}{" "}
-    {filteredProducts.length === 1
-      ? "PRODUCT"
-      : "PRODUCTS"}
-  </span>
+            <span>
 
-  <div className="active-filters">
+              {filteredProducts.length}{" "}
 
-    {category !== "All" && (
-      <span className="active-filter">
-        {category}
-      </span>
-    )}
+              {filteredProducts.length === 1
+                ? "PRODUCT"
+                : "PRODUCTS"}
 
-    {gender !== "All" && (
-      <span className="active-filter">
-        {gender}
-      </span>
-    )}
+            </span>
 
-    {minRating > 0 && (
-      <span className="active-filter">
-        ★ {minRating}+
-      </span>
-    )}
 
-    {maxPrice < 5000 && (
-      <span className="active-filter">
-        ≤ ₹{maxPrice.toLocaleString("en-IN")}
-      </span>
-    )}
+            <div className="active-filters">
 
-  </div>
+              {category !== "All" && (
+                <span className="active-filter">
+                  {category}
+                </span>
+              )}
 
-</div>
+              {gender !== "All" && (
+                <span className="active-filter">
+                  {gender}
+                </span>
+              )}
+
+              {minRating > 0 && (
+                <span className="active-filter">
+                  ★ {minRating}+
+                </span>
+              )}
+
+              {maxPrice < 5000 && (
+                <span className="active-filter">
+                  ≤ ₹
+                  {maxPrice.toLocaleString("en-IN")}
+                </span>
+              )}
+
+            </div>
+
+          </div>
+
 
           {filteredProducts.length === 0 ? (
 
@@ -500,157 +552,188 @@ function Shop() {
 
             <div className="shop-product-grid">
 
-              {filteredProducts.map((product, index) => (
+              {filteredProducts.map(
+                (product, index) => (
 
-                <Link
-                  to={`/product/${product._id}`}
-                  className="shop-product-card"
-                  key={product._id}
-                >
+                  <Link
+                    to={`/product/${product._id}`}
+                    className="shop-product-card"
+                    key={product._id}
+                  >
 
-                  <div className="shop-product-image">
+                    <div className="shop-product-image">
 
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                    />
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                      />
 
-                    <span className="product-index">
-                      {String(index + 1).padStart(2, "0")}
-                    </span>
-
-
-                    <button
-                      className="shop-wishlist"
-                      aria-label={
-                        isInWishlist(product._id)
-                          ? "Remove from wishlist"
-                          : "Add to wishlist"
-                      }
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-
-                        toggleWishlist(product);
-                      }}
-                    >
-                      {isInWishlist(product._id)
-                        ? "♥"
-                        : "♡"}
-                    </button>
-
-
-                    {product.originalPrice >
-                      product.price && (
-                      <span className="sale-badge">
-                        SALE
-                      </span>
-                    )}
-
-                  </div>
-
-
-                  <div className="shop-product-info">
-
-                    <p className="shop-category">
-                      {product.category}
-                    </p>
-
-                    <h3>
-                      {product.name}
-                    </h3>
-
-
-                    <div className="rating">
-
-                      <span className="rating-stars">
-                        {"★".repeat(
-                          Math.round(product.rating || 0)
-                        )}
-
-                        {"☆".repeat(
-                          5 -
-                            Math.round(
-                              product.rating || 0
-                            )
+                      <span className="product-index">
+                        {String(index + 1).padStart(
+                          2,
+                          "0"
                         )}
                       </span>
 
-                      <span className="rating-count">
-                        {product.rating || 0} (
-                        {product.reviewCount || 0})
-                      </span>
 
-                    </div>
+                      <button
+                        className="shop-wishlist"
+                        aria-label={
+                          isInWishlist(
+                            product._id
+                          )
+                            ? "Remove from wishlist"
+                            : "Add to wishlist"
+                        }
+                        onClick={(e) => {
 
+                          e.preventDefault();
+                          e.stopPropagation();
 
-                    <div className="shop-product-price">
+                          toggleWishlist(product);
 
-                      <span className="current-price">
-                        ₹
-                        {product.price.toLocaleString(
-                          "en-IN"
-                        )}
-                      </span>
+                        }}
+                      >
+
+                        {isInWishlist(
+                          product._id
+                        )
+                          ? "♥"
+                          : "♡"}
+
+                      </button>
+
 
                       {product.originalPrice >
                         product.price && (
-                        <>
-                          <span className="original-price">
-                            ₹
-                            {product.originalPrice.toLocaleString(
-                              "en-IN"
-                            )}
-                          </span>
-
-                          <span className="discount">
-                            {Math.round(
-                              ((product.originalPrice -
-                                product.price) /
-                                product.originalPrice) *
-                                100
-                            )}
-                            % OFF
-                          </span>
-                        </>
+                        <span className="sale-badge">
+                          SALE
+                        </span>
                       )}
 
                     </div>
 
 
-                    <button
-                      className="shop-cart-button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
+                    <div className="shop-product-info">
 
-                        const size =
-                          product.sizes?.[0];
+                      <p className="shop-category">
+                        {product.category}
+                      </p>
 
-                        if (!size) {
-                          alert("No size available");
-                          return;
-                        }
+                      <h3>
+                        {product.name}
+                      </h3>
 
-                        addToCart(
-                          product,
-                          size,
-                          1
-                        );
 
-                        alert(
-                          `${product.name} added to cart`
-                        );
-                      }}
-                    >
-                      ADD TO CART →
-                    </button>
+                      <div className="rating">
 
-                  </div>
+                        <span className="rating-stars">
 
-                </Link>
+                          {"★".repeat(
+                            Math.round(
+                              product.rating || 0
+                            )
+                          )}
 
-              ))}
+                          {"☆".repeat(
+                            5 -
+                              Math.round(
+                                product.rating || 0
+                              )
+                          )}
+
+                        </span>
+
+
+                        <span className="rating-count">
+
+                          {product.rating || 0} (
+
+                          {product.reviewCount || 0})
+
+                        </span>
+
+                      </div>
+
+
+                      <div className="shop-product-price">
+
+                        <span className="current-price">
+
+                          ₹
+                          {product.price.toLocaleString(
+                            "en-IN"
+                          )}
+
+                        </span>
+
+
+                        {product.originalPrice >
+                          product.price && (
+                          <>
+
+                            <span className="original-price">
+
+                              ₹
+                              {product.originalPrice.toLocaleString(
+                                "en-IN"
+                              )}
+
+                            </span>
+
+
+                            <span className="discount">
+
+                              {Math.round(
+                                ((product.originalPrice -
+                                  product.price) /
+                                  product.originalPrice) *
+                                  100
+                              )}
+
+                              % OFF
+
+                            </span>
+
+                          </>
+                        )}
+
+                      </div>
+
+
+                      {/* ADD TO CART */}
+
+                      <button
+                        className="shop-cart-button"
+                        onClick={(e) => {
+
+                          e.preventDefault();
+                          e.stopPropagation();
+
+                          const size =
+                            product.sizes?.[0];
+
+                          if (!size) {
+                            return;
+                          }
+
+                          addToCart(
+                            product,
+                            size,
+                            1
+                          );
+
+                        }}
+                      >
+                        ADD TO CART →
+                      </button>
+
+                    </div>
+
+                  </Link>
+
+                )
+              )}
 
             </div>
 

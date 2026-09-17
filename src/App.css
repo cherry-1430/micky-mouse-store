@@ -1260,6 +1260,124 @@
   padding: 110px 6%;
   background: #f7f7f5;
 }
+/* =========================================
+   CART TOAST
+   ========================================= */
+
+.cart-toast {
+  position: fixed;
+  top: 90px;
+  right: 30px;
+
+  z-index: 999999;
+
+  width: 340px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+
+  padding: 16px 18px;
+
+  background: #111;
+  color: #fff;
+
+  border-radius: 8px;
+
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+
+  animation: cartToastIn 0.4s ease-out;
+}
+
+
+/* CHECK ICON */
+
+.cart-toast-icon {
+  width: 38px;
+  height: 38px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #555;
+
+  border-radius: 50%;
+
+  font-size: 17px;
+  font-weight: 700;
+}
+
+
+/* TEXT */
+
+.cart-toast-content {
+  display: flex;
+  flex-direction: column;
+
+  gap: 4px;
+
+  min-width: 0;
+}
+
+.cart-toast-content strong {
+  font-size: 11px;
+
+  letter-spacing: 1.5px;
+}
+
+.cart-toast-content span {
+  font-size: 13px;
+
+  color: #aaa;
+
+  white-space: nowrap;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+}
+
+
+/* ANIMATION */
+
+@keyframes cartToastIn {
+
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+}
+
+
+/* MOBILE */
+
+@media (max-width: 768px) {
+
+  .cart-toast {
+    top: auto;
+
+    right: 15px;
+    bottom: 20px;
+    left: 15px;
+
+    width: auto;
+  }
+
+  .cart-toast-content span {
+    white-space: normal;
+  }
+
+}
 
 /* =========================================================
    HOMEPAGE POLISH
@@ -9246,4 +9364,2815 @@
 .page-container > p button:hover {
   color: #777;
   text-decoration: underline;
+}
+
+/* =========================================
+   PREMIUM UI ANIMATIONS
+========================================= */
+
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(25px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes softPulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.04);
+  }
+}
+
+@keyframes heartPop {
+  0% {
+    transform: scale(1);
+  }
+
+  40% {
+    transform: scale(1.35);
+  }
+
+  70% {
+    transform: scale(0.9);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Page entrance */
+
+main {
+  animation: pageFadeIn 0.55s ease both;
+}
+
+
+/* =========================================
+   BUTTON INTERACTIONS
+========================================= */
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
+}
+
+button:not(:disabled):hover {
+  transform: translateY(-2px);
+}
+
+button:not(:disabled):active {
+  transform: translateY(1px) scale(0.98);
+}
+
+
+/* =========================================
+   NAVIGATION
+========================================= */
+
+nav a {
+  position: relative;
+}
+
+nav a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -5px;
+
+  width: 100%;
+  height: 2px;
+
+  transform: scaleX(0);
+  transform-origin: right;
+
+  transition: transform 0.3s ease;
+}
+
+nav a:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+
+/* =========================================
+   IMAGE HOVER
+========================================= */
+
+img {
+  transition: transform 0.5s ease;
+}
+
+.product-card:hover img,
+.category-card:hover img {
+  transform: scale(1.06);
+}
+
+
+/* =========================================
+   PRODUCT CARD
+========================================= */
+
+.product-card {
+  transition:
+    transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.35s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-8px);
+}
+
+
+/* =========================================
+   CATEGORY CARD
+========================================= */
+
+.category-card {
+  transition:
+    transform 0.35s ease,
+    box-shadow 0.35s ease;
+}
+
+.category-card:hover {
+  transform: translateY(-7px) scale(1.015);
+}
+
+
+/* =========================================
+   FLASH SALE
+========================================= */
+
+.flash-sale-card {
+  animation: fadeUp 0.6s ease both;
+}
+
+.flash-sale-card:hover {
+  transform: translateY(-8px);
+}
+
+
+/* =========================================
+   WISHLIST
+========================================= */
+
+.wishlist-button:active {
+  animation: heartPop 0.4s ease;
+}
+
+
+/* =========================================
+   SCROLL REVEAL
+========================================= */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition:
+    opacity 0.7s ease,
+    transform 0.7s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+
+/* =========================================
+   STAGGERED CONTENT
+========================================= */
+
+.stagger-item {
+  opacity: 0;
+  animation: fadeUp 0.6s ease forwards;
+}
+
+.stagger-item:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.stagger-item:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.stagger-item:nth-child(3) {
+  animation-delay: 0.15s;
+}
+
+.stagger-item:nth-child(4) {
+  animation-delay: 0.2s;
+}
+
+.stagger-item:nth-child(5) {
+  animation-delay: 0.25s;
+}
+
+.stagger-item:nth-child(6) {
+  animation-delay: 0.3s;
+}
+
+.stagger-item:nth-child(7) {
+  animation-delay: 0.35s;
+}
+
+.stagger-item:nth-child(8) {
+  animation-delay: 0.4s;
+}
+
+
+/* =========================================
+   ACCESSIBILITY
+========================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* =========================================================
+   ✨ PREMIUM MICKEY MOUSE UI ANIMATIONS
+   ========================================================= */
+
+
+/* =========================
+   PAGE ENTRANCE
+========================= */
+
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+main {
+  animation: pageEnter 0.6s ease both;
+}
+
+
+/* =========================
+   HERO ANIMATION
+========================= */
+
+@keyframes heroTextReveal {
+  from {
+    opacity: 0;
+    transform: translateY(35px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-small-text {
+  animation: heroTextReveal 0.7s ease both;
+  animation-delay: 0.1s;
+}
+
+.hero-content h1 {
+  animation: heroTextReveal 0.8s ease both;
+  animation-delay: 0.2s;
+}
+
+.hero-description {
+  animation: heroTextReveal 0.8s ease both;
+  animation-delay: 0.3s;
+}
+
+.hero-actions {
+  animation: heroTextReveal 0.8s ease both;
+  animation-delay: 0.4s;
+}
+
+.hero-features {
+  animation: heroTextReveal 0.8s ease both;
+  animation-delay: 0.5s;
+}
+
+
+/* Hero image entrance */
+
+@keyframes heroImageReveal {
+  from {
+    opacity: 0;
+    transform: scale(1.08);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.hero-image img {
+  animation: heroImageReveal 1.2s ease both;
+}
+
+
+/* =========================
+   HERO BUTTON
+========================= */
+
+.hero-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -120%;
+
+  width: 80%;
+  height: 100%;
+
+  background: rgba(255, 255, 255, 0.15);
+
+  transform: skewX(-20deg);
+  transition: left 0.5s ease;
+}
+
+.hero-button:hover::before {
+  left: 130%;
+}
+
+
+/* =========================
+   CATEGORY CARDS
+========================= */
+
+.category-card {
+  transition:
+    transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.45s ease;
+}
+
+.category-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.16);
+}
+
+.category-card img {
+  transition:
+    transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1),
+    filter 0.5s ease;
+}
+
+.category-card:hover img {
+  transform: scale(1.09);
+}
+
+.category-overlay {
+  transition: transform 0.4s ease;
+}
+
+.category-card:hover .category-overlay {
+  transform: translateY(-5px);
+}
+
+.category-arrow {
+  transition:
+    transform 0.35s ease,
+    background 0.35s ease,
+    color 0.35s ease;
+}
+
+.category-card:hover .category-arrow {
+  transform: translateX(8px) rotate(-5deg);
+}
+
+
+/* =========================
+   PRODUCT CARDS
+========================= */
+
+.product-card {
+  transition:
+    transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.4s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 25px 45px rgba(0, 0, 0, 0.12);
+}
+
+.product-image {
+  overflow: hidden;
+}
+
+.product-image img {
+  transition:
+    transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1),
+    filter 0.5s ease;
+}
+
+.product-card:hover .product-image img {
+  transform: scale(1.08);
+  filter: brightness(0.8);
+}
+
+
+/* =========================
+   PRODUCT OVERLAY
+========================= */
+
+.product-overlay {
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s ease;
+}
+
+.product-card:hover .product-overlay {
+  transform: translateY(0);
+}
+
+
+/* =========================
+   ADD TO CART
+========================= */
+
+.add-cart-button {
+  position: relative;
+  overflow: hidden;
+
+  transition:
+    transform 0.25s ease,
+    background 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.add-cart-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+}
+
+.add-cart-button:active {
+  transform: scale(0.94);
+}
+
+
+/* Button shine */
+
+.add-cart-button::before {
+  content: "";
+
+  position: absolute;
+  top: 0;
+  left: -100%;
+
+  width: 60%;
+  height: 100%;
+
+  background: rgba(255, 255, 255, 0.12);
+
+  transform: skewX(-20deg);
+
+  transition: left 0.45s ease;
+}
+
+.add-cart-button:hover::before {
+  left: 130%;
+}
+
+
+/* =========================
+   WISHLIST HEART
+========================= */
+
+@keyframes wishlistPop {
+  0% {
+    transform: scale(1);
+  }
+
+  35% {
+    transform: scale(1.35);
+  }
+
+  60% {
+    transform: scale(0.88);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+.wishlist-button:active {
+  animation: wishlistPop 0.4s ease;
+}
+
+.wishlist-button:hover {
+  transform: scale(1.12);
+}
+
+
+/* =========================
+   FLASH SALE
+========================= */
+
+.flash-sale-card {
+  transition:
+    transform 0.4s ease,
+    box-shadow 0.4s ease;
+}
+
+.flash-sale-card:hover {
+  transform: translateY(-10px) scale(1.01);
+
+  box-shadow:
+    0 20px 45px rgba(0, 0, 0, 0.35);
+}
+
+.flash-sale-image {
+  overflow: hidden;
+}
+
+.flash-sale-image img {
+  transition:
+    transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.flash-sale-card:hover .flash-sale-image img {
+  transform: scale(1.08);
+}
+
+
+/* Flash sale badge */
+
+@keyframes salePulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+.flash-sale-discount {
+  animation: salePulse 2.5s ease-in-out infinite;
+}
+
+
+/* =========================
+   COUNTDOWN
+========================= */
+
+@keyframes countdownPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.flash-sale-countdown {
+  animation: countdownPulse 2s ease-in-out infinite;
+}
+
+
+/* =========================
+   WHY CHOOSE US
+========================= */
+
+.feature-card {
+  transition:
+    transform 0.4s ease,
+    background 0.4s ease,
+    box-shadow 0.4s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.feature-icon {
+  transition:
+    transform 0.4s ease;
+}
+
+.feature-card:hover .feature-icon {
+  transform: scale(1.15) rotate(-5deg);
+}
+
+.feature-line {
+  transition:
+    width 0.4s ease,
+    background 0.4s ease;
+}
+
+.feature-card:hover .feature-line {
+  width: 70px;
+}
+
+
+/* =========================
+   PROMO BANNER
+========================= */
+
+@keyframes promoZoom {
+  from {
+    transform: scale(1);
+  }
+
+  to {
+    transform: scale(1.05);
+  }
+}
+
+.promo-banner {
+  position: relative;
+}
+
+.promo-banner:hover {
+  background-size: 105%;
+}
+
+.promo-decoration {
+  animation: decorationFloat 6s ease-in-out infinite;
+}
+
+@keyframes decorationFloat {
+  0%,
+  100% {
+    transform: translateY(-50%) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-50%) rotate(8deg);
+  }
+}
+
+
+/* =========================
+   RECENTLY VIEWED
+========================= */
+
+.recently-viewed-card {
+  transition:
+    transform 0.35s ease;
+}
+
+.recently-viewed-card:hover {
+  transform: translateY(-7px);
+}
+
+.recently-viewed-image {
+  overflow: hidden;
+}
+
+.recently-viewed-card:hover img {
+  transform: scale(1.08);
+}
+
+
+/* =========================
+   NAVBAR
+========================= */
+
+.nav-links a {
+  position: relative;
+  transition: color 0.25s ease;
+}
+
+.nav-links a::after {
+  content: "";
+
+  position: absolute;
+  left: 50%;
+  bottom: -8px;
+
+  width: 0;
+  height: 2px;
+
+  background: #e63946;
+
+  transform: translateX(-50%);
+
+  transition: width 0.3s ease;
+}
+
+.nav-links a:hover::after {
+  width: 100%;
+}
+
+
+/* Navbar icons */
+
+.nav-account,
+.nav-cart,
+.nav-icons button {
+  transition:
+    transform 0.25s ease,
+    color 0.25s ease;
+}
+
+.nav-account:hover,
+.nav-cart:hover,
+.nav-icons button:hover {
+  transform: translateY(-2px) scale(1.08);
+}
+
+
+/* =========================
+   SCROLLING FEEL
+========================= */
+
+html {
+  scroll-behavior: smooth;
+}
+
+
+/* =========================
+   GLOBAL LINK HOVER
+========================= */
+
+a {
+  transition:
+    color 0.25s ease,
+    opacity 0.25s ease;
+}
+
+
+/* =========================
+   LOADING SKELETON
+========================= */
+
+@keyframes skeletonShimmer {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.skeleton-image::after,
+.skeleton-line::after {
+  animation:
+    skeletonShimmer 1.4s infinite;
+}
+
+
+/* =========================
+   MOBILE OPTIMIZATION
+========================= */
+
+@media (max-width: 768px) {
+
+  .category-card:hover,
+  .product-card:hover,
+  .flash-sale-card:hover {
+    transform: translateY(-5px);
+  }
+
+  .product-card:hover .product-image img,
+  .category-card:hover img,
+  .flash-sale-card:hover .flash-sale-image img {
+    transform: scale(1.04);
+  }
+
+}
+
+
+/* =========================
+   ACCESSIBILITY
+========================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+}
+
+/* =========================================================
+   ✨ STAGGERED CARD ENTRANCE ANIMATIONS
+   ========================================================= */
+
+@keyframes cardReveal {
+  from {
+    opacity: 0;
+    transform: translateY(25px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Product cards */
+.product-card {
+  animation: cardReveal 0.6s ease both;
+}
+
+.product-card:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.product-card:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.product-card:nth-child(3) {
+  animation-delay: 0.15s;
+}
+
+.product-card:nth-child(4) {
+  animation-delay: 0.2s;
+}
+
+.product-card:nth-child(5) {
+  animation-delay: 0.25s;
+}
+
+.product-card:nth-child(6) {
+  animation-delay: 0.3s;
+}
+
+.product-card:nth-child(7) {
+  animation-delay: 0.35s;
+}
+
+.product-card:nth-child(8) {
+  animation-delay: 0.4s;
+}
+
+
+/* Category cards */
+.category-card {
+  animation: cardReveal 0.65s ease both;
+}
+
+.category-card:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.category-card:nth-child(2) {
+  animation-delay: 0.12s;
+}
+
+.category-card:nth-child(3) {
+  animation-delay: 0.19s;
+}
+
+.category-card:nth-child(4) {
+  animation-delay: 0.26s;
+}
+
+.category-card:nth-child(5) {
+  animation-delay: 0.33s;
+}
+
+.category-card:nth-child(6) {
+  animation-delay: 0.4s;
+}
+
+
+/* Flash-sale cards */
+.flash-sale-card {
+  animation: cardReveal 0.7s ease both;
+}
+
+.flash-sale-card:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.flash-sale-card:nth-child(2) {
+  animation-delay: 0.18s;
+}
+
+.flash-sale-card:nth-child(3) {
+  animation-delay: 0.26s;
+}
+
+.flash-sale-card:nth-child(4) {
+  animation-delay: 0.34s;
+}
+
+
+/* Recently viewed */
+.recently-viewed-card {
+  animation: cardReveal 0.55s ease both;
+}
+
+.recently-viewed-card:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.recently-viewed-card:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.recently-viewed-card:nth-child(3) {
+  animation-delay: 0.15s;
+}
+
+.recently-viewed-card:nth-child(4) {
+  animation-delay: 0.2s;
+}
+
+.recently-viewed-card:nth-child(5) {
+  animation-delay: 0.25s;
+}
+
+.recently-viewed-card:nth-child(6) {
+  animation-delay: 0.3s;
+}
+
+
+/* Mobile — keep animations lighter */
+@media (max-width: 768px) {
+  .product-card,
+  .category-card,
+  .flash-sale-card,
+  .recently-viewed-card {
+    animation-duration: 0.45s;
+  }
+}
+
+
+/* Respect accessibility settings */
+@media (prefers-reduced-motion: reduce) {
+  .product-card,
+  .category-card,
+  .flash-sale-card,
+  .recently-viewed-card {
+    animation: none !important;
+  }
+}
+
+/* =========================================================
+   ✨ PREMIUM MICRO-INTERACTIONS
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   🛒 CART BUTTON
+   --------------------------------------------------------- */
+
+.add-cart-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.add-cart-button:active {
+  transform: scale(0.94);
+}
+
+
+/* Ripple-like shine */
+.add-cart-button::after {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+  transform: scale(0);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.add-cart-button:active::after {
+  animation: buttonRipple 0.5s ease-out;
+}
+
+@keyframes buttonRipple {
+  0% {
+    transform: scale(0);
+    opacity: 0.6;
+  }
+
+  100% {
+    transform: scale(15);
+    opacity: 0;
+  }
+}
+
+
+/* ---------------------------------------------------------
+   🛒 CART ICON
+   --------------------------------------------------------- */
+
+@keyframes cartBounce {
+  0% {
+    transform: translateY(0);
+  }
+
+  25% {
+    transform: translateY(-7px) rotate(-5deg);
+  }
+
+  50% {
+    transform: translateY(0) rotate(5deg);
+  }
+
+  75% {
+    transform: translateY(-3px) rotate(-3deg);
+  }
+
+  100% {
+    transform: translateY(0) rotate(0);
+  }
+}
+
+.nav-cart:active {
+  animation: cartBounce 0.5s ease;
+}
+
+
+/* ---------------------------------------------------------
+   ❤️ WISHLIST
+   --------------------------------------------------------- */
+
+@keyframes heartPop {
+  0% {
+    transform: scale(1);
+  }
+
+  30% {
+    transform: scale(1.45);
+  }
+
+  55% {
+    transform: scale(0.8);
+  }
+
+  75% {
+    transform: scale(1.15);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+.wishlist-button:active {
+  animation: heartPop 0.45s ease;
+}
+
+.wishlist-button:hover {
+  transform: scale(1.12);
+}
+
+
+/* ---------------------------------------------------------
+   🏷️ SALE BADGES
+   --------------------------------------------------------- */
+
+@keyframes badgeFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.product-badge,
+.sale-badge,
+.flash-sale-badge {
+  animation: badgeFloat 2.5s ease-in-out infinite;
+}
+
+
+/* ---------------------------------------------------------
+   🔥 FLASH SALE
+   --------------------------------------------------------- */
+
+@keyframes firePulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+.flash-sale-title,
+.flash-sale-icon {
+  animation: firePulse 1.8s ease-in-out infinite;
+}
+
+
+/* ---------------------------------------------------------
+   🔘 GENERAL BUTTON PRESS
+   --------------------------------------------------------- */
+
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:not(:disabled):active {
+  transform: scale(0.97);
+}
+
+
+/* ---------------------------------------------------------
+   🖼️ PRODUCT IMAGE
+   --------------------------------------------------------- */
+
+.product-image img {
+  will-change: transform;
+}
+
+.product-card:hover .product-image img {
+  transform: scale(1.08);
+}
+
+
+/* ---------------------------------------------------------
+   👆 PRODUCT OVERLAY
+   --------------------------------------------------------- */
+
+.product-overlay {
+  transform: translateY(8px);
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s ease;
+}
+
+.product-card:hover .product-overlay {
+  transform: translateY(0);
+}
+
+
+/* ---------------------------------------------------------
+   💳 ACTION CARDS
+   --------------------------------------------------------- */
+
+.profile-action-card,
+.checkout-card,
+.order-card {
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.profile-action-card:hover,
+.checkout-card:hover,
+.order-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+
+/* ---------------------------------------------------------
+   ➜ ARROW INTERACTION
+   --------------------------------------------------------- */
+
+.category-arrow,
+.profile-action-card strong,
+button span {
+  transition: transform 0.3s ease;
+}
+
+.category-card:hover .category-arrow {
+  transform: translateX(7px);
+}
+
+.profile-action-card:hover strong {
+  transform: translateX(6px);
+}
+
+
+/* ---------------------------------------------------------
+   🔎 SEARCH INPUT
+   --------------------------------------------------------- */
+
+input,
+select,
+textarea {
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  transform: translateY(-1px);
+}
+
+
+/* ---------------------------------------------------------
+   🛍️ NAVIGATION
+   --------------------------------------------------------- */
+
+.nav-links a {
+  transition:
+    color 0.25s ease,
+    transform 0.25s ease;
+}
+
+.nav-links a:hover {
+  transform: translateY(-2px);
+}
+
+
+/* ---------------------------------------------------------
+   ✨ SECTION HEADINGS
+   --------------------------------------------------------- */
+
+.section-title {
+  transition: transform 0.35s ease;
+}
+
+.section-title:hover {
+  transform: translateY(-2px);
+}
+
+
+/* ---------------------------------------------------------
+   📱 MOBILE
+   --------------------------------------------------------- */
+
+@media (max-width: 768px) {
+  .product-card:hover {
+    transform: translateY(-5px);
+  }
+
+  .category-card:hover {
+    transform: translateY(-5px);
+  }
+
+  .profile-action-card:hover,
+  .checkout-card:hover,
+  .order-card:hover {
+    transform: translateY(-3px);
+  }
+}
+
+
+/* ---------------------------------------------------------
+   ♿ REDUCED MOTION
+   --------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* =========================================================
+   ✨ PREMIUM PAGE TRANSITIONS
+   ========================================================= */
+
+@keyframes pageFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-container,
+.shop-page,
+.product-page,
+.cart-page,
+.checkout-page,
+.profile-page,
+.orders-page,
+.order-details-page,
+.wishlist-page,
+.admin-page {
+  animation: pageFadeUp 0.45s ease both;
+}
+
+
+/* =========================================================
+   ✨ MODAL / POPUP ANIMATION
+   ========================================================= */
+
+@keyframes modalEnter {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal,
+.modal-content,
+.popup,
+.dialog {
+  animation: modalEnter 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+
+/* =========================================================
+   ✨ DROPDOWN ANIMATION
+   ========================================================= */
+
+@keyframes dropdownEnter {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown,
+.dropdown-menu,
+.nav-dropdown {
+  animation: dropdownEnter 0.25s ease both;
+}
+
+
+/* =========================================================
+   ✨ CART / ORDER SUMMARY
+   ========================================================= */
+
+@keyframes summaryEnter {
+  from {
+    opacity: 0;
+    transform: translateX(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.cart-summary,
+.order-summary,
+.checkout-summary {
+  animation: summaryEnter 0.5s ease both;
+}
+
+
+/* =========================================================
+   ✨ EMPTY STATE
+   ========================================================= */
+
+@keyframes emptyStateEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.empty-state {
+  animation: emptyStateEnter 0.5s ease both;
+}
+
+
+/* =========================================================
+   ✨ SUCCESS STATE
+   ========================================================= */
+
+@keyframes successPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+
+  70% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+.success-icon,
+.order-success-icon {
+  animation: successPop 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+
+/* =========================================================
+   📱 MOBILE
+   ========================================================= */
+
+@media (max-width: 768px) {
+  .page-container,
+  .shop-page,
+  .product-page,
+  .cart-page,
+  .checkout-page,
+  .profile-page,
+  .orders-page,
+  .order-details-page,
+  .wishlist-page,
+  .admin-page {
+    animation-duration: 0.35s;
+  }
+}
+
+
+/* =========================================================
+   ♿ REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .page-container,
+  .shop-page,
+  .product-page,
+  .cart-page,
+  .checkout-page,
+  .profile-page,
+  .orders-page,
+  .order-details-page,
+  .wishlist-page,
+  .admin-page,
+  .modal,
+  .modal-content,
+  .popup,
+  .dialog,
+  .dropdown,
+  .dropdown-menu,
+  .nav-dropdown,
+  .cart-summary,
+  .order-summary,
+  .checkout-summary,
+  .empty-state,
+  .success-icon,
+  .order-success-icon {
+    animation: none !important;
+  }
+}
+/* =========================================================
+   ✨ PREMIUM SKELETON LOADING
+   ========================================================= */
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: #eeeeee;
+  border-radius: 8px;
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.65),
+    transparent
+  );
+
+  animation: skeletonShimmer 1.4s infinite;
+}
+
+@keyframes skeletonShimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+
+/* =========================================================
+   🖼️ SKELETON IMAGE
+   ========================================================= */
+
+.skeleton-image {
+  width: 100%;
+  height: 280px;
+  border-radius: 10px;
+}
+
+
+/* =========================================================
+   📝 SKELETON TEXT
+   ========================================================= */
+
+.skeleton-title {
+  width: 75%;
+  height: 18px;
+  margin-top: 16px;
+  border-radius: 6px;
+}
+
+.skeleton-text {
+  width: 55%;
+  height: 14px;
+  margin-top: 10px;
+  border-radius: 6px;
+}
+
+.skeleton-price {
+  width: 35%;
+  height: 18px;
+  margin-top: 14px;
+  border-radius: 6px;
+}
+
+
+/* =========================================================
+   🛍️ SKELETON PRODUCT CARD
+   ========================================================= */
+
+.skeleton-product-card {
+  padding: 12px;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.skeleton-product-info {
+  padding: 4px 6px 10px;
+}
+
+
+/* =========================================================
+   🔘 SKELETON BUTTON
+   ========================================================= */
+
+.skeleton-button {
+  width: 100%;
+  height: 42px;
+  margin-top: 16px;
+  border-radius: 8px;
+}
+
+
+/* =========================================================
+   📱 MOBILE
+   ========================================================= */
+
+@media (max-width: 768px) {
+  .skeleton-image {
+    height: 220px;
+  }
+
+  .skeleton-product-card {
+    padding: 8px;
+  }
+}
+
+
+/* =========================================================
+   ♿ REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after {
+    animation: none;
+  }
+}
+
+/* =========================================================
+   ✨ PREMIUM PRODUCT CARD INTERACTIONS
+   ========================================================= */
+
+.product-card {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Product image smooth movement */
+.product-card .product-image {
+  position: relative;
+  overflow: hidden;
+}
+
+.product-card .product-image img {
+  transition:
+    transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1),
+    filter 0.5s ease;
+}
+
+.product-card:hover .product-image img {
+  transform: scale(1.07);
+  filter: brightness(0.82);
+}
+
+
+/* Product number */
+.product-number {
+  transition:
+    transform 0.35s ease,
+    opacity 0.35s ease;
+}
+
+.product-card:hover .product-number {
+  transform: translateX(5px);
+}
+
+
+/* Wishlist button */
+.product-card .wishlist-button {
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease,
+    background 0.3s ease;
+}
+
+.product-card:hover .wishlist-button {
+  transform: scale(1.08);
+}
+
+
+/* View product overlay */
+.product-card .product-overlay {
+  opacity: 0;
+  transform: translateY(15px);
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s ease;
+}
+
+.product-card:hover .product-overlay {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+
+/* View product link */
+.product-card .product-overlay a {
+  transition:
+    letter-spacing 0.3s ease,
+    transform 0.3s ease;
+}
+
+.product-card .product-overlay a:hover {
+  letter-spacing: 1px;
+}
+
+
+/* Product information */
+.product-card .product-info {
+  transition:
+    transform 0.35s ease;
+}
+
+.product-card:hover .product-info {
+  transform: translateY(-2px);
+}
+
+
+/* Product title */
+.product-card .product-info h3 {
+  transition:
+    letter-spacing 0.3s ease;
+}
+
+.product-card:hover .product-info h3 {
+  letter-spacing: 0.2px;
+}
+
+
+/* Price emphasis */
+.product-card .product-price {
+  transition:
+    transform 0.3s ease;
+}
+
+.product-card:hover .product-price {
+  transform: translateX(3px);
+}
+
+
+/* Add-to-cart button */
+.product-card .add-cart-button {
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease,
+    letter-spacing 0.3s ease;
+}
+
+.product-card .add-cart-button:hover {
+  transform: translateY(-3px);
+  letter-spacing: 0.4px;
+}
+
+
+/* Subtle card glow */
+.product-card {
+  transition:
+    transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.4s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-8px);
+  box-shadow:
+    0 20px 45px rgba(0, 0, 0, 0.12);
+}
+
+
+/* Mobile */
+@media (max-width: 768px) {
+  .product-card:hover {
+    transform: translateY(-4px);
+  }
+
+  .product-card:hover .product-image img {
+    transform: scale(1.04);
+  }
+
+  .product-card:hover .product-info {
+    transform: none;
+  }
+}
+
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .product-card,
+  .product-card *,
+  .product-card .product-image img {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .product-card:hover {
+    transform: none;
+  }
+}
+
+/* =========================================================
+   🎉 PREMIUM ORDER SUCCESS ANIMATIONS
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   PAGE ENTRANCE
+   --------------------------------------------------------- */
+
+@keyframes successPageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(25px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.order-success-page {
+  animation: successPageEnter 0.7s ease both;
+}
+
+
+/* ---------------------------------------------------------
+   ✓ SUCCESS ICON
+   --------------------------------------------------------- */
+
+@keyframes successIconPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) rotate(-20deg);
+  }
+
+  60% {
+    opacity: 1;
+    transform: scale(1.12) rotate(4deg);
+  }
+
+  80% {
+    transform: scale(0.96) rotate(-2deg);
+  }
+
+  100% {
+    transform: scale(1) rotate(0);
+  }
+}
+
+.success-icon {
+  animation:
+    successIconPop
+    0.75s
+    cubic-bezier(0.2, 0.8, 0.2, 1)
+    both;
+}
+
+
+/* Subtle success pulse */
+
+@keyframes successPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+  }
+
+  50% {
+    box-shadow: 0 0 0 10px rgba(0, 0, 0, 0.04);
+  }
+}
+
+.success-icon {
+  animation:
+    successIconPop 0.75s cubic-bezier(0.2, 0.8, 0.2, 1) both,
+    successPulse 2.5s ease-in-out 1s infinite;
+}
+
+
+/* ---------------------------------------------------------
+   📝 SUCCESS TEXT
+   --------------------------------------------------------- */
+
+@keyframes successTextReveal {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.success-label {
+  animation:
+    successTextReveal
+    0.5s
+    ease
+    0.25s
+    both;
+}
+
+.order-success-page h1 {
+  animation:
+    successTextReveal
+    0.6s
+    ease
+    0.35s
+    both;
+}
+
+.success-message {
+  animation:
+    successTextReveal
+    0.55s
+    ease
+    0.45s
+    both;
+}
+
+
+/* ---------------------------------------------------------
+   🧾 ORDER CARD
+   --------------------------------------------------------- */
+
+@keyframes successCardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(25px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.success-order-card {
+  animation:
+    successCardEnter
+    0.65s
+    cubic-bezier(0.2, 0.8, 0.2, 1)
+    0.55s
+    both;
+}
+
+
+/* Card hover */
+
+.success-order-card {
+  transition:
+    transform 0.35s ease,
+    box-shadow 0.35s ease;
+}
+
+.success-order-card:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.1);
+}
+
+
+/* ---------------------------------------------------------
+   💳 ORDER INFORMATION
+   --------------------------------------------------------- */
+
+.success-info-item {
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease;
+}
+
+.success-info-item:hover {
+  transform: translateY(-3px);
+}
+
+
+/* Total emphasis */
+
+.success-total {
+  transition:
+    transform 0.3s ease;
+}
+
+.success-info-item:hover .success-total {
+  transform: scale(1.04);
+}
+
+
+/* Paid badge */
+
+.success-paid-badge {
+  transition:
+    transform 0.3s ease;
+}
+
+.success-paid-badge:hover {
+  transform: scale(1.06);
+}
+
+
+/* ---------------------------------------------------------
+   📦 DELIVERY
+   --------------------------------------------------------- */
+
+@keyframes deliveryEnter {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.success-delivery {
+  animation:
+    deliveryEnter
+    0.55s
+    ease
+    0.75s
+    both;
+}
+
+.success-delivery {
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.success-delivery:hover {
+  transform: translateX(4px);
+}
+
+
+/* Delivery icon */
+
+.success-delivery-icon {
+  transition:
+    transform 0.35s ease;
+}
+
+.success-delivery:hover .success-delivery-icon {
+  transform: translateX(6px);
+}
+
+
+/* ---------------------------------------------------------
+   🔜 WHAT'S NEXT
+   --------------------------------------------------------- */
+
+@keyframes nextStepEnter {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.success-next-step {
+  animation:
+    nextStepEnter
+    0.6s
+    ease
+    0.9s
+    both;
+}
+
+
+/* ---------------------------------------------------------
+   🚚 TRACK ORDER BUTTON
+   --------------------------------------------------------- */
+
+.success-track-button {
+  position: relative;
+  overflow: hidden;
+
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease,
+    letter-spacing 0.3s ease;
+}
+
+.success-track-button::before {
+  content: "";
+
+  position: absolute;
+  top: 0;
+  left: -120%;
+
+  width: 75%;
+  height: 100%;
+
+  background: rgba(255, 255, 255, 0.15);
+
+  transform: skewX(-20deg);
+
+  transition:
+    left 0.55s ease;
+}
+
+.success-track-button:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 12px 28px rgba(0, 0, 0, 0.14);
+  letter-spacing: 0.3px;
+}
+
+.success-track-button:hover::before {
+  left: 130%;
+}
+
+
+/* ---------------------------------------------------------
+   🔘 ACTION BUTTONS
+   --------------------------------------------------------- */
+
+@keyframes actionsEnter {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.success-actions {
+  animation:
+    actionsEnter
+    0.55s
+    ease
+    1.05s
+    both;
+}
+
+.success-actions a {
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease;
+}
+
+.success-actions a:hover {
+  transform: translateY(-3px);
+}
+
+
+/* ---------------------------------------------------------
+   📝 FOOTNOTE
+   --------------------------------------------------------- */
+
+.success-note {
+  animation:
+    successTextReveal
+    0.5s
+    ease
+    1.2s
+    both;
+}
+
+
+/* ---------------------------------------------------------
+   📱 MOBILE
+   --------------------------------------------------------- */
+
+@media (max-width: 768px) {
+  .success-order-card:hover {
+    transform: translateY(-2px);
+  }
+
+  .success-delivery:hover {
+    transform: translateX(2px);
+  }
+
+  .success-actions a:hover {
+    transform: translateY(-2px);
+  }
+}
+
+
+/* ---------------------------------------------------------
+   ♿ REDUCED MOTION
+   --------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .order-success-page *,
+  .order-success-page *::before,
+  .order-success-page *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* =========================================================
+   🛒 CART TOAST NOTIFICATION
+   ========================================================= */
+
+.cart-toast {
+  position: fixed;
+  top: 90px;
+  right: 25px;
+
+  z-index: 9999;
+
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  min-width: 300px;
+  max-width: 380px;
+
+  padding: 16px 18px;
+
+  background: #111;
+  color: #fff;
+
+  border-radius: 10px;
+
+  box-shadow:
+    0 15px 40px rgba(0, 0, 0, 0.22);
+
+  animation:
+    cartToastEnter
+    0.45s
+    cubic-bezier(0.2, 0.8, 0.2, 1)
+    both;
+}
+
+
+/* Toast entrance */
+
+@keyframes cartToastEnter {
+  from {
+    opacity: 0;
+    transform: translateX(40px) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+
+/* Success icon */
+
+.cart-toast-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 34px;
+  height: 34px;
+
+  flex-shrink: 0;
+
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+
+  font-size: 15px;
+  font-weight: 700;
+
+  animation:
+    toastCheckPop
+    0.5s
+    ease
+    0.15s
+    both;
+}
+
+@keyframes toastCheckPop {
+  0% {
+    transform: scale(0);
+  }
+
+  70% {
+    transform: scale(1.15);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+
+/* Toast content */
+
+.cart-toast div {
+  flex: 1;
+}
+
+.cart-toast strong {
+  display: block;
+
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+
+.cart-toast p {
+  margin: 4px 0 0;
+
+  font-size: 13px;
+  line-height: 1.4;
+
+  opacity: 0.7;
+}
+
+
+/* Close decoration */
+
+.cart-toast-close {
+  font-size: 20px;
+  line-height: 1;
+
+  opacity: 0.5;
+
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.cart-toast:hover .cart-toast-close {
+  opacity: 1;
+  transform: rotate(90deg);
+}
+
+
+/* Mobile */
+
+@media (max-width: 768px) {
+  .cart-toast {
+    top: auto;
+    right: 15px;
+    bottom: 20px;
+    left: 15px;
+
+    min-width: 0;
+    max-width: none;
+
+    width: auto;
+  }
+}
+
+
+/* Accessibility */
+
+@media (prefers-reduced-motion: reduce) {
+  .cart-toast,
+  .cart-toast-icon {
+    animation: none !important;
+  }
+}
+
+/* =========================================================
+   🛒 CART TOAST — FINAL VERSION
+   ========================================================= */
+
+.cart-toast {
+  position: fixed;
+
+  top: 90px;
+  right: 30px;
+
+  z-index: 99999;
+
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+
+  width: 340px;
+  min-height: 70px;
+
+  padding: 14px 18px;
+
+  background: #111111;
+  color: #ffffff;
+
+  border-radius: 8px;
+
+  box-shadow:
+    0 18px 45px rgba(0, 0, 0, 0.25);
+
+  animation: cartToastIn 0.4s
+    cubic-bezier(0.2, 0.8, 0.2, 1)
+    both;
+}
+
+
+/* ---------------------------------------------------------
+   CHECK ICON
+   --------------------------------------------------------- */
+
+.cart-toast-icon {
+  width: 38px;
+  height: 38px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid rgba(255, 255, 255, 0.4);
+
+  border-radius: 50%;
+
+  font-size: 17px;
+  font-weight: 700;
+
+  animation: cartToastCheck 0.45s
+    ease 0.15s both;
+}
+
+
+/* ---------------------------------------------------------
+   TEXT
+   --------------------------------------------------------- */
+
+.cart-toast-content {
+  display: flex;
+  flex-direction: column;
+
+  gap: 4px;
+
+  min-width: 0;
+}
+
+.cart-toast-content strong {
+  font-size: 11px;
+
+  font-weight: 700;
+
+  letter-spacing: 1.5px;
+}
+
+.cart-toast-content span {
+  font-size: 13px;
+
+  line-height: 1.4;
+
+  color: rgba(255, 255, 255, 0.7);
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+
+/* ---------------------------------------------------------
+   ENTER ANIMATION
+   --------------------------------------------------------- */
+
+@keyframes cartToastIn {
+  from {
+    opacity: 0;
+
+    transform:
+      translateX(45px)
+      scale(0.94);
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      translateX(0)
+      scale(1);
+  }
+}
+
+
+/* ---------------------------------------------------------
+   CHECK ANIMATION
+   --------------------------------------------------------- */
+
+@keyframes cartToastCheck {
+  0% {
+    transform: scale(0);
+
+    opacity: 0;
+  }
+
+  70% {
+    transform: scale(1.15);
+
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+
+    opacity: 1;
+  }
+}
+
+
+/* ---------------------------------------------------------
+   MOBILE
+   --------------------------------------------------------- */
+
+@media (max-width: 768px) {
+  .cart-toast {
+    top: auto;
+
+    right: 15px;
+    bottom: 20px;
+    left: 15px;
+
+    width: auto;
+
+    min-height: 64px;
+  }
+
+  .cart-toast-content span {
+    white-space: normal;
+  }
+}
+
+
+/* ---------------------------------------------------------
+   REDUCED MOTION
+   --------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .cart-toast,
+  .cart-toast-icon {
+    animation: none !important;
+  }
+}
+
+/* =========================================
+   CART TOAST
+   ========================================= */
+
+.cart-toast {
+  position: fixed !important;
+
+  top: 90px !important;
+  right: 30px !important;
+
+  z-index: 999999 !important;
+
+  width: 340px;
+
+  min-height: 70px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 14px;
+
+  padding: 16px 18px;
+
+  box-sizing: border-box;
+
+  background: #111111;
+
+  color: #ffffff;
+
+  border-radius: 8px;
+
+  box-shadow:
+    0 15px 40px rgba(0, 0, 0, 0.3);
+
+  animation:
+    cartToastEnter
+    0.35s
+    ease-out
+    forwards;
+}
+
+
+/* CHECK */
+
+.cart-toast-icon {
+  width: 38px;
+
+  height: 38px;
+
+  flex-shrink: 0;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border: 1px solid #555555;
+
+  border-radius: 50%;
+
+  font-size: 17px;
+
+  font-weight: 700;
+}
+
+
+/* CONTENT */
+
+.cart-toast-content {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 4px;
+
+  min-width: 0;
+}
+
+.cart-toast-content strong {
+  font-size: 11px;
+
+  font-weight: 700;
+
+  letter-spacing: 1.5px;
+}
+
+.cart-toast-content span {
+  font-size: 13px;
+
+  color: #aaaaaa;
+
+  white-space: nowrap;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+}
+
+
+/* =========================================
+   ENTER ANIMATION
+   ========================================= */
+
+@keyframes cartToastEnter {
+
+  from {
+    opacity: 0;
+
+    transform:
+      translateX(40px)
+      scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      translateX(0)
+      scale(1);
+  }
+
+}
+
+
+/* =========================================
+   MOBILE
+   ========================================= */
+
+@media (max-width: 768px) {
+
+  .cart-toast {
+
+    top: auto !important;
+
+    right: 15px !important;
+
+    bottom: 20px !important;
+
+    left: 15px !important;
+
+    width: auto;
+
+  }
+
+  .cart-toast-content span {
+
+    white-space: normal;
+
+  }
+
+}
+
+/* =========================================
+   CART TOAST - ONE VERSION ONLY
+   ========================================= */
+
+.cart-toast {
+  position: fixed;
+  top: 90px;
+  right: 30px;
+
+  z-index: 999999;
+
+  width: 340px;
+  min-height: 70px;
+
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  padding: 16px 18px;
+  box-sizing: border-box;
+
+  background: #111;
+  color: #fff;
+
+  border-radius: 8px;
+
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+
+  animation: cartToastEnter 0.35s ease-out;
+}
+
+.cart-toast-icon {
+  width: 38px;
+  height: 38px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #555;
+  border-radius: 50%;
+
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.cart-toast-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  min-width: 0;
+}
+
+.cart-toast-content strong {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+}
+
+.cart-toast-content span {
+  font-size: 13px;
+  color: #aaa;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@keyframes cartToastEnter {
+  from {
+    opacity: 0;
+    transform: translateX(40px) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@media (max-width: 768px) {
+  .cart-toast {
+    top: auto;
+    right: 15px;
+    bottom: 20px;
+    left: 15px;
+
+    width: auto;
+  }
+
+  .cart-toast-content span {
+    white-space: normal;
+  }
 }

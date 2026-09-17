@@ -16,11 +16,35 @@ const app = express();
 
 const PORT = process.env.PORT || 5000;
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+// --------------------------------------------------
+// MIDDLEWARE
+// --------------------------------------------------
 
-// Routes
+app.use(cors());
+
+app.use(express.json({ limit: "10mb" }));
+
+// Request timing middleware
+app.use((req, res, next) => {
+  const start = Date.now();
+
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+
+    if (duration > 1000) {
+      console.log(
+        `SLOW REQUEST: ${req.method} ${req.originalUrl} - ${res.statusCode} - ${duration}ms`
+      );
+    }
+  });
+
+  next();
+});
+
+// --------------------------------------------------
+// ROUTES
+// --------------------------------------------------
+
 app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/auth", authRoutes);
@@ -30,27 +54,60 @@ app.use("/api/users", userRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/coupons", couponRoutes);
 
-// MongoDB Connection
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log("MongoDB connected successfully");
-  })
-  .catch((error) => {
-    console.error("MongoDB connection failed");
-    console.error(error);
-  });
+// --------------------------------------------------
+// TEST ROUTE
+// --------------------------------------------------
 
-// Test Route
 app.get("/", (req, res) => {
   res.json({
     message: "Micky Mouse API is running!",
   });
 });
 
-// Start Server
-app.listen(PORT, () => {
-  console.log(
-    `Micky Mouse backend running on port ${PORT}`
-  );
+// --------------------------------------------------
+// ERROR HANDLER
+// --------------------------------------------------
+
+app.use((err, req, res, next) => {
+  console.error("Express error:", err);
+
+  if (res.headersSent) {
+    return next(err);
+  }
+
+  res.status(500).json({
+    message: "Internal server error",
+  });
 });
+
+// --------------------------------------------------
+// MONGODB + SERVER
+// --------------------------------------------------
+
+async function startServer() {
+  try {
+    await mongoose.connect(process.env.MONGO_URI, {
+      maxPoolSize: 50,
+      minPoolSize: 10,
+      serverSelectionTimeoutMS: 5000,
+    });
+
+    console.log("MongoDB connected successfully");
+
+    const server = app.listen(PORT, "0.0.0.0", () => {
+      console.log(`Micky Mouse backend running on port ${PORT}`);
+    });
+
+    // Keep connections alive during load testing
+    server.keepAliveTimeout = 65000;
+    server.headersTimeout = 66000;
+    server.requestTimeout = 120000;
+
+  } catch (error) {
+    console.error("MongoDB connection failed");
+    console.error(error);
+    process.exit(1);
+  }
+}
+
+startServer();

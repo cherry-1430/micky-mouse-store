@@ -552,3 +552,552 @@
     font-size: 34px;
   }
 }
+
+/* =========================================================
+   ✨ PREMIUM CART ANIMATIONS
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   🛒 CART PAGE ENTRANCE
+   --------------------------------------------------------- */
+
+@keyframes cartPageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.cart-page {
+  animation: cartPageEnter 0.6s ease both;
+}
+
+
+/* ---------------------------------------------------------
+   🧾 CART HEADER
+   --------------------------------------------------------- */
+
+@keyframes cartHeaderEnter {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.cart-header {
+  animation: cartHeaderEnter 0.55s ease both;
+}
+
+
+/* ---------------------------------------------------------
+   📦 CART ITEMS
+   --------------------------------------------------------- */
+
+@keyframes cartItemEnter {
+  from {
+    opacity: 0;
+    transform: translateX(-25px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.cart-item {
+  animation: cartItemEnter 0.5s ease both;
+}
+
+
+/* Stagger cart items */
+
+.cart-item:nth-child(2) {
+  animation-delay: 0.08s;
+}
+
+.cart-item:nth-child(3) {
+  animation-delay: 0.16s;
+}
+
+.cart-item:nth-child(4) {
+  animation-delay: 0.24s;
+}
+
+.cart-item:nth-child(5) {
+  animation-delay: 0.32s;
+}
+
+.cart-item:nth-child(6) {
+  animation-delay: 0.40s;
+}
+
+.cart-item:nth-child(7) {
+  animation-delay: 0.48s;
+}
+
+
+/* ---------------------------------------------------------
+   🖼️ CART PRODUCT IMAGE
+   --------------------------------------------------------- */
+
+.cart-item-image {
+  overflow: hidden;
+}
+
+.cart-item-image img {
+  transition:
+    transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1),
+    filter 0.4s ease;
+}
+
+.cart-item:hover .cart-item-image img {
+  transform: scale(1.07);
+}
+
+
+/* ---------------------------------------------------------
+   📝 CART INFORMATION
+   --------------------------------------------------------- */
+
+.cart-item-info {
+  transition:
+    transform 0.35s ease;
+}
+
+.cart-item:hover .cart-item-info {
+  transform: translateX(3px);
+}
+
+
+/* ---------------------------------------------------------
+   ❌ REMOVE BUTTON
+   --------------------------------------------------------- */
+
+.remove-button {
+  transition:
+    color 0.25s ease,
+    transform 0.25s ease,
+    opacity 0.25s ease;
+}
+
+.remove-button:hover {
+  transform: translateX(-3px);
+  opacity: 0.7;
+}
+
+.remove-button:active {
+  transform: scale(0.94);
+}
+
+
+/* ---------------------------------------------------------
+   ➖ QUANTITY CONTROL
+   --------------------------------------------------------- */
+
+.quantity-control {
+  transition:
+    box-shadow 0.3s ease,
+    transform 0.3s ease;
+}
+
+.quantity-control:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.quantity-control button {
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+.quantity-control button:hover:not(:disabled) {
+  transform: scale(1.12);
+}
+
+.quantity-control button:active:not(:disabled) {
+  transform: scale(0.88);
+}
+
+
+/* Quantity number */
+
+.quantity-control span {
+  transition:
+    transform 0.2s ease;
+}
+
+
+/* ---------------------------------------------------------
+   💰 ITEM TOTAL
+   --------------------------------------------------------- */
+
+.cart-item-total {
+  transition:
+    transform 0.3s ease;
+}
+
+.cart-item:hover .cart-item-total {
+  transform: translateX(-4px);
+}
+
+
+/* ---------------------------------------------------------
+   💳 ORDER SUMMARY
+   --------------------------------------------------------- */
+
+@keyframes summarySlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(25px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.cart-summary {
+  animation: summarySlideIn 0.65s ease 0.15s both;
+}
+
+
+/* Summary total emphasis */
+
+.summary-total {
+  transition:
+    transform 0.3s ease;
+}
+
+.cart-summary:hover .summary-total {
+  transform: translateY(-2px);
+}
+
+
+/* ---------------------------------------------------------
+   🛍️ CHECKOUT BUTTON
+   --------------------------------------------------------- */
+
+.checkout-button {
+  position: relative;
+  overflow: hidden;
+
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease,
+    letter-spacing 0.3s ease;
+}
+
+.checkout-button::before {
+  content: "";
+
+  position: absolute;
+  top: 0;
+  left: -120%;
+
+  width: 80%;
+  height: 100%;
+
+  background: rgba(255, 255, 255, 0.15);
+
+  transform: skewX(-20deg);
+
+  transition: left 0.55s ease;
+}
+
+.checkout-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+  letter-spacing: 0.3px;
+}
+
+.checkout-button:hover::before {
+  left: 130%;
+}
+
+.checkout-button:active {
+  transform: scale(0.97);
+}
+
+
+/* Arrow */
+
+.checkout-button span {
+  display: inline-block;
+
+  transition:
+    transform 0.3s ease;
+}
+
+.checkout-button:hover span {
+  transform: translateX(6px);
+}
+
+
+/* ---------------------------------------------------------
+   ← CONTINUE SHOPPING
+   --------------------------------------------------------- */
+
+.cart-summary .continue-shopping {
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease;
+}
+
+.cart-summary .continue-shopping:hover {
+  transform: translateX(-4px);
+}
+
+
+/* ---------------------------------------------------------
+   🔒 TRUST BADGES
+   --------------------------------------------------------- */
+
+.cart-trust span {
+  transition:
+    transform 0.25s ease,
+    opacity 0.25s ease;
+}
+
+.cart-trust span:hover {
+  transform: translateY(-2px);
+  opacity: 0.75;
+}
+
+
+/* ---------------------------------------------------------
+   🛒 EMPTY CART
+   --------------------------------------------------------- */
+
+@keyframes emptyCartEnter {
+  from {
+    opacity: 0;
+    transform: translateY(25px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.empty-cart-content {
+  animation:
+    emptyCartEnter
+    0.65s
+    cubic-bezier(0.2, 0.8, 0.2, 1)
+    both;
+}
+
+
+/* Empty cart icon */
+
+@keyframes cartIconFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.empty-cart-mark {
+  animation:
+    cartIconFloat
+    2.5s
+    ease-in-out
+    infinite;
+}
+
+
+/* Empty cart button */
+
+.empty-cart .continue-shopping {
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.empty-cart .continue-shopping:hover {
+  transform: translateY(-3px);
+}
+
+
+/* ---------------------------------------------------------
+   📱 MOBILE
+   --------------------------------------------------------- */
+
+@media (max-width: 768px) {
+  .cart-item:hover .cart-item-info {
+    transform: none;
+  }
+
+  .cart-item:hover .cart-item-image img {
+    transform: scale(1.04);
+  }
+
+  .cart-summary {
+    animation-delay: 0.05s;
+  }
+}
+
+
+/* ---------------------------------------------------------
+   ♿ REDUCED MOTION
+   --------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .cart-page,
+  .cart-header,
+  .cart-item,
+  .cart-summary,
+  .empty-cart-content,
+  .empty-cart-mark {
+    animation: none !important;
+  }
+
+  .cart-page *,
+  .empty-cart * {
+    transition: none !important;
+  }
+}
+
+/* =========================================================
+   ✨ CART QUANTITY MICRO-INTERACTIONS
+   ========================================================= */
+
+.quantity-control button {
+  position: relative;
+  overflow: hidden;
+}
+
+
+/* Button press effect */
+
+.quantity-control button:active:not(:disabled) {
+  transform: scale(0.82);
+}
+
+
+/* Quantity number */
+
+.quantity-control span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 28px;
+
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+
+/* Give the quantity area a subtle highlight
+   when the control is interacted with */
+
+.quantity-control:focus-within {
+  box-shadow:
+    0 0 0 2px rgba(0, 0, 0, 0.06);
+}
+
+
+/* =========================================================
+   ✨ CART ITEM HOVER
+   ========================================================= */
+
+.cart-item {
+  transition:
+    transform 0.35s ease,
+    box-shadow 0.35s ease,
+    border-color 0.35s ease;
+}
+
+.cart-item:hover {
+  transform: translateY(-3px);
+}
+
+
+/* =========================================================
+   💰 PRICE HIGHLIGHT
+   ========================================================= */
+
+.cart-item-total {
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease;
+}
+
+.cart-item:hover .cart-item-total {
+  opacity: 1;
+}
+
+
+/* =========================================================
+   🛍️ CHECKOUT BUTTON ARROW
+   ========================================================= */
+
+.checkout-button span {
+  display: inline-block;
+  transition:
+    transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.checkout-button:hover span {
+  transform: translateX(7px);
+}
+
+
+/* =========================================================
+   ✨ EMPTY CART ICON
+   ========================================================= */
+
+.empty-cart-mark {
+  transition:
+    transform 0.35s ease;
+}
+
+.empty-cart-mark:hover {
+  transform: scale(1.12) rotate(-5deg);
+}
+
+
+/* =========================================================
+   📱 MOBILE
+   ========================================================= */
+
+@media (max-width: 768px) {
+  .cart-item:hover {
+    transform: translateY(-2px);
+  }
+}
+
+
+/* =========================================================
+   ♿ ACCESSIBILITY
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .quantity-control *,
+  .cart-item *,
+  .checkout-button *,
+  .empty-cart-mark {
+    transition: none !important;
+    animation: none !important;
+  }
+}

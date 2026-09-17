@@ -170,4 +170,9 @@ razorpayPaymentId: {
   }
 );
 
+orderSchema.index({
+  userId: 1,
+  createdAt: -1,
+});
+
 module.exports = mongoose.model("Order", orderSchema);

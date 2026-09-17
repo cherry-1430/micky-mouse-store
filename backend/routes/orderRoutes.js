@@ -279,8 +279,8 @@ router.get("/my-orders", authMiddleware, async (req, res) => {
     const orders = await Order.find({
       userId: req.user.userId,
     })
-      .populate("items.productId")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     res.status(200).json(orders);
   } catch (error) {
@@ -292,7 +292,6 @@ router.get("/my-orders", authMiddleware, async (req, res) => {
     });
   }
 });
-
 // Get single order
 router.get("/:id", authMiddleware, async (req, res) => {
   try {

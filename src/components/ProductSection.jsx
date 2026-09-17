@@ -12,6 +12,10 @@ function ProductSection() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // ==========================================
+  // LOAD FEATURED PRODUCTS
+  // ==========================================
+
   useEffect(() => {
     async function loadProducts() {
       try {
@@ -23,7 +27,10 @@ function ProductSection() {
 
         setProducts(featuredProducts);
       } catch (error) {
-        console.error("Failed to load featured products:", error);
+        console.error(
+          "Failed to load featured products:",
+          error
+        );
       } finally {
         setLoading(false);
       }
@@ -35,7 +42,12 @@ function ProductSection() {
   return (
     <section className="product-section">
 
+      {/* =====================================
+          SECTION HEADING
+          ===================================== */}
+
       <div className="section-heading">
+
         <p>OUR BEST PICKS</p>
 
         <h2>FEATURED PRODUCTS</h2>
@@ -43,38 +55,87 @@ function ProductSection() {
         <span>
           Discover some of our most-loved styles.
         </span>
+
       </div>
 
+      {/* =====================================
+          LOADING
+          ===================================== */}
+
       {loading ? (
+
         <div className="product-grid">
+
           {[1, 2, 3, 4].map((item) => (
-            <div className="product-card product-skeleton" key={item}>
-              <div className="product-image skeleton-image"></div>
+
+            <div
+              className="product-card product-skeleton"
+              key={item}
+            >
+
+              <div className="product-image skeleton-image">
+              </div>
 
               <div className="product-info">
-                <div className="skeleton-line short"></div>
-                <div className="skeleton-line"></div>
-                <div className="skeleton-line price"></div>
+
+                <div className="skeleton-line short">
+                </div>
+
+                <div className="skeleton-line">
+                </div>
+
+                <div className="skeleton-line price">
+                </div>
+
               </div>
+
             </div>
+
           ))}
+
         </div>
+
       ) : products.length === 0 ? (
+
+        /* =====================================
+           EMPTY
+           ===================================== */
+
         <div className="product-empty">
-          <h3>NO FEATURED PRODUCTS</h3>
+
+          <h3>
+            NO FEATURED PRODUCTS
+          </h3>
+
           <p>
-            Check back soon for our latest collection.
+            Check back soon for our latest
+            collection.
           </p>
 
           <Link to="/shop">
             SHOP ALL PRODUCTS →
           </Link>
+
         </div>
+
       ) : (
+
+        /* =====================================
+           PRODUCTS
+           ===================================== */
+
         <div className="product-grid">
 
           {products.map((product, index) => (
-            <div className="product-card" key={product._id}>
+
+            <div
+              className="product-card"
+              key={product._id}
+            >
+
+              {/* =================================
+                  PRODUCT IMAGE
+                  ================================= */}
 
               <div className="product-image">
 
@@ -87,6 +148,8 @@ function ProductSection() {
                   0{index + 1}
                 </div>
 
+                {/* WISHLIST */}
+
                 <button
                   className="wishlist-button"
                   aria-label={
@@ -95,22 +158,36 @@ function ProductSection() {
                       : "Add to wishlist"
                   }
                   onClick={(e) => {
+
                     e.preventDefault();
                     e.stopPropagation();
 
                     toggleWishlist(product);
+
                   }}
                 >
-                  {isInWishlist(product._id) ? "♥" : "♡"}
+                  {isInWishlist(product._id)
+                    ? "♥"
+                    : "♡"}
                 </button>
 
+                {/* PRODUCT OVERLAY */}
+
                 <div className="product-overlay">
-                  <Link to={`/product/${product._id}`}>
+
+                  <Link
+                    to={`/product/${product._id}`}
+                  >
                     VIEW PRODUCT →
                   </Link>
+
                 </div>
 
               </div>
+
+              {/* =================================
+                  PRODUCT INFORMATION
+                  ================================= */}
 
               <div className="product-info">
 
@@ -118,35 +195,49 @@ function ProductSection() {
                   {product.category}
                 </p>
 
-                <h3>{product.name}</h3>
+                <h3>
+                  {product.name}
+                </h3>
 
                 <div className="product-bottom">
 
+                  {/* PRICE */}
+
                   <p className="product-price">
+
                     ₹
-                    {Number(product.price).toLocaleString(
-                      "en-IN"
-                    )}
+                    {Number(
+                      product.price
+                    ).toLocaleString("en-IN")}
+
                   </p>
+
+                  {/* ADD TO CART */}
 
                   <button
                     className="add-cart-button"
                     onClick={(e) => {
+
                       e.preventDefault();
                       e.stopPropagation();
 
-                      const size = product.sizes?.[0];
+                      const size =
+                        product.sizes?.[0];
 
+                      // If no size exists,
+                      // do nothing.
                       if (!size) {
-                        alert("No size available");
                         return;
                       }
 
-                      addToCart(product, size, 1);
-
-                      alert(
-                        `${product.name} added to cart`
+                      // Directly add product
+                      // to cart.
+                      addToCart(
+                        product,
+                        size,
+                        1
                       );
+
                     }}
                   >
                     ADD TO CART
@@ -157,21 +248,32 @@ function ProductSection() {
               </div>
 
             </div>
+
           ))}
 
         </div>
+
       )}
 
-      {!loading && products.length > 0 && (
-        <div className="product-section-footer">
-          <Link
-            to="/shop"
-            className="view-all-products"
-          >
-            VIEW ALL PRODUCTS →
-          </Link>
-        </div>
-      )}
+      {/* =====================================
+          VIEW ALL PRODUCTS
+          ===================================== */}
+
+      {!loading &&
+        products.length > 0 && (
+
+          <div className="product-section-footer">
+
+            <Link
+              to="/shop"
+              className="view-all-products"
+            >
+              VIEW ALL PRODUCTS →
+            </Link>
+
+          </div>
+
+        )}
 
     </section>
   );

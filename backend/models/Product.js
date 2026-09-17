@@ -102,4 +102,6 @@ isFlashSale: {
   }
 );
 
+productSchema.index({ isActive: 1 });
+
 module.exports = mongoose.model("Product", productSchema);

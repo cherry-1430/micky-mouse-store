@@ -699,3 +699,511 @@
     position: static;
   }
 }
+
+/* =========================================================
+   ✨ PREMIUM CHECKOUT ANIMATIONS
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   PAGE ENTRANCE
+   --------------------------------------------------------- */
+
+@keyframes checkoutPageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.checkout-page {
+  animation: checkoutPageEnter 0.6s ease both;
+}
+
+
+/* ---------------------------------------------------------
+   HEADER
+   --------------------------------------------------------- */
+
+@keyframes checkoutHeaderEnter {
+  from {
+    opacity: 0;
+    transform: translateX(-25px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.checkout-header {
+  animation: checkoutHeaderEnter 0.55s ease both;
+}
+
+
+/* ---------------------------------------------------------
+   LEFT FORM
+   --------------------------------------------------------- */
+
+@keyframes checkoutFormEnter {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.checkout-form {
+  animation: checkoutFormEnter 0.6s ease 0.1s both;
+}
+
+
+/* ---------------------------------------------------------
+   CHECKOUT SECTIONS
+   --------------------------------------------------------- */
+
+.checkout-section {
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.checkout-section:hover {
+  transform: translateY(-2px);
+}
+
+
+/* Section heading */
+
+.checkout-section-title {
+  transition:
+    transform 0.3s ease;
+}
+
+.checkout-section:hover .checkout-section-title {
+  transform: translateX(3px);
+}
+
+
+/* ---------------------------------------------------------
+   FORM INPUTS
+   --------------------------------------------------------- */
+
+.form-group input,
+.form-group textarea {
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  transform: translateY(-1px);
+  box-shadow:
+    0 5px 18px rgba(0, 0, 0, 0.06);
+}
+
+
+/* ---------------------------------------------------------
+   SAVED ADDRESS CARDS
+   --------------------------------------------------------- */
+
+.saved-address-checkout-card {
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.saved-address-checkout-card:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 12px 28px rgba(0, 0, 0, 0.08);
+}
+
+.saved-address-checkout-card.selected {
+  transform: translateY(-2px);
+}
+
+
+/* Selection text */
+
+.saved-address-select {
+  transition:
+    transform 0.25s ease,
+    opacity 0.25s ease;
+}
+
+.saved-address-checkout-card:hover .saved-address-select {
+  transform: translateX(4px);
+}
+
+
+/* ---------------------------------------------------------
+   💳 PAYMENT OPTION
+   --------------------------------------------------------- */
+
+.payment-option {
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.payment-option:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 12px 28px rgba(0, 0, 0, 0.08);
+}
+
+
+/* Payment radio */
+
+.payment-radio {
+  transition:
+    transform 0.3s ease;
+}
+
+.payment-option:hover .payment-radio {
+  transform: scale(1.08);
+}
+
+
+/* ---------------------------------------------------------
+   🛒 ORDER SUMMARY
+   --------------------------------------------------------- */
+
+@keyframes checkoutSummaryEnter {
+  from {
+    opacity: 0;
+    transform: translateX(25px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.checkout-summary {
+  animation:
+    checkoutSummaryEnter
+    0.65s
+    ease
+    0.15s
+    both;
+}
+
+
+/* ---------------------------------------------------------
+   PRODUCT SUMMARY ITEMS
+   --------------------------------------------------------- */
+
+.checkout-product {
+  transition:
+    transform 0.3s ease,
+    background 0.3s ease;
+}
+
+.checkout-product:hover {
+  transform: translateX(4px);
+}
+
+
+/* Product image */
+
+.checkout-product-image {
+  overflow: hidden;
+}
+
+.checkout-product-image img {
+  transition:
+    transform 0.5s ease;
+}
+
+.checkout-product:hover .checkout-product-image img {
+  transform: scale(1.08);
+}
+
+
+/* Quantity badge */
+
+.checkout-product-image span {
+  transition:
+    transform 0.25s ease;
+}
+
+.checkout-product:hover .checkout-product-image span {
+  transform: scale(1.1);
+}
+
+
+/* ---------------------------------------------------------
+   🎟️ COUPON
+   --------------------------------------------------------- */
+
+.checkout-coupon {
+  transition:
+    transform 0.3s ease;
+}
+
+.checkout-coupon:focus-within {
+  transform: translateY(-2px);
+}
+
+
+/* Coupon button */
+
+.checkout-coupon button {
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.checkout-coupon button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow:
+    0 7px 18px rgba(0, 0, 0, 0.1);
+}
+
+.checkout-coupon button:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+
+/* Applied coupon */
+
+.applied-coupon {
+  animation:
+    couponApplied
+    0.4s
+    ease
+    both;
+}
+
+@keyframes couponApplied {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+
+/* ---------------------------------------------------------
+   ⭐ REWARD POINTS
+   --------------------------------------------------------- */
+
+.checkout-rewards {
+  transition:
+    transform 0.3s ease;
+}
+
+.checkout-rewards:focus-within {
+  transform: translateY(-2px);
+}
+
+.reward-balance strong {
+  transition:
+    transform 0.3s ease;
+}
+
+.checkout-rewards:hover .reward-balance strong {
+  transform: scale(1.05);
+}
+
+.reward-applied {
+  animation:
+    rewardApplied
+    0.4s
+    ease
+    both;
+}
+
+@keyframes rewardApplied {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* ---------------------------------------------------------
+   💰 TOTAL
+   --------------------------------------------------------- */
+
+.summary-total {
+  transition:
+    transform 0.3s ease;
+}
+
+.checkout-summary:hover .summary-total {
+  transform: translateY(-2px);
+}
+
+.summary-total strong {
+  transition:
+    transform 0.3s ease;
+}
+
+.checkout-summary:hover .summary-total strong {
+  transform: scale(1.03);
+}
+
+
+/* ---------------------------------------------------------
+   🔐 SECURE NOTE
+   --------------------------------------------------------- */
+
+.secure-note {
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+
+.secure-note:hover {
+  transform: translateY(-2px);
+  opacity: 0.8;
+}
+
+
+/* ---------------------------------------------------------
+   🚀 PLACE ORDER BUTTON
+   --------------------------------------------------------- */
+
+.place-order-button {
+  position: relative;
+  overflow: hidden;
+
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease,
+    letter-spacing 0.3s ease;
+}
+
+
+/* Shine */
+
+.place-order-button::before {
+  content: "";
+
+  position: absolute;
+  top: 0;
+  left: -120%;
+
+  width: 75%;
+  height: 100%;
+
+  background:
+    rgba(255, 255, 255, 0.16);
+
+  transform: skewX(-20deg);
+
+  transition:
+    left 0.55s ease;
+}
+
+.place-order-button:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 14px 32px rgba(0, 0, 0, 0.16);
+  letter-spacing: 0.3px;
+}
+
+.place-order-button:hover::before {
+  left: 130%;
+}
+
+.place-order-button:active {
+  transform: scale(0.97);
+}
+
+
+/* Arrow */
+
+.payment-arrow {
+  display: inline-block;
+
+  transition:
+    transform 0.3s ease;
+}
+
+.place-order-button:hover .payment-arrow {
+  transform: translateX(7px);
+}
+
+
+/* ---------------------------------------------------------
+   ← BACK TO CART
+   --------------------------------------------------------- */
+
+.back-to-cart {
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease;
+}
+
+.back-to-cart:hover {
+  transform: translateX(-5px);
+  opacity: 0.75;
+}
+
+
+/* ---------------------------------------------------------
+   📱 MOBILE
+   --------------------------------------------------------- */
+
+@media (max-width: 768px) {
+  .checkout-section:hover {
+    transform: none;
+  }
+
+  .saved-address-checkout-card:hover,
+  .payment-option:hover {
+    transform: translateY(-2px);
+  }
+
+  .checkout-summary {
+    animation-delay: 0.05s;
+  }
+}
+
+
+/* ---------------------------------------------------------
+   ♿ REDUCED MOTION
+   --------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .checkout-page,
+  .checkout-header,
+  .checkout-form,
+  .checkout-summary,
+  .applied-coupon,
+  .reward-applied {
+    animation: none !important;
+  }
+
+  .checkout-page *,
+  .checkout-page *::before,
+  .checkout-page *::after {
+    transition: none !important;
+  }
+}
