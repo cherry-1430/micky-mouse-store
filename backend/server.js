@@ -95,10 +95,11 @@ async function startServer() {
     console.log("MongoDB connected successfully");
 
     const server = app.listen(PORT, "0.0.0.0", () => {
-      console.log(`Micky Mouse backend running on port ${PORT}`);
+      console.log(
+        `Micky Mouse backend running on port ${PORT}`
+      );
     });
 
-    // Keep connections alive during load testing
     server.keepAliveTimeout = 65000;
     server.headersTimeout = 66000;
     server.requestTimeout = 120000;

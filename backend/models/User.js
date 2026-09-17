@@ -15,78 +15,87 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
+
     phone: {
-  type: String,
-  required: false,
-  unique: true,
-  sparse: true,
-  trim: true,
-},
+      type: String,
+      required: false,
+      unique: true,
+      sparse: true,
+      trim: true,
+    },
 
     password: {
       type: String,
       required: true,
     },
-    role: {
-  type: String,
-  enum: ["user", "admin"],
-  default: "user",
-},
-rewardPoints: {
-  type: Number,
-  default: 0,
-  min: 0,
-},
-addresses: [
-  {
-    label: {
-      type: String,
-      required: true,
-      trim: true,
-    },
 
-    fullName: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    phone: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    address: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    city: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    state: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    pincode: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    isDefault: {
+    otpVerified: {
       type: Boolean,
       default: false,
     },
-  },
-],
+
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
+    },
+
+    rewardPoints: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    addresses: [
+      {
+        label: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+
+        fullName: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+
+        phone: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+
+        address: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+
+        city: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+
+        state: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+
+        pincode: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+
+        isDefault: {
+          type: Boolean,
+          default: false,
+        },
+      },
+    ],
   },
   {
     timestamps: true,

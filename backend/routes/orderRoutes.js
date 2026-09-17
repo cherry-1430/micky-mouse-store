@@ -15,16 +15,40 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
-// Create new order
-// Create new order
-// Create new order
+/* =========================================================
+   HELPER: GET CURRENT SELLING PRICE
+========================================================= */
+
+function getEffectivePrice(product) {
+  const now = new Date();
+
+  const flashSaleActive =
+    product.isFlashSale &&
+    Number(product.salePrice) > 0 &&
+    (!product.saleStart ||
+      now >= new Date(product.saleStart)) &&
+    (!product.saleEnd ||
+      now <= new Date(product.saleEnd));
+
+  if (flashSaleActive) {
+    return Number(product.salePrice);
+  }
+
+  return Number(product.price);
+}
+
+/* =========================================================
+   CREATE ORDER
+   IMPORTANT:
+   PRICE AND STOCK ARE ALWAYS VERIFIED FROM DATABASE
+========================================================= */
+
 router.post("/", authMiddleware, async (req, res) => {
   try {
     const {
       customer,
       shippingAddress,
       items,
-      subtotal,
       couponCode,
       rewardPointsUsed,
       paymentMethod,
@@ -33,7 +57,7 @@ router.post("/", authMiddleware, async (req, res) => {
     if (
       !customer ||
       !shippingAddress ||
-      !items ||
+      !Array.isArray(items) ||
       items.length === 0
     ) {
       return res.status(400).json({
@@ -42,40 +66,106 @@ router.post("/", authMiddleware, async (req, res) => {
       });
     }
 
-    // ================================
-    // CALCULATE SUBTOTAL
-    // ================================
+    /* =====================================================
+       VALIDATE PRODUCTS + PRICES + STOCK
+    ===================================================== */
+
+    const validatedItems = [];
+
+    for (const item of items) {
+      const productId = item.productId || item.id;
+
+      const quantity = Number(item.quantity);
+
+      if (!productId) {
+        return res.status(400).json({
+          message: "Product ID is required for every item",
+        });
+      }
+
+      if (!Number.isInteger(quantity) || quantity < 1) {
+        return res.status(400).json({
+          message: "Invalid product quantity",
+        });
+      }
+
+      const product = await Product.findById(productId);
+
+      if (!product) {
+        return res.status(404).json({
+          message: "One of the products no longer exists",
+        });
+      }
+
+      if (!product.isActive) {
+        return res.status(400).json({
+          message: `${product.name} is currently unavailable`,
+        });
+      }
+
+      /* ---------------------------------------------------
+         STOCK CHECK
+      --------------------------------------------------- */
+
+      if (Number(product.stock) < quantity) {
+        return res.status(409).json({
+          message: `Insufficient stock for ${product.name}. Only ${product.stock} available.`,
+          productId: product._id,
+          availableStock: product.stock,
+        });
+      }
+
+      /* ---------------------------------------------------
+         CURRENT DATABASE PRICE
+      --------------------------------------------------- */
+
+      const currentPrice = getEffectivePrice(product);
+
+      /*
+       * We intentionally DO NOT use:
+       *
+       * item.price
+       *
+       * because frontend values can be modified.
+       */
+
+      validatedItems.push({
+        productId: product._id,
+        name: product.name,
+        price: currentPrice,
+        originalPrice: Number(product.price),
+        salePrice: Number(product.salePrice || 0),
+        isFlashSale: Boolean(product.isFlashSale),
+        image: product.image,
+        size: item.size,
+        quantity,
+      });
+    }
+
+    /* =====================================================
+       CALCULATE SUBTOTAL FROM DATABASE PRICES
+    ===================================================== */
 
     const calculatedSubtotal = Number(
-      items
+      validatedItems
         .reduce(
           (total, item) =>
             total +
-            Number(item.price) * Number(item.quantity),
+            item.price * item.quantity,
           0
         )
         .toFixed(2)
     );
 
-    if (
-      subtotal !== undefined &&
-      Number(subtotal).toFixed(2) !==
-        calculatedSubtotal.toFixed(2)
-    ) {
-      return res.status(400).json({
-        message: "Invalid subtotal",
-      });
-    }
-
-    // ================================
-    // COUPON
-    // ================================
+    /* =====================================================
+       COUPON
+    ===================================================== */
 
     let couponDiscount = 0;
     let appliedCouponCode = null;
 
     if (couponCode) {
-      const normalizedCode = couponCode
+      const normalizedCode = String(couponCode)
         .toUpperCase()
         .trim();
 
@@ -95,7 +185,10 @@ router.post("/", authMiddleware, async (req, res) => {
         });
       }
 
-      if (new Date(coupon.expiryDate) <= new Date()) {
+      if (
+        coupon.expiryDate &&
+        new Date(coupon.expiryDate) <= new Date()
+      ) {
         return res.status(400).json({
           message: "This coupon has expired",
         });
@@ -103,6 +196,7 @@ router.post("/", authMiddleware, async (req, res) => {
 
       if (
         coupon.usageLimit !== null &&
+        coupon.usageLimit !== undefined &&
         coupon.usedCount >= coupon.usageLimit
       ) {
         return res.status(400).json({
@@ -113,7 +207,7 @@ router.post("/", authMiddleware, async (req, res) => {
 
       if (
         calculatedSubtotal <
-        coupon.minimumOrderAmount
+        Number(coupon.minimumOrderAmount || 0)
       ) {
         return res.status(400).json({
           message: `Minimum order amount is ₹${coupon.minimumOrderAmount}`,
@@ -123,18 +217,21 @@ router.post("/", authMiddleware, async (req, res) => {
       if (coupon.discountType === "percentage") {
         couponDiscount =
           (calculatedSubtotal *
-            coupon.discountValue) /
+            Number(coupon.discountValue)) /
           100;
 
         if (
           coupon.maximumDiscount !== null &&
-          couponDiscount > coupon.maximumDiscount
+          coupon.maximumDiscount !== undefined &&
+          couponDiscount >
+            Number(coupon.maximumDiscount)
         ) {
           couponDiscount =
-            coupon.maximumDiscount;
+            Number(coupon.maximumDiscount);
         }
       } else {
-        couponDiscount = coupon.discountValue;
+        couponDiscount =
+          Number(coupon.discountValue) || 0;
       }
 
       couponDiscount = Math.min(
@@ -149,21 +246,19 @@ router.post("/", authMiddleware, async (req, res) => {
       appliedCouponCode = coupon.code;
     }
 
-    // ================================
-    // REWARD POINTS
-    // ================================
+    /* =====================================================
+       REWARD POINTS
+    ===================================================== */
 
-    let usedRewardPoints = Number(
-      rewardPointsUsed
-    ) || 0;
+    let usedRewardPoints =
+      Number(rewardPointsUsed) || 0;
 
     if (usedRewardPoints < 0) {
       usedRewardPoints = 0;
     }
 
-    usedRewardPoints = Math.floor(
-      usedRewardPoints
-    );
+    usedRewardPoints =
+      Math.floor(usedRewardPoints);
 
     const amountAfterCoupon = Math.max(
       0,
@@ -172,7 +267,7 @@ router.post("/", authMiddleware, async (req, res) => {
 
     const user = await User.findById(
       req.user.userId
-    ).select("rewardPoints");
+    );
 
     if (!user) {
       return res.status(404).json({
@@ -180,33 +275,38 @@ router.post("/", authMiddleware, async (req, res) => {
       });
     }
 
-    // Cannot use more points than the user owns
-    if (usedRewardPoints > (user.rewardPoints || 0)) {
+    const availableRewardPoints =
+      Number(user.rewardPoints || 0);
+
+    if (
+      usedRewardPoints >
+      availableRewardPoints
+    ) {
       return res.status(400).json({
-        message: "You do not have enough reward points",
+        message:
+          "You do not have enough reward points",
       });
     }
 
-    // Cannot use more points than the remaining order amount
-    const maximumUsablePoints = Math.floor(
-      amountAfterCoupon
-    );
+    const maximumUsablePoints =
+      Math.floor(amountAfterCoupon);
 
     if (
       usedRewardPoints >
       maximumUsablePoints
     ) {
-      usedRewardPoints =
-        maximumUsablePoints;
+      return res.status(400).json({
+        message: `Maximum usable reward points are ${maximumUsablePoints}`,
+      });
     }
 
     const rewardDiscount = Number(
       usedRewardPoints.toFixed(2)
     );
 
-    // ================================
-    // FINAL TOTAL
-    // ================================
+    /* =====================================================
+       FINAL TOTAL
+    ===================================================== */
 
     const finalAmount = Number(
       Math.max(
@@ -215,12 +315,20 @@ router.post("/", authMiddleware, async (req, res) => {
       ).toFixed(2)
     );
 
+    /* =====================================================
+       CREATE ORDER
+    ===================================================== */
+
     const order = new Order({
       userId: req.user.userId,
 
       customer,
       shippingAddress,
-      items,
+
+      /*
+       * Store DATABASE-VERIFIED items
+       */
+      items: validatedItems,
 
       subtotal: calculatedSubtotal,
 
@@ -236,6 +344,11 @@ router.post("/", authMiddleware, async (req, res) => {
 
       paymentMethod:
         paymentMethod || "online",
+
+      paymentStatus: "pending",
+      orderStatus: "pending",
+
+      inventoryDeducted: false,
     });
 
     const savedOrder = await order.save();
@@ -257,7 +370,10 @@ router.post("/", authMiddleware, async (req, res) => {
   }
 });
 
-// Get all orders
+/* =========================================================
+   GET ALL ORDERS
+========================================================= */
+
 router.get("/", authMiddleware, async (req, res) => {
   try {
     const orders = await Order.find()
@@ -266,6 +382,11 @@ router.get("/", authMiddleware, async (req, res) => {
 
     res.status(200).json(orders);
   } catch (error) {
+    console.error(
+      "Get all orders error:",
+      error
+    );
+
     res.status(500).json({
       message: "Failed to fetch orders",
       error: error.message,
@@ -273,100 +394,80 @@ router.get("/", authMiddleware, async (req, res) => {
   }
 });
 
-// Get orders of logged-in user
-router.get("/my-orders", authMiddleware, async (req, res) => {
-  try {
-    const orders = await Order.find({
-      userId: req.user.userId,
-    })
-      .sort({ createdAt: -1 })
-      .lean();
+/* =========================================================
+   GET LOGGED-IN USER ORDERS
+========================================================= */
 
-    res.status(200).json(orders);
-  } catch (error) {
-    console.error("My orders error:", error);
-
-    res.status(500).json({
-      message: "Failed to fetch your orders",
-      error: error.message,
-    });
-  }
-});
-// Get single order
-router.get("/:id", authMiddleware, async (req, res) => {
-  try {
-    const order = await Order.findOne({
-  _id: req.params.id,
-  userId: req.user.userId,
-}).populate("items.productId");
-
-    if (!order) {
-      return res.status(404).json({
-        message: "Order not found",
-      });
-    }
-
-    res.status(200).json(order);
-  } catch (error) {
-    res.status(500).json({
-      message: "Failed to fetch order",
-      error: error.message,
-    });
-  }
-});
-
-// Create Razorpay payment order
-router.post("/:id/payment", authMiddleware, async (req, res) => {
-  try {
-   const order = await Order.findOne({
-  _id: req.params.id,
-  userId: req.user.userId,
-});
-
-    if (!order) {
-      return res.status(404).json({
-        message: "Order not found",
-      });
-    }
-
-    const razorpayOrder = await razorpay.orders.create({
-      amount: Math.round(order.totalAmount * 100),
-      currency: "INR",
-      receipt: order._id.toString(),
-    });
-
-    order.razorpayOrderId = razorpayOrder.id;
-    await order.save();
-
-    res.status(200).json({
-      message: "Razorpay order created",
-      razorpayOrder,
-      keyId: process.env.RAZORPAY_KEY_ID,
-    });
-  } catch (error) {
-    console.error("Razorpay order creation error:", error);
-
-    res.status(500).json({
-      message: "Failed to create Razorpay order",
-      error: error.message,
-    });
-  }
-});
-
-// Verify Razorpay payment
-// Verify Razorpay payment
-router.post(
-  "/:id/verify-payment",
+router.get(
+  "/my-orders",
   authMiddleware,
   async (req, res) => {
     try {
-      const {
-        razorpay_order_id,
-        razorpay_payment_id,
-        razorpay_signature,
-      } = req.body;
+      const orders = await Order.find({
+        userId: req.user.userId,
+      })
+        .sort({ createdAt: -1 })
+        .lean();
 
-      // Find the order belonging to the logged-in user
+      res.status(200).json(orders);
+    } catch (error) {
+      console.error(
+        "My orders error:",
+        error
+      );
+
+      res.status(500).json({
+        message: "Failed to fetch your orders",
+        error: error.message,
+      });
+    }
+  }
+);
+
+/* =========================================================
+   GET SINGLE ORDER
+========================================================= */
+
+router.get(
+  "/:id",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const order = await Order.findOne({
+        _id: req.params.id,
+        userId: req.user.userId,
+      }).populate("items.productId");
+
+      if (!order) {
+        return res.status(404).json({
+          message: "Order not found",
+        });
+      }
+
+      res.status(200).json(order);
+    } catch (error) {
+      console.error(
+        "Get single order error:",
+        error
+      );
+
+      res.status(500).json({
+        message: "Failed to fetch order",
+        error: error.message,
+      });
+    }
+  }
+);
+
+/* =========================================================
+   CREATE RAZORPAY PAYMENT ORDER
+========================================================= */
+
+router.post(
+  "/:id/payment",
+  authMiddleware,
+  async (req, res) => {
+    try {
       const order = await Order.findOne({
         _id: req.params.id,
         userId: req.user.userId,
@@ -378,63 +479,200 @@ router.post(
         });
       }
 
-      // Prevent duplicate payment/inventory processing
+      if (order.paymentStatus === "paid") {
+        return res.status(400).json({
+          message: "Order is already paid",
+        });
+      }
+
+      if (Number(order.totalAmount) <= 0) {
+        return res.status(400).json({
+          message:
+            "Invalid payment amount",
+        });
+      }
+
+      /* ---------------------------------------------------
+         FINAL STOCK CHECK BEFORE PAYMENT
+      --------------------------------------------------- */
+
+      for (const item of order.items) {
+        const product = await Product.findById(
+          item.productId
+        );
+
+        if (!product) {
+          return res.status(404).json({
+            message:
+              `${item.name} is no longer available`,
+          });
+        }
+
+        if (!product.isActive) {
+          return res.status(400).json({
+            message:
+              `${product.name} is currently unavailable`,
+          });
+        }
+
+        if (
+          Number(product.stock) <
+          Number(item.quantity)
+        ) {
+          return res.status(409).json({
+            message:
+              `Insufficient stock for ${product.name}. Only ${product.stock} available.`,
+          });
+        }
+      }
+
+      const razorpayOrder =
+        await razorpay.orders.create({
+          amount: Math.round(
+            Number(order.totalAmount) * 100
+          ),
+          currency: "INR",
+          receipt: order._id.toString(),
+        });
+
+      order.razorpayOrderId =
+        razorpayOrder.id;
+
+      await order.save();
+
+      res.status(200).json({
+        message:
+          "Razorpay order created",
+        razorpayOrder,
+        keyId:
+          process.env.RAZORPAY_KEY_ID,
+      });
+    } catch (error) {
+      console.error(
+        "Razorpay order creation error:",
+        error
+      );
+
+      res.status(500).json({
+        message:
+          "Failed to create Razorpay order",
+        error: error.message,
+      });
+    }
+  }
+);
+
+/* =========================================================
+   VERIFY RAZORPAY PAYMENT
+========================================================= */
+
+router.post(
+  "/:id/verify-payment",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const {
+        razorpay_order_id,
+        razorpay_payment_id,
+        razorpay_signature,
+      } = req.body;
+
+      const order = await Order.findOne({
+        _id: req.params.id,
+        userId: req.user.userId,
+      });
+
+      if (!order) {
+        return res.status(404).json({
+          message: "Order not found",
+        });
+      }
+
+      /* ---------------------------------------------------
+         DUPLICATE PAYMENT PROTECTION
+      --------------------------------------------------- */
+
       if (order.paymentStatus === "paid") {
         return res.status(200).json({
-          message: "Payment already verified",
+          message:
+            "Payment already verified",
           order,
         });
       }
 
-      // Make sure Razorpay order matches our order
-      if (razorpay_order_id !== order.razorpayOrderId) {
+      if (
+        !razorpay_order_id ||
+        !razorpay_payment_id ||
+        !razorpay_signature
+      ) {
         return res.status(400).json({
-          message: "Invalid Razorpay order ID",
+          message:
+            "Payment verification details are incomplete",
         });
       }
 
-      // Generate the expected Razorpay signature
-      const generatedSignature = crypto
-        .createHmac(
-          "sha256",
-          process.env.RAZORPAY_KEY_SECRET
-        )
-        .update(
-          order.razorpayOrderId +
-            "|" +
-            razorpay_payment_id
-        )
-        .digest("hex");
+      /* ---------------------------------------------------
+         RAZORPAY ORDER ID CHECK
+      --------------------------------------------------- */
 
-      // Verify Razorpay payment
-      if (generatedSignature !== razorpay_signature) {
+      if (
+        razorpay_order_id !==
+        order.razorpayOrderId
+      ) {
         return res.status(400).json({
-          message: "Payment verification failed",
+          message:
+            "Invalid Razorpay order ID",
         });
       }
 
-      /*
-       * DEDUCT INVENTORY
-       *
-       * The condition:
-       *
-       * stock >= quantity
-       *
-       * prevents stock from becoming negative.
-       */
+      /* ---------------------------------------------------
+         SIGNATURE VERIFICATION
+      --------------------------------------------------- */
+
+      const generatedSignature =
+        crypto
+          .createHmac(
+            "sha256",
+            process.env.RAZORPAY_KEY_SECRET
+          )
+          .update(
+            order.razorpayOrderId +
+              "|" +
+              razorpay_payment_id
+          )
+          .digest("hex");
+
+      if (
+        generatedSignature !==
+        razorpay_signature
+      ) {
+        return res.status(400).json({
+          message:
+            "Payment verification failed",
+        });
+      }
+
+      /* ===================================================
+         INVENTORY DEDUCTION
+         ATOMIC PER PRODUCT
+      =================================================== */
+
+      const deductedItems = [];
 
       for (const item of order.items) {
         const updatedProduct =
           await Product.findOneAndUpdate(
             {
               _id: item.productId,
+              isActive: true,
               stock: {
-                $gte: item.quantity,
+                $gte: Number(item.quantity),
               },
             },
             {
               $inc: {
-                stock: -item.quantity,
+                stock:
+                  -Number(item.quantity),
               },
             },
             {
@@ -443,100 +681,176 @@ router.post(
           );
 
         if (!updatedProduct) {
+          /*
+           * Roll back previously deducted products
+           */
+
+          for (const deducted of deductedItems) {
+            await Product.findByIdAndUpdate(
+              deducted.productId,
+              {
+                $inc: {
+                  stock:
+                    Number(deducted.quantity),
+                },
+              }
+            );
+          }
+
           return res.status(409).json({
-            message: `Insufficient stock for ${item.name}`,
+            message:
+              `Insufficient stock for ${item.name}. Payment was verified, but inventory could not be reserved. Please contact support if payment was charged.`,
           });
         }
+
+        deductedItems.push({
+          productId: item.productId,
+          quantity: item.quantity,
+        });
       }
 
-      // Mark inventory as deducted
-      // Mark inventory as deducted
-order.inventoryDeducted = true;
+      order.inventoryDeducted = true;
 
-// ==================================
-// REWARD POINTS + COUPON
-// ==================================
+      /* ===================================================
+         REWARD POINTS
+      =================================================== */
 
-const user = await User.findById(
-  order.userId
-);
+      const user = await User.findById(
+        order.userId
+      );
 
-if (!user) {
-  return res.status(404).json({
-    message: "User not found",
-  });
-}
+      if (!user) {
+        /*
+         * Roll back inventory
+         */
 
-// Deduct reward points actually used
-if (order.rewardPointsUsed > 0) {
-  if (
-    (user.rewardPoints || 0) <
-    order.rewardPointsUsed
-  ) {
-    return res.status(400).json({
-      message:
-        "Insufficient reward points",
-    });
-  }
+        for (const item of deductedItems) {
+          await Product.findByIdAndUpdate(
+            item.productId,
+            {
+              $inc: {
+                stock:
+                  Number(item.quantity),
+              },
+            }
+          );
+        }
 
-  user.rewardPoints -=
-    order.rewardPointsUsed;
-}
+        order.inventoryDeducted = false;
 
-// Earn 1 point for every ₹100 actually spent
-const earnedPoints = Math.floor(
-  order.totalAmount / 100
-);
+        await order.save();
 
-order.rewardPointsEarned =
-  earnedPoints;
+        return res.status(404).json({
+          message: "User not found",
+        });
+      }
 
-// Add newly earned points
-user.rewardPoints += earnedPoints;
+      /* ---------------------------------------------------
+         RECHECK REWARD POINTS
+      --------------------------------------------------- */
 
-await user.save();
+      if (
+        Number(order.rewardPointsUsed) >
+        Number(user.rewardPoints || 0)
+      ) {
+        /*
+         * Roll back inventory
+         */
 
-// ==================================
-// INCREMENT COUPON USAGE
-// ==================================
+        for (const item of deductedItems) {
+          await Product.findByIdAndUpdate(
+            item.productId,
+            {
+              $inc: {
+                stock:
+                  Number(item.quantity),
+              },
+            }
+          );
+        }
 
-if (order.couponCode) {
-  await Coupon.findOneAndUpdate(
-    {
-      code: order.couponCode,
-      $or: [
-        { usageLimit: null },
-        {
-          $expr: {
-            $lt: [
-              "$usedCount",
-              "$usageLimit",
+        order.inventoryDeducted = false;
+
+        await order.save();
+
+        return res.status(400).json({
+          message:
+            "Insufficient reward points",
+        });
+      }
+
+      if (order.rewardPointsUsed > 0) {
+        user.rewardPoints -=
+          Number(order.rewardPointsUsed);
+      }
+
+      /* ---------------------------------------------------
+         EARN REWARD POINTS
+      --------------------------------------------------- */
+
+      const earnedPoints = Math.floor(
+        Number(order.totalAmount) / 100
+      );
+
+      order.rewardPointsEarned =
+        earnedPoints;
+
+      user.rewardPoints +=
+        earnedPoints;
+
+      await user.save();
+
+      /* ===================================================
+         COUPON USAGE
+      =================================================== */
+
+      if (order.couponCode) {
+        await Coupon.findOneAndUpdate(
+          {
+            code: order.couponCode,
+            $or: [
+              {
+                usageLimit: null,
+              },
+              {
+                usageLimit: {
+                  $exists: false,
+                },
+              },
+              {
+                $expr: {
+                  $lt: [
+                    "$usedCount",
+                    "$usageLimit",
+                  ],
+                },
+              },
             ],
           },
-        },
-      ],
-    },
-    {
-      $inc: {
-        usedCount: 1,
-      },
-    }
-  );
-}
+          {
+            $inc: {
+              usedCount: 1,
+            },
+          }
+        );
+      }
 
-// ==================================
-// COMPLETE ORDER
-// ==================================
-order.razorpayPaymentId = razorpay_payment_id;
+      /* ===================================================
+         COMPLETE ORDER
+      =================================================== */
 
-order.paymentStatus = "paid";
-order.orderStatus = "confirmed";
+      order.razorpayPaymentId =
+        razorpay_payment_id;
 
-await order.save();
+      order.paymentStatus = "paid";
+
+      order.orderStatus = "confirmed";
+
+      await order.save();
 
       res.status(200).json({
         message:
-          "Payment verified and inventory updated successfully",
+          "Payment verified and order confirmed successfully",
         order,
       });
     } catch (error) {
@@ -546,20 +860,17 @@ await order.save();
       );
 
       res.status(500).json({
-        message: "Payment verification failed",
+        message:
+          "Payment verification failed",
         error: error.message,
       });
     }
   }
 );
 
-// ================================
-// CANCEL ORDER
-// ================================
-
-// ================================
-// CANCEL ORDER
-// ================================
+/* =========================================================
+   CANCEL ORDER
+========================================================= */
 
 router.post(
   "/:id/cancel",
@@ -577,7 +888,10 @@ router.post(
         });
       }
 
-      // Only these statuses can be cancelled
+      /* ---------------------------------------------------
+         CHECK STATUS
+      --------------------------------------------------- */
+
       if (
         ![
           "pending",
@@ -591,9 +905,9 @@ router.post(
         });
       }
 
-      // ==================================
-      // REFUND PAID ORDER
-      // ==================================
+      /* ===================================================
+         REFUND
+      =================================================== */
 
       if (
         order.paymentStatus === "paid" &&
@@ -605,7 +919,8 @@ router.post(
               order.razorpayPaymentId,
               {
                 amount: Math.round(
-                  order.totalAmount * 100
+                  Number(order.totalAmount) *
+                    100
                 ),
                 speed: "normal",
               }
@@ -624,35 +939,35 @@ router.post(
           return res.status(500).json({
             message:
               "Refund could not be initiated. Order was not cancelled.",
-            error: refundError.message,
+            error:
+              refundError.message,
           });
         }
       }
 
-      // ==================================
-      // RESTORE INVENTORY
-      // ==================================
+      /* ===================================================
+         RESTORE INVENTORY
+      =================================================== */
 
       if (order.inventoryDeducted) {
         for (const item of order.items) {
-          const product =
-            await Product.findById(
-              item.productId
-            );
-
-          if (product) {
-            product.stock += item.quantity;
-
-            await product.save();
-          }
+          await Product.findByIdAndUpdate(
+            item.productId,
+            {
+              $inc: {
+                stock:
+                  Number(item.quantity),
+              },
+            }
+          );
         }
 
         order.inventoryDeducted = false;
       }
 
-      // ==================================
-      // RESTORE REWARD POINTS USED
-      // ==================================
+      /* ===================================================
+         RESTORE REWARD POINTS
+      =================================================== */
 
       const user = await User.findById(
         order.userId
@@ -664,31 +979,38 @@ router.post(
         });
       }
 
+      /* Restore points used */
+
       if (order.rewardPointsUsed > 0) {
         user.rewardPoints +=
-          order.rewardPointsUsed;
+          Number(order.rewardPointsUsed);
       }
 
-      // Remove points earned from this order
+      /* Remove points earned */
+
       if (order.rewardPointsEarned > 0) {
         user.rewardPoints = Math.max(
           0,
-          user.rewardPoints -
-            order.rewardPointsEarned
+          Number(user.rewardPoints) -
+            Number(
+              order.rewardPointsEarned
+            )
         );
       }
 
       await user.save();
 
-      // ==================================
-      // RESTORE COUPON USAGE
-      // ==================================
+      /* ===================================================
+         RESTORE COUPON USAGE
+      =================================================== */
 
       if (order.couponCode) {
         await Coupon.findOneAndUpdate(
           {
             code: order.couponCode,
-            usedCount: { $gt: 0 },
+            usedCount: {
+              $gt: 0,
+            },
           },
           {
             $inc: {
@@ -698,21 +1020,25 @@ router.post(
         );
       }
 
-      // ==================================
-      // UPDATE ORDER
-      // ==================================
+      /* ===================================================
+         UPDATE ORDER
+      =================================================== */
 
       order.orderStatus = "cancelled";
 
-      if (order.paymentStatus === "paid") {
-        order.paymentStatus = "refunded";
+      if (
+        order.paymentStatus === "paid"
+      ) {
+        order.paymentStatus =
+          "refunded";
       }
 
       await order.save();
 
       res.status(200).json({
         message:
-          order.paymentStatus === "refunded"
+          order.paymentStatus ===
+          "refunded"
             ? "Order cancelled and refund initiated successfully"
             : "Order cancelled successfully",
         order,
