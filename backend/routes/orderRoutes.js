@@ -394,6 +394,31 @@ router.get("/", authMiddleware, async (req, res) => {
   }
 });
 
+router.delete("/:id", authMiddleware, async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({
+        message: "Order not found",
+      });
+    }
+
+    await Order.findByIdAndDelete(req.params.id);
+
+    res.status(200).json({
+      message: "Order deleted successfully",
+    });
+  } catch (error) {
+    console.error("Delete order error:", error);
+
+    res.status(500).json({
+      message: "Failed to delete order",
+      error: error.message,
+    });
+  }
+});
+
 /* =========================================================
    GET LOGGED-IN USER ORDERS
 ========================================================= */

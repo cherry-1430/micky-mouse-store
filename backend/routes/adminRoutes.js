@@ -80,4 +80,38 @@ router.patch(
   }
 );
 
+
+// Delete order - Admin only
+// Delete order - Admin only
+router.delete(
+  "/orders/:id",
+  authMiddleware,
+  adminMiddleware,
+  async (req, res) => {
+    try {
+      const order = await Order.findById(req.params.id);
+
+      if (!order) {
+        return res.status(404).json({
+          message: "Order not found",
+        });
+      }
+
+      await Order.findByIdAndDelete(req.params.id);
+
+      res.status(200).json({
+        message: "Order deleted successfully",
+        orderId: req.params.id,
+      });
+    } catch (error) {
+      console.error("Delete order error:", error);
+
+      res.status(500).json({
+        message: "Failed to delete order",
+        error: error.message,
+      });
+    }
+  }
+);
+
 module.exports = router;
