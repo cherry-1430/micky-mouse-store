@@ -6,16 +6,27 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem("user");
 
-    return savedUser
-      ? JSON.parse(savedUser)
-      : null;
+    if (!savedUser) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(savedUser);
+    } catch (error) {
+      console.error("Invalid saved user:", error);
+      localStorage.removeItem("user");
+      return null;
+    }
   });
 
+  // =========================================
+  // LOGIN / OTP LOGIN
+  // =========================================
+
   const login = (userData, token) => {
-    localStorage.setItem(
-      "token",
-      token
-    );
+    if (token) {
+      localStorage.setItem("token", token);
+    }
 
     localStorage.setItem(
       "user",
@@ -24,6 +35,23 @@ export function AuthProvider({ children }) {
 
     setUser(userData);
   };
+
+  // =========================================
+  // UPDATE USER
+  // =========================================
+
+  const updateUser = (userData) => {
+    localStorage.setItem(
+      "user",
+      JSON.stringify(userData)
+    );
+
+    setUser(userData);
+  };
+
+  // =========================================
+  // LOGOUT
+  // =========================================
 
   const logout = () => {
     localStorage.removeItem("token");
@@ -38,6 +66,7 @@ export function AuthProvider({ children }) {
         user,
         login,
         logout,
+        updateUser,
         isLoggedIn: !!user,
       }}
     >

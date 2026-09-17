@@ -6,6 +6,7 @@ function AdminDashboard() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedOrderDate, setSelectedOrderDate] = useState("");
 
   const [products, setProducts] = useState([]);
   const [productLoading, setProductLoading] = useState(true);
@@ -42,6 +43,7 @@ const [couponForm, setCouponForm] = useState({
   expiryDate: "",
   isActive: true,
 });
+
 
 const handleCouponChange = (e) => {
   const { name, value, type, checked } = e.target;
@@ -544,6 +546,49 @@ const handleAddProduct = async (e) => {
   }
 };
 
+const handleDeleteOrder = async (orderId) => {
+  const confirmed = window.confirm(
+    "Are you sure you want to permanently delete this order?"
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+    const token = localStorage.getItem("token");
+
+    const response = await fetch(
+      `${API_URL}/api/admin/orders/${orderId}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.message || "Failed to delete order"
+      );
+    }
+
+    setOrders((currentOrders) =>
+      currentOrders.filter(
+        (order) => order._id !== orderId
+      )
+    );
+
+    alert("Order deleted successfully!");
+  } catch (error) {
+    console.error("Delete order error:", error);
+    setError(error.message);
+  }
+};
+
   useEffect(() => {
     const fetchOrders = async () => {
       try {
@@ -673,6 +718,17 @@ const outOfStockProducts = products.filter(
   (product) => Number(product.stock || 0) === 0
 );
 
+const filteredOrders = selectedOrderDate
+  ? orders.filter((order) => {
+      if (!order.createdAt) return false;
+
+      const orderDate = new Date(order.createdAt)
+        .toLocaleDateString("en-CA");
+
+      return orderDate === selectedOrderDate;
+    })
+  : orders;
+
  return (
   <main className="admin-page">
 
@@ -794,10 +850,28 @@ const outOfStockProducts = products.filter(
     </button>
   </div>
 
-  {orders.length === 0 ? (
+  {filteredOrders.length === 0 ? (
     <div className="admin-empty-state">
-      No orders yet.
-    </div>
+
+  <span>
+    {selectedOrderDate
+      ? "NO ORDERS FOR THIS DATE"
+      : "NO ORDERS"}
+  </span>
+
+  <h2>
+    {selectedOrderDate
+      ? "No orders found for this date"
+      : "No orders found"}
+  </h2>
+
+  <p>
+    {selectedOrderDate
+      ? "Try selecting another date."
+      : "Orders placed by customers will appear here."}
+  </p>
+
+</div>
   ) : (
     <div className="admin-recent-orders">
 
@@ -941,20 +1015,47 @@ const outOfStockProducts = products.filter(
 
     <section className="admin-orders-section">
 
-      <div className="admin-section-heading">
+  <div className="admin-section-heading">
 
-        <div>
-          <p>ORDER MANAGEMENT</p>
+    <div>
+      <p>ORDER MANAGEMENT</p>
 
-          <h2>ALL ORDERS</h2>
-        </div>
+      <h2>
+        {selectedOrderDate
+          ? "ORDERS BY DATE"
+          : "ALL ORDERS"}
+      </h2>
+    </div>
 
-        <span>
-          {orders.length}{" "}
-          {orders.length === 1 ? "ORDER" : "ORDERS"}
-        </span>
+    <div className="admin-order-filter">
 
-      </div>
+      <input
+        type="date"
+        value={selectedOrderDate}
+        onChange={(e) =>
+          setSelectedOrderDate(e.target.value)
+        }
+      />
+
+      {selectedOrderDate && (
+        <button
+          type="button"
+          onClick={() => setSelectedOrderDate("")}
+        >
+          CLEAR
+        </button>
+      )}
+
+      <span>
+        {filteredOrders.length}{" "}
+        {filteredOrders.length === 1
+          ? "ORDER"
+          : "ORDERS"}
+      </span>
+
+    </div>
+
+  </div>
 
 
       {orders.length === 0 ? (
@@ -975,7 +1076,7 @@ const outOfStockProducts = products.filter(
 
         <div className="admin-orders-list">
 
-          {orders.map((order) => (
+          {filteredOrders.map((order) => (
 
             <article
               className="admin-order-card"
@@ -1113,12 +1214,32 @@ const outOfStockProducts = products.filter(
                     </option>
 
                   </select>
+                  
 
                   <p>
                     Update fulfilment status
                   </p>
 
                 </div>
+                <div className="admin-detail admin-order-delete">
+
+  <span>DANGER ZONE</span>
+
+  <button
+    type="button"
+    className="admin-delete-order-button"
+    onClick={() =>
+      handleDeleteOrder(order._id)
+    }
+  >
+    DELETE ORDER
+  </button>
+
+  <p>
+    Permanently remove this order
+  </p>
+
+</div>
 
               </div>
 
@@ -1126,9 +1247,13 @@ const outOfStockProducts = products.filter(
 
           ))}
 
+          
+
         </div>
+        
 
       )}
+      
 
     </section>
 

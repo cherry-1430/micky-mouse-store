@@ -1,9 +1,13 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import {
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import API_URL from "../api/apiConfig";
 
 function Register() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -13,6 +17,10 @@ function Register() {
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Remember where the customer originally wanted to go
+  const redirectPath =
+    location.state?.from || "/";
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -51,9 +59,22 @@ function Register() {
 
       alert("Account created successfully!");
 
-      navigate("/login");
+      /*
+       * After registration, go to Login.
+       * Pass the original destination so that
+       * Login can send the customer there
+       * after successful login.
+       */
+      navigate("/login", {
+        state: {
+          from: redirectPath,
+        },
+      });
     } catch (error) {
-      console.error("Registration error:", error);
+      console.error(
+        "Registration error:",
+        error
+      );
 
       setError(error.message);
     } finally {
@@ -63,11 +84,9 @@ function Register() {
 
   return (
     <div className="page-container">
-
       <h1>Create Account</h1>
 
       <form onSubmit={handleSubmit}>
-
         <input
           type="text"
           name="name"
@@ -109,20 +128,23 @@ function Register() {
             ? "CREATING ACCOUNT..."
             : "CREATE ACCOUNT"}
         </button>
-
       </form>
 
-      
       <p>
         Already have an account?{" "}
         <button
           type="button"
-          onClick={() => navigate("/login")}
+          onClick={() =>
+            navigate("/login", {
+              state: {
+                from: redirectPath,
+              },
+            })
+          }
         >
           LOGIN
         </button>
       </p>
-
     </div>
   );
 }

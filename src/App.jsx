@@ -1,7 +1,9 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+
 import { WishlistProvider } from "./context/WishlistContext";
 import { AuthProvider } from "./context/AuthContext";
-import MyOrders from "./pages/MyOrders";
+import { CartProvider } from "./context/CartContext";
+
 import "./App.css";
 
 import Navbar from "./components/Navbar";
@@ -10,70 +12,92 @@ import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import Shop from "./pages/Shop";
 import Cart from "./pages/Cart";
-import Login from "./pages/Login";
+import Login from "./pages/Login"
+import Register from "./pages/Register"
 import Profile from "./pages/Profile";
-import Register from "./pages/Register";
 import ProductDetails from "./pages/ProductDetails";
-import { CartProvider } from "./context/CartContext";
 import Wishlist from "./pages/Wishlist";
 import Checkout from "./pages/Checkout";
 import OrderSuccess from "./pages/OrderSuccess";
 import OrderDetails from "./pages/OrderDetails";
-import ProtectedRoute from "./components/ProtectedRoute";
+import MyOrders from "./pages/MyOrders";
 import AdminDashboard from "./pages/AdminDashboard";
+
+import ProtectedRoute from "./components/ProtectedRoute";
 
 
 function App() {
   return (
-     <AuthProvider>
-    <CartProvider>
+    <AuthProvider>
+      <CartProvider>
         <WishlistProvider>
-    <BrowserRouter>
 
-      <Navbar />
+          <BrowserRouter>
 
-      <Routes>
+            <Navbar />
 
-       <Route
-  path="/"
-  element={
-    <ProtectedRoute>
-      <Home />
-    </ProtectedRoute>
-  }
-/>
+            <Routes>
 
-        <Route path="/shop" element={<Shop />} />
+              {/* =========================================
+                  HOME
+              ========================================== */}
 
-        <Route path="/cart" element={<Cart />} />
+              <Route
+                path="/"
+                element={<Home />}
+              />
 
-        <Route path="/login" element={<Login />} />
 
-        <Route path="/register" element={<Register />} />
+              {/* =========================================
+                  SHOP
+              ========================================== */}
 
-        <Route path="/product/:id" element={<ProductDetails />}
-/>
-<Route
-  path="/profile"
-  element={
-    <ProtectedRoute>
-      <Profile />
-    </ProtectedRoute>
-  }
-/>
-<Route
-  path="/my-orders"
-  element={
-    <ProtectedRoute>
-      <MyOrders />
-    </ProtectedRoute>
-  }
-/>
-        <Route
-  path="/wishlist"
-  element={<Wishlist />}
-/>
-<Route
+              <Route
+                path="/shop"
+                element={<Shop />}
+              />
+
+
+              {/* =========================================
+                  PRODUCT DETAILS
+              ========================================== */}
+
+              <Route
+                path="/product/:id"
+                element={<ProductDetails />}
+              />
+
+
+              {/* =========================================
+                  CART
+              ========================================== */}
+
+              <Route
+                path="/cart"
+                element={<Cart />}
+              />
+              <Route path="/login" element={<Login />} />
+
+              <Route path="/register" element={<Register />}/>
+
+              {/* =========================================
+                  WISHLIST
+              ========================================== */}
+
+              <Route
+                path="/wishlist"
+                element={<Wishlist />}
+              />
+
+
+              {/* =========================================
+                  CHECKOUT
+                  
+                  NO LOGIN REQUIRED.
+                  MSG91 OTP WILL BE USED INSIDE CHECKOUT.
+              ========================================== */}
+
+              <Route
   path="/checkout"
   element={
     <ProtectedRoute>
@@ -81,32 +105,82 @@ function App() {
     </ProtectedRoute>
   }
 />
-<Route
-  path="/order-success"
-  element={<OrderSuccess />}
-/>
-<Route
-  path="/orders/:id"
-   element={
-    <ProtectedRoute>
-      <OrderDetails />
-    </ProtectedRoute>}
-/>
-<Route
-  path="/admin"
-  element={
-    <ProtectedRoute adminOnly={true}>
-      <AdminDashboard />
-    </ProtectedRoute>
-  }
-/>
-      </Routes>
 
-      <Footer />
+              {/* =========================================
+                  ORDER SUCCESS
+              ========================================== */}
 
-    </BrowserRouter>
-    </WishlistProvider>
-    </CartProvider>
+              <Route
+                path="/order-success"
+                element={<OrderSuccess />}
+              />
+
+
+              {/* =========================================
+                  PROFILE
+                  
+                  KEEP PROTECTED FOR NOW.
+              ========================================== */}
+
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                }
+              />
+
+
+              {/* =========================================
+                  MY ORDERS
+              ========================================== */}
+
+              <Route
+                path="/my-orders"
+                element={
+                  <ProtectedRoute>
+                    <MyOrders />
+                  </ProtectedRoute>
+                }
+              />
+
+
+              {/* =========================================
+                  ORDER DETAILS
+              ========================================== */}
+
+              <Route
+                path="/orders/:id"
+                element={
+                  <ProtectedRoute>
+                    <OrderDetails />
+                  </ProtectedRoute>
+                }
+              />
+
+
+              {/* =========================================
+                  ADMIN
+              ========================================== */}
+
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedRoute adminOnly={true}>
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                }
+              />
+
+            </Routes>
+
+            <Footer />
+
+          </BrowserRouter>
+
+        </WishlistProvider>
+      </CartProvider>
     </AuthProvider>
   );
 }

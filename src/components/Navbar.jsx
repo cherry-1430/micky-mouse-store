@@ -13,20 +13,23 @@ function Navbar() {
   const [search, setSearch] = useState("");
 
   const handleSearch = (event) => {
-  event.preventDefault();
+    event.preventDefault();
 
-  const searchValue = search.trim();
+    const searchValue = search.trim();
 
-  if (!searchValue) {
-    navigate("/shop");
+    if (!searchValue) {
+      navigate("/shop");
+      setSearchOpen(false);
+      return;
+    }
+
+    navigate(
+      `/shop?search=${encodeURIComponent(searchValue)}`
+    );
+
+    setSearch("");
     setSearchOpen(false);
-    return;
-  }
-
-  navigate(`/shop?search=${encodeURIComponent(searchValue)}`);
-  setSearch("");
-  setSearchOpen(false);
-};
+  };
 
   return (
     <nav className="navbar">
@@ -34,8 +37,13 @@ function Navbar() {
       {/* LOGO */}
 
       <Link to="/" className="logo">
-        <span className="logo-main">Micky</span>
-        <span className="logo-sub">Mouse</span>
+        <span className="logo-main">
+          Micky
+        </span>
+
+        <span className="logo-sub">
+          Mouse
+        </span>
       </Link>
 
 
@@ -83,12 +91,13 @@ function Navbar() {
             aria-label="Search"
             title="Search"
             onClick={() =>
-              setSearchOpen((previous) => !previous)
+              setSearchOpen(
+                (previous) => !previous
+              )
             }
           >
             🔍
           </button>
-
 
           {searchOpen && (
             <form
@@ -101,7 +110,9 @@ function Navbar() {
                 placeholder="Search products..."
                 value={search}
                 onChange={(event) =>
-                  setSearch(event.target.value)
+                  setSearch(
+                    event.target.value
+                  )
                 }
                 autoFocus
               />
@@ -116,9 +127,9 @@ function Navbar() {
         </div>
 
 
-        {/* AUTHENTICATED USER */}
+        {/* USER */}
 
-        {isLoggedIn ? (
+        {isLoggedIn && user ? (
           <>
 
             <span className="nav-user">
@@ -174,20 +185,7 @@ function Navbar() {
             </button>
 
           </>
-        ) : (
-
-          /* LOGIN */
-
-          <Link
-            to="/login"
-            className="nav-icon-button"
-            aria-label="Account"
-            title="Login"
-          >
-            👤
-          </Link>
-
-        )}
+        ) : null}
 
 
         {/* WISHLIST */}

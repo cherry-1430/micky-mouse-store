@@ -2,19 +2,26 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { useCart } from "../context/useCart";
-
+import { useAuth } from "../context/AuthContext";
 import API_URL from "../api/apiConfig";
 
 import "./Checkout.css";
 
 function Checkout() {
-  const {
-    cart,
-    cartTotal,
-    clearCart,
-  } = useCart();
-
+  const { cart, clearCart } = useCart();
+  const { isLoggedIn } = useAuth();
   const navigate = useNavigate();
+
+  // Checkout is available only to logged-in customers.
+  useEffect(() => {
+    if (!isLoggedIn) {
+      navigate("/login", { replace: true });
+    }
+  }, [isLoggedIn, navigate]);
+
+  // =========================================================
+  // CUSTOMER FORM
+  // =========================================================
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -26,392 +33,982 @@ function Checkout() {
     state: "",
     pincode: "",
   });
+
+
+  // =========================================================
+  // CHECKOUT CART
+  // =========================================================
+
+  const [checkoutCart, setCheckoutCart] = useState([]);
+  const [priceLoading, setPriceLoading] = useState(true);
+  const [priceError, setPriceError] = useState("");
+  const [priceChanged, setPriceChanged] = useState(false);
+
+  // =========================================================
+  // SAVED ADDRESSES
+  // =========================================================
+
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [addressLoading, setAddressLoading] = useState(true);
-  const [selectedAddressId, setSelectedAddressId] = useState("");
+  const [selectedAddressId, setSelectedAddressId] =
+    useState("");
+
+  // =========================================================
+  // COUPON
+  // =========================================================
+
   const [couponCode, setCouponCode] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponDiscount, setCouponDiscount] = useState(0);
   const [couponLoading, setCouponLoading] = useState(false);
   const [couponError, setCouponError] = useState("");
+
+  // =========================================================
+  // REWARD POINTS
+  // =========================================================
+
   const [rewardPoints, setRewardPoints] = useState(0);
   const [rewardPointsUsed, setRewardPointsUsed] = useState(0);
   const [rewardDiscount, setRewardDiscount] = useState(0);
   const [rewardLoading, setRewardLoading] = useState(true);
 
+  // =========================================================
+  // EFFECTIVE PRICE
+  // =========================================================
+
+  const getEffectivePrice = (product) => {
+    let price = Number(product.price || 0);
+
+    if (
+      product.isFlashSale &&
+      Number(product.salePrice || 0) > 0
+    ) {
+      const now = new Date();
+
+      const saleStart = product.saleStart
+        ? new Date(product.saleStart)
+        : null;
+
+      const saleEnd = product.saleEnd
+        ? new Date(product.saleEnd)
+        : null;
+
+      const saleActive =
+        (!saleStart || now >= saleStart) &&
+        (!saleEnd || now <= saleEnd);
+
+      if (saleActive) {
+        price = Number(product.salePrice);
+      }
+    }
+
+    return price;
+  };
+
+  // =========================================================
+  // FETCH LATEST PRODUCTS
+  // =========================================================
+
+  const fetchLatestProducts = async () => {
+    if (!cart || cart.length === 0) {
+      setCheckoutCart([]);
+      setPriceLoading(false);
+      return;
+    }
+
+    try {
+      setPriceLoading(true);
+      setPriceError("");
+
+      const response = await fetch(
+        `${API_URL}/api/products`
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message ||
+            "Failed to fetch latest products"
+        );
+      }
+
+      const products = Array.isArray(data)
+        ? data
+        : data.products || [];
+
+      let hasPriceChanged = false;
+
+      const updatedCart = cart.map((cartItem) => {
+        const product = products.find(
+          (product) =>
+            String(product._id) ===
+            String(cartItem.id)
+        );
+
+        if (!product) {
+          return {
+            ...cartItem,
+            unavailable: true,
+            stock: 0,
+          };
+        }
+
+        const latestPrice =
+          getEffectivePrice(product);
+
+        const oldPrice = Number(
+          cartItem.price || 0
+        );
+
+        if (oldPrice !== latestPrice) {
+          hasPriceChanged = true;
+        }
+
+        return {
+          ...cartItem,
+          price: latestPrice,
+          originalPrice: Number(
+            product.price || 0
+          ),
+          salePrice: Number(
+            product.salePrice || 0
+          ),
+          saleStart:
+            product.saleStart || null,
+          saleEnd:
+            product.saleEnd || null,
+          isFlashSale:
+            product.isFlashSale || false,
+          stock: Number(product.stock || 0),
+          name: product.name,
+          image: product.image,
+          category: product.category,
+          unavailable: false,
+        };
+      });
+
+      setCheckoutCart(updatedCart);
+      setPriceChanged(hasPriceChanged);
+
+      if (hasPriceChanged) {
+        setAppliedCoupon(null);
+        setCouponDiscount(0);
+        setCouponError(
+          "Product price changed. Please apply your coupon again."
+        );
+      }
+
+      const cartForStorage =
+        updatedCart.map((item) => {
+          const {
+            stock,
+            unavailable,
+            ...cartItem
+          } = item;
+
+          return cartItem;
+        });
+
+      localStorage.setItem(
+        "mickyMouseCart",
+        JSON.stringify(cartForStorage)
+      );
+    } catch (error) {
+      console.error(
+        "Latest products error:",
+        error
+      );
+
+      setPriceError(
+        "Unable to check latest product prices."
+      );
+
+      setCheckoutCart(cart);
+    } finally {
+      setPriceLoading(false);
+    }
+  };
+
+  // =========================================================
+  // INITIAL PRICE CHECK
+  // =========================================================
+
   useEffect(() => {
-  const fetchSavedAddresses = async () => {
-    try {
-      const token = localStorage.getItem("token");
+    fetchLatestProducts();
 
-      const response = await fetch(
-        `${API_URL}/api/users/addresses`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+    const interval = setInterval(() => {
+      fetchLatestProducts();
+    }, 30000);
+
+    return () => clearInterval(interval);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cart]);
+
+  // =========================================================
+  // SAVED ADDRESSES
+  // =========================================================
+
+  useEffect(() => {
+    const fetchSavedAddresses = async () => {
+      try {
+        const token =
+          localStorage.getItem("token");
+
+        if (!token) {
+          setAddressLoading(false);
+          return;
         }
-      );
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.message || "Failed to fetch saved addresses"
+        const response = await fetch(
+          `${API_URL}/api/users/addresses`,
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+          }
         );
-      }
 
-      setSavedAddresses(data);
+        const data = await response.json();
 
-      // Automatically select the default address
-      const defaultAddress = data.find(
-        (address) => address.isDefault
-      );
-
-      if (defaultAddress) {
-        setSelectedAddressId(defaultAddress._id);
-      }
-    } catch (error) {
-      console.error("Saved addresses error:", error);
-    } finally {
-      setAddressLoading(false);
-    }
-  };
-
-  fetchSavedAddresses();
-}, []);
-
-useEffect(() => {
-  const fetchRewardPoints = async () => {
-    try {
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(
-        `${API_URL}/api/users/reward-points`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        if (!response.ok) {
+          throw new Error(
+            data.message ||
+              "Failed to fetch saved addresses"
+          );
         }
-      );
 
-      const data = await response.json();
+        setSavedAddresses(data);
 
-      if (!response.ok) {
-        throw new Error(
-          data.message || "Failed to fetch reward points"
+        const defaultAddress = data.find(
+          (address) => address.isDefault
         );
+
+        if (defaultAddress) {
+          setSelectedAddressId(
+            defaultAddress._id
+          );
+        }
+      } catch (error) {
+        console.error(
+          "Saved addresses error:",
+          error
+        );
+      } finally {
+        setAddressLoading(false);
       }
+    };
 
-      setRewardPoints(data.rewardPoints || 0);
-    } catch (error) {
-      console.error("Reward points error:", error);
-    } finally {
-      setRewardLoading(false);
-    }
-  };
+    fetchSavedAddresses();
+  }, []);
 
-  fetchRewardPoints();
-}, []);
+  // =========================================================
+  // REWARD POINTS
+  // =========================================================
+
+  useEffect(() => {
+    const fetchRewardPoints = async () => {
+      try {
+        const token =
+          localStorage.getItem("token");
+
+        if (!token) {
+          setRewardLoading(false);
+          return;
+        }
+
+        const response = await fetch(
+          `${API_URL}/api/users/reward-points`,
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+          }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            data.message ||
+              "Failed to fetch reward points"
+          );
+        }
+
+        setRewardPoints(
+          Number(data.rewardPoints || 0)
+        );
+      } catch (error) {
+        console.error(
+          "Reward points error:",
+          error
+        );
+      } finally {
+        setRewardLoading(false);
+      }
+    };
+
+    fetchRewardPoints();
+  }, []);
+
+  // =========================================================
+  // FORM CHANGE
+  // =========================================================
 
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    setFormData({
-      ...formData,
+    setFormData((previous) => ({
+      ...previous,
       [name]: value,
-    });
+    }));
+
   };
-  const handleSavedAddressSelect = (address) => {
-  setSelectedAddressId(address._id);
 
-  const nameParts = address.fullName.trim().split(" ");
 
-  const firstName = nameParts[0] || "";
-  const lastName = nameParts.slice(1).join(" ");
+  // =========================================================
+  // SAVED ADDRESS SELECT
+  // =========================================================
 
-  setFormData((previous) => ({
-    ...previous,
-    firstName,
-    lastName,
-    phone: address.phone || "",
-    address: address.address || "",
-    city: address.city || "",
-    state: address.state || "",
-    pincode: address.pincode || "",
-  }));
-};
-
-const handleApplyCoupon = async () => {
-  if (!couponCode.trim()) {
-    setCouponError("Please enter a coupon code");
-    return;
-  }
-
-  setCouponLoading(true);
-  setCouponError("");
-
-  try {
-    const token = localStorage.getItem("token");
-
-    const response = await fetch(
-      `${API_URL}/api/coupons/validate`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          code: couponCode.trim(),
-          orderAmount: cartTotal,
-        }),
-      }
+  const handleSavedAddressSelect = (
+    address
+  ) => {
+    setSelectedAddressId(
+      address._id
     );
 
-    const data = await response.json();
+    const nameParts =
+      address.fullName
+        .trim()
+        .split(" ");
 
-    if (!response.ok) {
-      throw new Error(
-        data.message || "Failed to apply coupon"
+    const firstName =
+      nameParts[0] || "";
+
+    const lastName =
+      nameParts
+        .slice(1)
+        .join(" ");
+
+    setFormData((previous) => ({
+      ...previous,
+      firstName,
+      lastName,
+      phone:
+        address.phone || "",
+      address:
+        address.address || "",
+      city:
+        address.city || "",
+      state:
+        address.state || "",
+      pincode:
+        address.pincode || "",
+    }));
+
+  };
+
+  // =========================================================
+  // SUBTOTAL
+  // =========================================================
+
+  const checkoutCartTotal =
+    checkoutCart.reduce(
+      (total, item) =>
+        total +
+        Number(item.price || 0) *
+          Number(item.quantity || 0),
+      0
+    );
+
+  // =========================================================
+  // COUPON
+  // =========================================================
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) {
+      setCouponError(
+        "Please enter a coupon code"
       );
+      return;
     }
 
-    setAppliedCoupon(data.coupon);
-    setCouponDiscount(data.discount);
+    setCouponLoading(true);
     setCouponError("");
-  } catch (error) {
-    console.error("Coupon error:", error);
 
+    try {
+      const token =
+        localStorage.getItem("token");
+
+      const headers = {
+        "Content-Type":
+          "application/json",
+      };
+
+      if (token) {
+        headers.Authorization =
+          `Bearer ${token}`;
+      }
+
+      const response = await fetch(
+        `${API_URL}/api/coupons/validate`,
+        {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            code:
+              couponCode.trim(),
+            orderAmount:
+              checkoutCartTotal,
+          }),
+        }
+      );
+
+      const data =
+        await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message ||
+            "Failed to apply coupon"
+        );
+      }
+
+      setAppliedCoupon(
+        data.coupon
+      );
+
+      setCouponDiscount(
+        Number(data.discount || 0)
+      );
+
+      setCouponError("");
+    } catch (error) {
+      console.error(
+        "Coupon error:",
+        error
+      );
+
+      setAppliedCoupon(null);
+      setCouponDiscount(0);
+      setCouponError(
+        error.message
+      );
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  // =========================================================
+  // REMOVE COUPON
+  // =========================================================
+
+  const handleRemoveCoupon = () => {
+    setCouponCode("");
     setAppliedCoupon(null);
     setCouponDiscount(0);
-    setCouponError(error.message);
-  } finally {
-    setCouponLoading(false);
-  }
-};
+    setCouponError("");
+  };
 
-const handleRemoveCoupon = () => {
-  setCouponCode("");
-  setAppliedCoupon(null);
-  setCouponDiscount(0);
-  setCouponError("");
-};
+  // =========================================================
+  // REWARD POINTS
+  // =========================================================
 
-const handleRewardPointsChange = (e) => {
-  const requestedPoints = Number(e.target.value) || 0;
+  const handleRewardPointsChange = (
+    e
+  ) => {
+    const requestedPoints =
+      Number(e.target.value) || 0;
 
-  const amountAfterCoupon = Math.max(
+    const amountAfterCoupon =
+      Math.max(
+        0,
+        checkoutCartTotal -
+          couponDiscount
+      );
+
+    const maximumUsablePoints =
+      Math.min(
+        rewardPoints,
+        Math.floor(
+          amountAfterCoupon
+        )
+      );
+
+    const pointsToUse =
+      Math.min(
+        Math.max(
+          0,
+          requestedPoints
+        ),
+        maximumUsablePoints
+      );
+
+    setRewardPointsUsed(
+      pointsToUse
+    );
+
+    setRewardDiscount(
+      pointsToUse
+    );
+  };
+
+  // =========================================================
+  // FINAL TOTAL
+  // =========================================================
+
+  const finalTotal = Math.max(
     0,
-    cartTotal - couponDiscount
+    checkoutCartTotal -
+      couponDiscount -
+      rewardDiscount
   );
 
-  const maximumUsablePoints = Math.min(
-    rewardPoints,
-    Math.floor(amountAfterCoupon)
-  );
+  // =========================================================
+  // STOCK VALIDATION
+  // =========================================================
 
-  const pointsToUse = Math.min(
-    Math.max(0, requestedPoints),
-    maximumUsablePoints
-  );
+  const validateStock = (
+    items = checkoutCart
+  ) => {
+    return items.filter(
+      (item) =>
+        item.unavailable ||
+        Number(item.stock || 0) <
+          Number(item.quantity || 0)
+    );
+  };
 
-  setRewardPointsUsed(pointsToUse);
-  setRewardDiscount(pointsToUse);
-};
-
-const finalTotal = Math.max(
-  0,
-  cartTotal - couponDiscount - rewardDiscount
-);
+  // =========================================================
+  // SUBMIT ORDER
+  // =========================================================
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+
+    // =====================================================
+    // REQUIRED PHONE
+    // =====================================================
+
+    let verifiedPhone =
+      String(
+        formData.phone || ""
+      ).replace(/\D/g, "");
+
+    if (verifiedPhone.length === 10) {
+      verifiedPhone =
+        `91${verifiedPhone}`;
+    }
+
+    if (
+      verifiedPhone.length !== 12 ||
+      !verifiedPhone.startsWith("91")
+    ) {
+      setOtpError(
+        "Please enter a valid mobile number."
+      );
+
+      return;
+    }
+
+    // =====================================================
+    // LATEST PRODUCT CHECK
+    // =====================================================
+
+    await fetchLatestProducts();
+
+    // checkoutCart state may update after this function.
+    // Validate the currently available cart as well.
+    const currentCart =
+      checkoutCart;
+
+    if (!currentCart.length) {
+      alert(
+        "Your cart is empty."
+      );
+      return;
+    }
+
+    // =====================================================
+    // STOCK VALIDATION
+    // =====================================================
+
+    const outOfStockItems =
+      validateStock(currentCart);
+
+    if (
+      outOfStockItems.length > 0
+    ) {
+      alert(
+        `Insufficient stock for: ${outOfStockItems
+          .map(
+            (item) =>
+              item.name
+          )
+          .join(", ")}`
+      );
+
+      return;
+    }
+
+    // =====================================================
+    // PRICE CHECK
+    // =====================================================
+
+    if (priceLoading) {
+      alert(
+        "Please wait while we check the latest product prices."
+      );
+
+      return;
+    }
+
+    // =====================================================
+    // TOKEN
+    // =====================================================
+
+    const token =
+      localStorage.getItem("token");
+
+    if (!token) {
+      alert(
+        "Please login before placing the order."
+      );
+      navigate("/login");
+      return;
+    }
+
     try {
+      // ===================================================
+      // BUILD ORDER DATA
+      // ===================================================
+
       const orderData = {
         customer: {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          phone: formData.phone,
+          firstName:
+            formData.firstName,
+
+          lastName:
+            formData.lastName,
+
+          email:
+            formData.email,
+
+          phone:
+            formData.phone,
         },
 
         shippingAddress: {
-          address: formData.address,
-          city: formData.city,
-          state: formData.state,
-          pincode: formData.pincode,
+          address:
+            formData.address,
+
+          city:
+            formData.city,
+
+          state:
+            formData.state,
+
+          pincode:
+            formData.pincode,
         },
 
-        items: cart.map((item) => ({
-          productId: item._id || item.id,
-          name: item.name,
-          price: item.price,
-          image: item.image,
-          size: item.size,
-          quantity: item.quantity,
-        })),
+        items: currentCart.map(
+          (item) => ({
+            productId:
+              item.id,
 
-        subtotal: cartTotal,
+            name:
+              item.name,
 
-couponCode: appliedCoupon
-  ? appliedCoupon.code
-  : null,
+            price:
+              Number(
+                item.price
+              ),
 
-  couponDiscount,
+            image:
+              item.image,
 
-rewardPointsUsed,
+            size:
+              item.size,
 
-rewardDiscount,
+            quantity:
+              Number(
+                item.quantity
+              ),
+          })
+        ),
 
+        subtotal:
+          checkoutCartTotal,
 
-totalAmount: finalTotal,
+        couponCode:
+          appliedCoupon
+            ? appliedCoupon.code
+            : null,
 
-paymentMethod: "online",
+        couponDiscount:
+          couponDiscount,
+
+        rewardPointsUsed:
+          rewardPointsUsed,
+
+        rewardDiscount:
+          rewardDiscount,
+
+        totalAmount:
+          finalTotal,
+
+        paymentMethod:
+          "online",
       };
 
-      const response = await fetch(
-        `${API_URL}/api/orders`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify(orderData),
-        }
+      console.log(
+        "Final checkout order:",
+        orderData
       );
 
-      const data = await response.json();
+      // ===================================================
+      // CREATE ORDER
+      // ===================================================
+
+      const response =
+        await fetch(
+          `${API_URL}/api/orders`,
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+
+              Authorization:
+                `Bearer ${token}`,
+            },
+
+            body:
+              JSON.stringify(
+                orderData
+              ),
+          }
+        );
+
+      const data =
+        await response.json();
 
       if (!response.ok) {
         throw new Error(
-          data.message || "Failed to create order"
+          data.message ||
+            "Failed to create order"
         );
       }
 
-      console.log("Order created:", data);
-
-      const orderId = data.order._id;
-
-      const paymentResponse = await fetch(
-        `${API_URL}/api/orders/${orderId}/payment`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
+      console.log(
+        "Order created:",
+        data
       );
 
-      const paymentData = await paymentResponse.json();
+      const orderId =
+        data.order._id;
 
-      if (!paymentResponse.ok) {
+      // ===================================================
+      // CREATE RAZORPAY ORDER
+      // ===================================================
+
+      const paymentResponse =
+        await fetch(
+          `${API_URL}/api/orders/${orderId}/payment`,
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+
+              Authorization:
+                `Bearer ${token}`,
+            },
+          }
+        );
+
+      const paymentData =
+        await paymentResponse.json();
+
+      if (
+        !paymentResponse.ok
+      ) {
         throw new Error(
           paymentData.message ||
             "Failed to create payment"
         );
       }
 
+      // ===================================================
+      // RAZORPAY
+      // ===================================================
+
+      if (
+        !window.Razorpay
+      ) {
+        throw new Error(
+          "Razorpay is not loaded. Please refresh the page and try again."
+        );
+      }
+
       const options = {
-        key: paymentData.keyId,
+        key:
+          paymentData.keyId,
 
-        amount: paymentData.razorpayOrder.amount,
+        amount:
+          paymentData
+            .razorpayOrder
+            .amount,
 
-        currency: paymentData.razorpayOrder.currency,
+        currency:
+          paymentData
+            .razorpayOrder
+            .currency,
 
-        name: "Micky Mouse",
+        name:
+          "Micky Mouse",
 
-        description: "Micky Mouse Store Purchase",
+        description:
+          "Micky Mouse Store Purchase",
 
-        order_id: paymentData.razorpayOrder.id,
+        order_id:
+          paymentData
+            .razorpayOrder
+            .id,
 
         prefill: {
-          name: `${formData.firstName} ${formData.lastName}`,
-          email: formData.email,
-          contact: formData.phone,
+          name:
+            `${formData.firstName} ${formData.lastName}`.trim(),
+
+          email:
+            formData.email,
+
+          contact:
+            formData.phone,
         },
 
         theme: {
-          color: "#000000",
+          color:
+            "#000000",
         },
 
-        handler: async function (response) {
-          try {
-            console.log(
-              "Payment response:",
-              response
-            );
+        handler:
+          async function (
+            razorpayResponse
+          ) {
+            try {
+              console.log(
+                "Payment response:",
+                razorpayResponse
+              );
 
-            const verifyResponse = await fetch(
-              `${API_URL}/api/orders/${orderId}/verify-payment`,
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${localStorage.getItem("token")}`,
-                },
-                body: JSON.stringify({
-                  razorpay_order_id:
-                    response.razorpay_order_id,
+              // =============================================
+              // VERIFY PAYMENT
+              // =============================================
 
-                  razorpay_payment_id:
-                    response.razorpay_payment_id,
+              const verifyResponse =
+                await fetch(
+                  `${API_URL}/api/orders/${orderId}/verify-payment`,
+                  {
+                    method:
+                      "POST",
 
-                  razorpay_signature:
-                    response.razorpay_signature,
-                }),
+                    headers: {
+                      "Content-Type":
+                        "application/json",
+
+                      Authorization:
+                        `Bearer ${localStorage.getItem(
+                          "token"
+                        )}`,
+                    },
+
+                    body:
+                      JSON.stringify({
+                        razorpay_order_id:
+                          razorpayResponse.razorpay_order_id,
+
+                        razorpay_payment_id:
+                          razorpayResponse.razorpay_payment_id,
+
+                        razorpay_signature:
+                          razorpayResponse.razorpay_signature,
+                      }),
+                  }
+                );
+
+              const verifyData =
+                await verifyResponse.json();
+
+              if (
+                !verifyResponse.ok
+              ) {
+                throw new Error(
+                  verifyData.message ||
+                    "Payment verification failed"
+                );
               }
-            );
 
-            const verifyData =
-              await verifyResponse.json();
+              console.log(
+                "Payment verified:",
+                verifyData
+              );
 
-            if (!verifyResponse.ok) {
-              throw new Error(
-                verifyData.message ||
-                  "Payment verification failed"
+              // =============================================
+              // CLEAR CART
+              // =============================================
+
+              clearCart();
+
+              // =============================================
+              // SUCCESS
+              // =============================================
+
+              navigate(
+                "/order-success",
+                {
+                  state: {
+                    order:
+                      verifyData.order,
+
+                    payment:
+                      razorpayResponse,
+                  },
+                }
+              );
+            } catch (error) {
+              console.error(
+                "Payment verification error:",
+                error
+              );
+
+              alert(
+                "Payment verification failed. Please contact support."
               );
             }
-
-            console.log(
-              "Payment verified:",
-              verifyData
-            );
-
-            clearCart();
-
-            navigate("/order-success", {
-              state: {
-                order: verifyData.order,
-                payment: response,
-              },
-            });
-          } catch (error) {
-            console.error(
-              "Payment verification error:",
-              error
-            );
-
-            alert(
-              "Payment verification failed. Please contact support."
-            );
-          }
-        },
+          },
 
         modal: {
-          ondismiss: function () {
-            console.log(
-              "Payment window closed"
-            );
-          },
+          ondismiss:
+            function () {
+              console.log(
+                "Payment window closed"
+              );
+            },
         },
       };
 
       const razorpay =
-        new window.Razorpay(options);
+        new window.Razorpay(
+          options
+        );
 
       razorpay.open();
     } catch (error) {
@@ -421,24 +1018,31 @@ paymentMethod: "online",
       );
 
       alert(
-        "Failed to create order. Please try again."
+        error.message ||
+          "Failed to create order. Please try again."
       );
     }
   };
 
+  // =========================================================
+  // EMPTY CART
+  // =========================================================
+
   if (cart.length === 0) {
     return (
       <main className="empty-checkout">
-
         <div className="empty-checkout-content">
+          <span>
+            CHECKOUT
+          </span>
 
-          <span>CHECKOUT</span>
-
-          <h1>Your Cart Is Empty</h1>
+          <h1>
+            Your Cart Is Empty
+          </h1>
 
           <p>
-            Add some products before proceeding
-            to checkout.
+            Add some products before
+            proceeding to checkout.
           </p>
 
           <Link
@@ -447,12 +1051,14 @@ paymentMethod: "online",
           >
             CONTINUE SHOPPING →
           </Link>
-
         </div>
-
       </main>
     );
   }
+
+  // =========================================================
+  // UI
+  // =========================================================
 
   return (
     <main className="checkout-page">
@@ -460,66 +1066,84 @@ paymentMethod: "online",
       {/* HEADER */}
 
       <section className="checkout-header">
-
         <div>
-
           <p>
             MICKEY MOUSE • SECURE CHECKOUT
           </p>
 
-          <h1>CHECKOUT</h1>
-
+          <h1>
+            CHECKOUT
+          </h1>
         </div>
 
         <span className="checkout-step">
           STEP 01 / 01
         </span>
-
       </section>
-
 
       <div className="checkout-container">
 
-        {/* LEFT SIDE */}
+        {/* ===================================================
+            LEFT
+        ==================================================== */}
 
         <section className="checkout-form">
 
           <div className="checkout-progress">
 
             <div className="progress-step active">
-              <span>01</span>
-              <p>DETAILS</p>
+              <span>
+                01
+              </span>
+
+              <p>
+                DETAILS
+              </p>
             </div>
 
             <div className="progress-line"></div>
 
             <div className="progress-step">
-              <span>02</span>
-              <p>PAYMENT</p>
+              <span>
+                02
+              </span>
+
+              <p>
+                PAYMENT
+              </p>
             </div>
 
           </div>
 
+          <form
+            onSubmit={
+              handleSubmit
+            }
+          >
 
-          <form onSubmit={handleSubmit}>
-
-            {/* CUSTOMER */}
+            {/* =================================================
+                CUSTOMER
+            ================================================== */}
 
             <div className="checkout-section">
 
               <div className="checkout-section-title">
 
-                <span>01</span>
+                <span>
+                  01
+                </span>
 
                 <div>
-                  <p>YOUR DETAILS</p>
+                  <p>
+                    YOUR DETAILS
+                  </p>
+
                   <h2>
                     CUSTOMER INFORMATION
                   </h2>
                 </div>
 
               </div>
-
 
               <div className="form-row">
 
@@ -534,13 +1158,16 @@ paymentMethod: "online",
                     type="text"
                     name="firstName"
                     placeholder="Enter first name"
-                    value={formData.firstName}
-                    onChange={handleChange}
+                    value={
+                      formData.firstName
+                    }
+                    onChange={
+                      handleChange
+                    }
                     required
                   />
 
                 </div>
-
 
                 <div className="form-group">
 
@@ -553,15 +1180,18 @@ paymentMethod: "online",
                     type="text"
                     name="lastName"
                     placeholder="Enter last name"
-                    value={formData.lastName}
-                    onChange={handleChange}
+                    value={
+                      formData.lastName
+                    }
+                    onChange={
+                      handleChange
+                    }
                     required
                   />
 
                 </div>
 
               </div>
-
 
               <div className="form-group">
 
@@ -574,114 +1204,175 @@ paymentMethod: "online",
                   type="email"
                   name="email"
                   placeholder="Enter your email address"
-                  value={formData.email}
-                  onChange={handleChange}
+                  value={
+                    formData.email
+                  }
+                  onChange={
+                    handleChange
+                  }
                   required
                 />
 
               </div>
 
+              {/* =================================================
+                  PHONE NUMBER
+              ================================================== */}
 
               <div className="form-group">
 
                 <label htmlFor="phone">
-                  PHONE NUMBER
+                  MOBILE NUMBER
                 </label>
 
                 <input
                   id="phone"
                   type="tel"
                   name="phone"
-                  placeholder="Enter your phone number"
+                  inputMode="numeric"
+                  autoComplete="tel"
+                  placeholder="Enter 10-digit mobile number"
                   value={formData.phone}
-                  onChange={handleChange}
+                  onChange={(e) =>
+                    setFormData((previous) => ({
+                      ...previous,
+                      phone: e.target.value
+                        .replace(/\D/g, "")
+                        .slice(0, 10),
+                    }))
+                  }
+                  maxLength={10}
+                  pattern="[6-9][0-9]{9}"
                   required
                 />
+
+                <p style={{ marginTop: "8px" }}>
+                  We will use this number to contact you about your order.
+                </p>
 
               </div>
 
             </div>
 
-
-            {/* ADDRESS */}
+            {/* =================================================
+                ADDRESS
+            ================================================== */}
 
             <div className="checkout-section">
 
-              {/* SAVED ADDRESSES */}
+              {!addressLoading &&
+                savedAddresses.length >
+                  0 && (
 
-{!addressLoading && savedAddresses.length > 0 && (
-  <div className="saved-addresses-checkout">
+                  <div className="saved-addresses-checkout">
 
-    <div className="saved-addresses-checkout-heading">
-      <span>SAVED ADDRESSES</span>
-      <p>SELECT AN ADDRESS</p>
-    </div>
+                    <div className="saved-addresses-checkout-heading">
 
-    <div className="saved-addresses-checkout-list">
+                      <span>
+                        SAVED ADDRESSES
+                      </span>
 
-      {savedAddresses.map((address) => (
+                      <p>
+                        SELECT AN ADDRESS
+                      </p>
 
-        <button
-          type="button"
-          key={address._id}
-          className={`saved-address-checkout-card ${
-            selectedAddressId === address._id
-              ? "selected"
-              : ""
-          }`}
-          onClick={() =>
-            handleSavedAddressSelect(address)
-          }
-        >
+                    </div>
 
-          <div className="saved-address-checkout-top">
+                    <div className="saved-addresses-checkout-list">
 
-            <strong>
-              {address.label}
-            </strong>
+                      {savedAddresses.map(
+                        (
+                          address
+                        ) => (
 
-            {address.isDefault && (
-              <span>★ DEFAULT</span>
-            )}
+                          <button
+                            type="button"
+                            key={
+                              address._id
+                            }
+                            className={`saved-address-checkout-card ${
+                              selectedAddressId ===
+                              address._id
+                                ? "selected"
+                                : ""
+                            }`}
+                            onClick={() =>
+                              handleSavedAddressSelect(
+                                address
+                              )
+                            }
+                          >
 
-          </div>
+                            <div className="saved-address-checkout-top">
 
-          <p>
-            {address.fullName}
-          </p>
+                              <strong>
+                                {
+                                  address.label
+                                }
+                              </strong>
 
-          <p>
-            {address.address}
-          </p>
+                              {address.isDefault && (
+                                <span>
+                                  ★ DEFAULT
+                                </span>
+                              )}
 
-          <p>
-            {address.city}, {address.state}
-          </p>
+                            </div>
 
-          <p>
-            PIN: {address.pincode}
-          </p>
+                            <p>
+                              {
+                                address.fullName
+                              }
+                            </p>
 
-          <span className="saved-address-select">
-            {selectedAddressId === address._id
-              ? "✓ SELECTED"
-              : "USE THIS ADDRESS →"}
-          </span>
+                            <p>
+                              {
+                                address.address
+                              }
+                            </p>
 
-        </button>
+                            <p>
+                              {
+                                address.city
+                              }
+                              ,{" "}
+                              {
+                                address.state
+                              }
+                            </p>
 
-      ))}
+                            <p>
+                              PIN:{" "}
+                              {
+                                address.pincode
+                              }
+                            </p>
 
-    </div>
+                            <span className="saved-address-select">
 
-    <p className="saved-address-note">
-      You can edit the selected address below before
-      placing your order.
-    </p>
+                              {selectedAddressId ===
+                              address._id
+                                ? "✓ SELECTED"
+                                : "USE THIS ADDRESS →"}
 
-  </div>
-)}
+                            </span>
 
+                          </button>
+
+                        )
+                      )}
+
+                    </div>
+
+                    <p className="saved-address-note">
+                      You can edit the selected
+                      address below before placing
+                      your order.
+                    </p>
+
+                  </div>
+
+                )}
 
               <div className="form-group">
 
@@ -693,14 +1384,17 @@ paymentMethod: "online",
                   id="address"
                   name="address"
                   placeholder="House number, street, area..."
-                  value={formData.address}
-                  onChange={handleChange}
+                  value={
+                    formData.address
+                  }
+                  onChange={
+                    handleChange
+                  }
                   rows="4"
                   required
                 />
 
               </div>
-
 
               <div className="form-row">
 
@@ -715,13 +1409,16 @@ paymentMethod: "online",
                     type="text"
                     name="city"
                     placeholder="City"
-                    value={formData.city}
-                    onChange={handleChange}
+                    value={
+                      formData.city
+                    }
+                    onChange={
+                      handleChange
+                    }
                     required
                   />
 
                 </div>
-
 
                 <div className="form-group">
 
@@ -734,15 +1431,18 @@ paymentMethod: "online",
                     type="text"
                     name="state"
                     placeholder="State"
-                    value={formData.state}
-                    onChange={handleChange}
+                    value={
+                      formData.state
+                    }
+                    onChange={
+                      handleChange
+                    }
                     required
                   />
 
                 </div>
 
               </div>
-
 
               <div className="form-group">
 
@@ -755,8 +1455,12 @@ paymentMethod: "online",
                   type="text"
                   name="pincode"
                   placeholder="6-digit PIN code"
-                  value={formData.pincode}
-                  onChange={handleChange}
+                  value={
+                    formData.pincode
+                  }
+                  onChange={
+                    handleChange
+                  }
                   maxLength="6"
                   pattern="[0-9]{6}"
                   required
@@ -766,22 +1470,29 @@ paymentMethod: "online",
 
             </div>
 
-
-            {/* PAYMENT */}
+            {/* =================================================
+                PAYMENT
+            ================================================== */}
 
             <div className="checkout-section">
 
               <div className="checkout-section-title">
 
-                <span>03</span>
+                <span>
+                  03
+                </span>
 
                 <div>
-                  <p>ALMOST THERE</p>
-                  <h2>PAYMENT</h2>
+                  <p>
+                    ALMOST THERE
+                  </p>
+
+                  <h2>
+                    PAYMENT
+                  </h2>
                 </div>
 
               </div>
-
 
               <div className="payment-option">
 
@@ -800,6 +1511,7 @@ paymentMethod: "online",
                   </span>
 
                   <span>
+
                     <strong>
                       ONLINE PAYMENT
                     </strong>
@@ -807,259 +1519,455 @@ paymentMethod: "online",
                     <small>
                       Secure payment powered by Razorpay
                     </small>
+
                   </span>
 
                 </label>
 
               </div>
 
-
               <p className="payment-note">
-                You will be redirected to the secure
-                Razorpay payment window after placing
-                your order.
+                You will be redirected to the
+                secure Razorpay payment window
+                after placing your order.
               </p>
 
             </div>
 
+            {/* =================================================
+                PRICE STATUS
+            ================================================== */}
+
+            {priceLoading && (
+              <p>
+                Checking latest product prices...
+              </p>
+            )}
+
+            {priceChanged &&
+              !priceLoading && (
+                <p className="price-update-message">
+                  Product prices have changed.
+                  Your checkout total has been
+                  updated to the latest prices.
+                </p>
+              )}
+
+            {priceError && (
+              <p>
+                {priceError}
+              </p>
+            )}
+
+            {/* =================================================
+                PLACE ORDER
+            ================================================== */}
 
             <button
-  type="submit"
-  className="place-order-button"
->
-  <span>CONTINUE TO SECURE PAYMENT</span>
-  <span className="payment-arrow">→</span>
-</button>
+              type="submit"
+              className="place-order-button"
+              disabled={
+                priceLoading
+              }
+            >
+              <span>
+                {priceLoading
+                  ? "CHECKING PRICES..."
+                  : "CONTINUE TO SECURE PAYMENT"}
+              </span>
+
+              <span className="payment-arrow">
+                →
+              </span>
+            </button>
 
           </form>
 
         </section>
 
-
-        {/* RIGHT SIDE */}
+        {/* ===================================================
+            RIGHT SIDE
+        ==================================================== */}
 
         <aside className="checkout-summary">
 
           <div className="checkout-summary-heading">
 
-            <p>YOUR SELECTION</p>
+            <p>
+              YOUR SELECTION
+            </p>
 
-            <h2>ORDER SUMMARY</h2>
+            <h2>
+              ORDER SUMMARY
+            </h2>
 
           </div>
 
+          {/* PRODUCTS */}
 
           <div className="checkout-products">
 
-            {cart.map((item) => (
+            {checkoutCart.map(
+              (item) => (
 
-              <div
-                className="checkout-product"
-                key={`${item.id}-${item.size}`}
-              >
+                <div
+                  className="checkout-product"
+                  key={`${item.id}-${item.size}`}
+                >
 
-                <div className="checkout-product-image">
+                  <div className="checkout-product-image">
 
-                  <img
-                    src={item.image}
-                    alt={item.name}
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                    />
+
+                    <span>
+                      ×{item.quantity}
+                    </span>
+
+                  </div>
+
+                  <div className="checkout-product-info">
+
+                    <h3>
+                      {item.name}
+                    </h3>
+
+                    <p>
+                      {item.size} •{" "}
+                      {item.category ||
+                        "COLLECTION"}
+                    </p>
+
+                    <strong>
+                      ₹
+                      {(
+                        Number(
+                          item.price || 0
+                        ) *
+                        Number(
+                          item.quantity ||
+                            0
+                        )
+                      ).toLocaleString(
+                        "en-IN"
+                      )}
+                    </strong>
+
+                    {Number(
+                      item.stock || 0
+                    ) <
+                      Number(
+                        item.quantity ||
+                          0
+                      ) && (
+                      <p>
+                        Only{" "}
+                        {
+                          item.stock
+                        }{" "}
+                        left in stock
+                      </p>
+                    )}
+
+                  </div>
+
+                </div>
+              )
+            )}
+
+          </div>
+
+          {/* COUPON */}
+
+          <div className="checkout-coupon">
+
+            <div className="checkout-coupon-heading">
+
+              <span>
+                HAVE A COUPON?
+              </span>
+
+              <p>
+                APPLY YOUR DISCOUNT
+              </p>
+
+            </div>
+
+            {!appliedCoupon ? (
+              <>
+                <div className="coupon-input-row">
+
+                  <input
+                    type="text"
+                    placeholder="Enter coupon code"
+                    value={
+                      couponCode
+                    }
+                    onChange={(e) =>
+                      setCouponCode(
+                        e.target.value.toUpperCase()
+                      )
+                    }
                   />
 
+                  <button
+                    type="button"
+                    onClick={
+                      handleApplyCoupon
+                    }
+                    disabled={
+                      couponLoading
+                    }
+                  >
+                    {couponLoading
+                      ? "CHECKING..."
+                      : "APPLY"}
+                  </button>
+
+                </div>
+
+                {couponError && (
+                  <p className="coupon-error">
+                    {
+                      couponError
+                    }
+                  </p>
+                )}
+              </>
+            ) : (
+
+              <div className="applied-coupon">
+
+                <div>
+
+                  <strong>
+                    {
+                      appliedCoupon.code
+                    }
+                  </strong>
+
                   <span>
-                    ×{item.quantity}
+                    {
+                      appliedCoupon.discountType ===
+                      "percentage"
+                        ? `${appliedCoupon.discountValue}% OFF`
+                        : `₹${appliedCoupon.discountValue} OFF`
+                    }
                   </span>
 
                 </div>
 
-
-                <div className="checkout-product-info">
-
-                  <h3>{item.name}</h3>
-
-                  <p>
-                    {item.size} • {item.category || "COLLECTION"}
-                  </p>
-
-                  <strong>
-                    ₹
-                    {(
-                      item.price *
-                      item.quantity
-                    ).toLocaleString("en-IN")}
-                  </strong>
-
-                </div>
+                <button
+                  type="button"
+                  onClick={
+                    handleRemoveCoupon
+                  }
+                >
+                  REMOVE
+                </button>
 
               </div>
 
-            ))}
+            )}
 
           </div>
-          {/* COUPON */}
 
-<div className="checkout-coupon">
-  <div className="checkout-coupon-heading">
-    <span>HAVE A COUPON?</span>
-    <p>APPLY YOUR DISCOUNT</p>
-  </div>
+          {/* COUPON DISCOUNT */}
 
-  {!appliedCoupon ? (
-    <>
-      <div className="coupon-input-row">
-        <input
-          type="text"
-          placeholder="Enter coupon code"
-          value={couponCode}
-          onChange={(e) =>
-            setCouponCode(e.target.value.toUpperCase())
-          }
-        />
+          {couponDiscount > 0 && (
 
-        <button
-          type="button"
-          onClick={handleApplyCoupon}
-          disabled={couponLoading}
-        >
-          {couponLoading ? "CHECKING..." : "APPLY"}
-        </button>
-      </div>
+            <div className="summary-row coupon-discount-row">
 
-      {couponError && (
-        <p className="coupon-error">
-          {couponError}
-        </p>
-      )}
-    </>
-  ) : (
-    <div className="applied-coupon">
-      <div>
-        <strong>{appliedCoupon.code}</strong>
+              <span>
+                Coupon Discount
+              </span>
 
-        <span>
-          {appliedCoupon.discountType === "percentage"
-            ? `${appliedCoupon.discountValue}% OFF`
-            : `₹${appliedCoupon.discountValue} OFF`}
-        </span>
-      </div>
+              <span>
+                -₹
+                {couponDiscount.toLocaleString(
+                  "en-IN"
+                )}
+              </span>
 
-      <button
-        type="button"
-        onClick={handleRemoveCoupon}
-      >
-        REMOVE
-      </button>
-    </div>
-  )}
-</div>
+            </div>
 
-{couponDiscount > 0 && (
-  <div className="summary-row coupon-discount-row">
-    <span>Coupon Discount</span>
+          )}
 
-    <span>
-      -₹{couponDiscount.toLocaleString("en-IN")}
-    </span>
-  </div>
-)}
-{rewardDiscount > 0 && (
-  <div className="summary-row reward-discount-row">
-    <span>Reward Points</span>
+          {/* REWARD DISCOUNT */}
 
-    <span>
-      -₹{rewardDiscount.toLocaleString("en-IN")}
-    </span>
-  </div>
-)}
+          {rewardDiscount > 0 && (
 
-{/* REWARD POINTS */}
+            <div className="summary-row reward-discount-row">
 
-<div className="checkout-rewards">
-  <div className="checkout-rewards-heading">
-    <span>REWARD POINTS</span>
-    <p>USE YOUR POINTS TO SAVE MORE</p>
-  </div>
+              <span>
+                Reward Points
+              </span>
 
-  {rewardLoading ? (
-    <p>Loading reward points...</p>
-  ) : rewardPoints > 0 ? (
-    <>
-      <div className="reward-balance">
-        <strong>{rewardPoints}</strong>
-        <span>points available</span>
-      </div>
+              <span>
+                -₹
+                {rewardDiscount.toLocaleString(
+                  "en-IN"
+                )}
+              </span>
 
-      <div className="reward-input-row">
-        <input
-          type="number"
-          min="0"
-          max={rewardPoints}
-          value={rewardPointsUsed}
-          onChange={handleRewardPointsChange}
-          placeholder="Points to use"
-        />
+            </div>
 
-        <span>1 point = ₹1</span>
-      </div>
+          )}
 
-      {rewardDiscount > 0 && (
-        <p className="reward-applied">
-          ✓ ₹{rewardDiscount.toLocaleString("en-IN")} reward
-          discount applied
-        </p>
-      )}
-    </>
-  ) : (
-    <p className="no-rewards">
-      You don't have any reward points yet.
-    </p>
-  )}
-</div>
+          {/* REWARDS */}
 
+          <div className="checkout-rewards">
+
+            <div className="checkout-rewards-heading">
+
+              <span>
+                REWARD POINTS
+              </span>
+
+              <p>
+                USE YOUR POINTS TO SAVE MORE
+              </p>
+
+            </div>
+
+            {rewardLoading ? (
+
+              <p>
+                Loading reward points...
+              </p>
+
+            ) : rewardPoints > 0 ? (
+
+              <>
+
+                <div className="reward-balance">
+
+                  <strong>
+                    {
+                      rewardPoints
+                    }
+                  </strong>
+
+                  <span>
+                    points available
+                  </span>
+
+                </div>
+
+                <div className="reward-input-row">
+
+                  <input
+                    type="number"
+                    min="0"
+                    max={
+                      rewardPoints
+                    }
+                    value={
+                      rewardPointsUsed
+                    }
+                    onChange={
+                      handleRewardPointsChange
+                    }
+                    placeholder="Points to use"
+                  />
+
+                  <span>
+                    1 point = ₹1
+                  </span>
+
+                </div>
+
+                {rewardDiscount >
+                  0 && (
+
+                  <p className="reward-applied">
+
+                    ✓ ₹
+                    {
+                      rewardDiscount.toLocaleString(
+                        "en-IN"
+                      )
+                    }{" "}
+                    reward discount applied
+
+                  </p>
+
+                )}
+
+              </>
+
+            ) : (
+
+              <p className="no-rewards">
+                You don't have any reward
+                points yet.
+              </p>
+
+            )}
+
+          </div>
+
+          {/* SUMMARY */}
 
           <div className="summary-divider"></div>
 
-
           <div className="summary-row">
 
-            <span>Subtotal</span>
+            <span>
+              Subtotal
+            </span>
 
             <span>
-              ₹{cartTotal.toLocaleString("en-IN")}
+              ₹
+              {checkoutCartTotal.toLocaleString(
+                "en-IN"
+              )}
             </span>
 
           </div>
 
-
           <div className="summary-row">
 
-            <span>Shipping</span>
+            <span>
+              Shipping
+            </span>
 
-            <span>FREE</span>
+            <span>
+              FREE
+            </span>
 
           </div>
-
 
           <div className="summary-divider"></div>
 
+          <div className="summary-total">
 
-<div className="summary-total">
-  <span>TOTAL</span>
+            <span>
+              TOTAL
+            </span>
 
-  <strong>
-    ₹{finalTotal.toLocaleString("en-IN")}
-  </strong>
-</div>
+            <strong>
+              ₹
+              {finalTotal.toLocaleString(
+                "en-IN"
+              )}
+            </strong>
 
-
-          <div className="secure-note">
-            🔒 Your payment is securely processed
-            through Razorpay.
           </div>
 
+          <div className="secure-note">
+            🔒 Your payment is securely
+            processed through Razorpay.
+          </div>
 
           <button
             className="back-to-cart"
-            onClick={() => navigate("/cart")}
+            type="button"
+            onClick={() =>
+              navigate("/cart")
+            }
           >
             ← BACK TO CART
           </button>
