@@ -68,6 +68,23 @@ router.patch(
       }
 
       order.orderStatus = status;
+      order.orderStatus = status;
+
+// Keep delivery status synchronized with order status
+const deliveryStatusMap = {
+  pending: "pending",
+  confirmed: "assigned",
+  processing: "assigned",
+  shipped: "in_transit",
+  delivered: "delivered",
+  cancelled: "cancelled",
+};
+
+if (deliveryStatusMap[status]) {
+  order.deliveryStatus = deliveryStatusMap[status];
+}
+
+await order.save();
 
       await order.save();
 

@@ -220,8 +220,8 @@ const [cancelError, setCancelError] = useState("");
     </div>
 
     <span
-      className={`details-status-badge status-${order.orderStatus}`}
-    >
+  className={`details-status-badge delivery-${order.orderStatus}`}
+>
       {order.orderStatus}
     </span>
   </div>
@@ -308,6 +308,109 @@ const [cancelError, setCancelError] = useState("");
   )}
 
 </div>
+
+{/* DELIVERY STATUS */}
+
+<div className="delivery-status-panel">
+
+  <div className="order-status-heading">
+    <div>
+      <span>DELIVERY INFORMATION</span>
+      <h2>DELIVERY STATUS</h2>
+    </div>
+
+    <span
+  className={`details-status-badge delivery-${
+    order.orderStatus === "delivered"
+      ? "delivered"
+      : order.deliveryStatus || "pending"
+  }`}
+>
+  {(
+    order.orderStatus === "delivered"
+      ? "delivered"
+      : order.deliveryStatus || "pending"
+  )
+    .replaceAll("_", " ")
+    .toUpperCase()}
+</span>
+  </div>
+  </div>
+
+  <div className="delivery-status-content">
+
+  <div className="delivery-status-icon">
+    🚚
+  </div>
+
+  <div className="delivery-status-info">
+
+    <strong>
+      {order.orderStatus === "delivered"
+        ? "Order Delivered"
+        : order.deliveryStatus === "assigned"
+        ? "Delivery Assigned"
+        : order.deliveryStatus === "picked_up"
+        ? "Order Picked Up"
+        : order.deliveryStatus === "in_transit"
+        ? "Order In Transit"
+        : order.deliveryStatus === "out_for_delivery"
+        ? "Out for Delivery"
+        : order.deliveryStatus === "cancelled"
+        ? "Delivery Cancelled"
+        : "Delivery Pending"}
+    </strong>
+
+    <p>
+      {order.orderStatus === "delivered"
+        ? "Your order has been successfully delivered."
+        : order.deliveryStatus === "assigned"
+        ? "A delivery person has been assigned to your order."
+        : order.deliveryStatus === "picked_up"
+        ? "Your order has been picked up for delivery."
+        : order.deliveryStatus === "in_transit"
+        ? "Your order is currently on the way."
+        : order.deliveryStatus === "out_for_delivery"
+        ? "Your order is out for delivery and will arrive soon."
+        : order.deliveryStatus === "cancelled"
+        ? "The delivery for this order has been cancelled."
+        : "Your order is waiting for delivery processing."}
+    </p>
+
+    {order.deliveryMethod && (
+      <p>
+        DELIVERY METHOD:{" "}
+        <strong>
+          {order.deliveryMethod === "courier"
+            ? "COURIER"
+            : "OWN DELIVERY"}
+        </strong>
+      </p>
+    )}
+
+    {order.shippingProvider && (
+      <p>
+        SHIPPING PROVIDER:{" "}
+        <strong>
+          {order.shippingProvider}
+        </strong>
+      </p>
+    )}
+
+    {order.trackingId && (
+      <p>
+        TRACKING ID:{" "}
+        <strong>
+          {order.trackingId}
+        </strong>
+      </p>
+    )}
+
+  </div>
+
+</div>
+
+
 
 
         {/* MAIN GRID */}
