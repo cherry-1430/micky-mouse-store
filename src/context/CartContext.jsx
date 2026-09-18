@@ -493,6 +493,17 @@ export function CartProvider({ children }) {
         Number(item.quantity || 0),
     0
   );
+    // =====================================================
+  // DELIVERY CHARGE
+  // =====================================================
+
+  const deliveryCharge = cartTotal < 999 ? 100 : 0;
+
+  // =====================================================
+  // FINAL CART TOTAL
+  // =====================================================
+
+  const finalCartTotal = cartTotal + deliveryCharge;
 
   /* =====================================================
      PROVIDER
@@ -500,28 +511,32 @@ export function CartProvider({ children }) {
 
   return (
     <CartContext.Provider
-      value={{
-        cart,
+  value={{
+    cart,
 
-        addToCart,
+    addToCart,
 
-        removeFromCart,
+    removeFromCart,
 
-        updateQuantity,
+    updateQuantity,
 
-        cartCount,
+    cartCount,
 
-        cartTotal,
+    cartTotal,
 
-        clearCart,
+    deliveryCharge,
 
-        getEffectivePrice,
+    finalCartTotal,
 
-        isFlashSaleActive,
+    clearCart,
 
-        syncCartWithDatabase,
-      }}
-    >
+    getEffectivePrice,
+
+    isFlashSaleActive,
+
+    syncCartWithDatabase,
+  }}
+>
       {children}
     </CartContext.Provider>
   );

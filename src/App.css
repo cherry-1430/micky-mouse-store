@@ -12176,3 +12176,554 @@ textarea:focus {
     white-space: normal;
   }
 }
+.admin-delivery-actions{
+  display:flex;
+  justify-content: space-between;
+}
+
+/* =========================================================
+   ORDER DATE FILTER
+   ========================================================= */
+
+.admin-order-filter {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  margin: 20px 0 28px;
+  padding: 18px;
+  border: 1px solid #ddd;
+  background: #fafafa;
+}
+
+.admin-order-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.admin-order-filter-group label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #555;
+}
+
+.admin-order-filter-group input[type="date"] {
+  height: 42px;
+  min-width: 190px;
+  padding: 0 12px;
+  border: 1px solid #ccc;
+  background: #fff;
+  font-size: 14px;
+  outline: none;
+}
+
+.admin-order-filter-group input[type="date"]:focus {
+  border-color: #111;
+}
+
+.admin-clear-date-button {
+  height: 42px;
+  padding: 0 18px;
+  border: 1px solid #111;
+  background: #111;
+  color: #fff;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.admin-clear-date-button:hover {
+  background: #333;
+}
+
+
+/* =========================================================
+   FILTER RESULT TEXT
+   ========================================================= */
+
+.admin-filter-result {
+  margin-top: 10px;
+  font-size: 13px;
+  color: #666;
+}
+
+.admin-filter-result strong {
+  color: #111;
+}
+
+
+/* =========================================================
+   DELIVERY INFORMATION
+   ========================================================= */
+
+.admin-delivery-section {
+  margin-top: 24px;
+  padding-top: 22px;
+  border-top: 1px solid #e5e5e5;
+}
+
+.admin-delivery-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.admin-delivery-heading span {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #777;
+}
+
+.admin-delivery-heading h4 {
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: 0.5px;
+}
+
+
+/* =========================================================
+   CUSTOMER / DELIVERY ADDRESS
+   ========================================================= */
+
+.admin-delivery-address {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  padding: 20px;
+  border: 1px solid #ddd;
+  background: #fafafa;
+}
+
+.admin-address-block span {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.3px;
+  color: #777;
+}
+
+.admin-address-block strong {
+  display: block;
+  font-size: 15px;
+  color: #111;
+}
+
+.admin-address-block p {
+  margin: 4px 0 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #444;
+}
+
+
+/* =========================================================
+   PRODUCTS INSIDE ORDER
+   ========================================================= */
+
+.admin-order-products {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e5e5;
+}
+
+.admin-order-products > span {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #777;
+}
+
+.admin-order-product-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.admin-order-product-item:last-child {
+  border-bottom: none;
+}
+
+.admin-order-product-item img {
+  width: 58px;
+  height: 68px;
+  object-fit: cover;
+  border: 1px solid #ddd;
+}
+
+.admin-order-product-info {
+  flex: 1;
+}
+
+.admin-order-product-info strong {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+.admin-order-product-info span {
+  font-size: 12px;
+  color: #666;
+}
+
+.admin-order-product-price {
+  text-align: right;
+}
+
+.admin-order-product-price strong {
+  display: block;
+  font-size: 14px;
+}
+
+.admin-order-product-price span {
+  font-size: 12px;
+  color: #777;
+}
+
+
+/* =========================================================
+   DELIVERY LABEL BUTTON
+   ========================================================= */
+
+.admin-delivery-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.admin-print-label-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  min-height: 42px;
+  padding: 0 18px;
+
+  border: 1px solid #111;
+  background: #111;
+  color: #fff;
+
+  cursor: pointer;
+
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.admin-print-label-button:hover {
+  background: #333;
+}
+
+
+/* =========================================================
+   DELETE ORDER BUTTON
+   ========================================================= */
+
+.admin-delete-order-button {
+  min-height: 40px;
+  padding: 0 16px;
+
+  border: 1px solid #c62828;
+  background: transparent;
+  color: #c62828;
+
+  cursor: pointer;
+
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.admin-delete-order-button:hover {
+  background: #c62828;
+  color: #fff;
+}
+
+
+/* =========================================================
+   DELIVERY LABEL
+   ========================================================= */
+
+.delivery-label {
+  width: 100%;
+  max-width: 800px;
+  margin: 30px auto;
+  padding: 35px;
+
+  border: 2px solid #111;
+  background: #fff;
+
+  color: #111;
+  font-family: Arial, sans-serif;
+}
+
+.delivery-label-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+
+  padding-bottom: 20px;
+  border-bottom: 2px solid #111;
+}
+
+.delivery-label-brand {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.delivery-label-order {
+  text-align: right;
+}
+
+.delivery-label-order span {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #666;
+}
+
+.delivery-label-order strong {
+  font-size: 18px;
+}
+
+
+/* =========================================================
+   DELIVERY LABEL ADDRESS
+   ========================================================= */
+
+.delivery-label-address {
+  padding: 25px 0;
+}
+
+.delivery-label-address > span {
+  display: block;
+  margin-bottom: 10px;
+
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+}
+
+.delivery-label-address h3 {
+  margin: 0 0 8px;
+  font-size: 21px;
+}
+
+.delivery-label-address p {
+  margin: 4px 0;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   DELIVERY LABEL PRODUCT LIST
+   ========================================================= */
+
+.delivery-label-products {
+  padding: 20px 0;
+  border-top: 1px solid #ccc;
+}
+
+.delivery-label-products h4 {
+  margin: 0 0 15px;
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+
+.delivery-label-product {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.delivery-label-product-name {
+  flex: 1;
+}
+
+.delivery-label-product-name strong {
+  display: block;
+  font-size: 14px;
+}
+
+.delivery-label-product-name span {
+  font-size: 12px;
+  color: #666;
+}
+
+.delivery-label-product-quantity {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   DELIVERY LABEL FOOTER
+   ========================================================= */
+
+.delivery-label-footer {
+  display: flex;
+  justify-content: space-between;
+
+  margin-top: 20px;
+  padding-top: 20px;
+
+  border-top: 2px solid #111;
+}
+
+.delivery-label-footer span {
+  font-size: 11px;
+  color: #666;
+}
+
+.delivery-label-footer strong {
+  font-size: 16px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+  .admin-order-filter {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-order-filter-group input[type="date"] {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .admin-clear-date-button {
+    width: 100%;
+  }
+
+  .admin-delivery-address {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-order-product-item {
+    align-items: flex-start;
+  }
+
+  .admin-order-product-price {
+    text-align: left;
+  }
+
+  .delivery-label {
+    padding: 20px;
+  }
+
+  .delivery-label-header {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .delivery-label-order {
+    text-align: left;
+  }
+
+  .delivery-label-footer {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+
+/* =========================================================
+   PRINT DELIVERY LABEL
+   ========================================================= */
+
+@media print {
+
+  body * {
+    visibility: hidden;
+  }
+
+  .delivery-label,
+  .delivery-label * {
+    visibility: visible;
+  }
+
+  .delivery-label {
+    position: absolute;
+    left: 0;
+    top: 0;
+
+    width: 100%;
+    max-width: none;
+
+    margin: 0;
+    padding: 25px;
+
+    border: 2px solid #111;
+  }
+
+  .admin-print-label-button,
+  .admin-delete-order-button {
+    display: none !important;
+  }
+
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
+}
+
+.checkout-price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  padding: 10px 0;
+}
+
+.checkout-price-row span {
+  flex: 1;
+}
+
+.checkout-price-row strong {
+  margin-left: auto;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.checkout-price-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  padding-top: 15px;
+  margin-top: 10px;
+  border-top: 1px solid #ddd;
+}
+
+.checkout-price-total span {
+  flex: 1;
+}
+
+.checkout-price-total strong {
+  margin-left: auto;
+  text-align: right;
+  white-space: nowrap;
+}

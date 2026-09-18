@@ -2,11 +2,20 @@ const mongoose = require("mongoose");
 
 const orderSchema = new mongoose.Schema(
   {
+    // =====================================================
+    // USER
+    // =====================================================
+
     userId: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: "User",
-  required: true,
-},
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+
+    // =====================================================
+    // CUSTOMER
+    // =====================================================
+
     customer: {
       firstName: {
         type: String,
@@ -29,6 +38,10 @@ const orderSchema = new mongoose.Schema(
       },
     },
 
+    // =====================================================
+    // SHIPPING ADDRESS
+    // =====================================================
+
     shippingAddress: {
       address: {
         type: String,
@@ -50,6 +63,10 @@ const orderSchema = new mongoose.Schema(
         required: true,
       },
     },
+
+    // =====================================================
+    // ORDER ITEMS
+    // =====================================================
 
     items: [
       {
@@ -85,94 +102,132 @@ const orderSchema = new mongoose.Schema(
       },
     ],
 
+    // =====================================================
+    // PRICE DETAILS
+    // =====================================================
+
     subtotal: {
-  type: Number,
-  required: true,
-},
+      type: Number,
+      required: true,
+      min: 0,
+    },
 
-couponCode: {
-  type: String,
-  default: null,
-  trim: true,
-},
+    deliveryCharge: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
 
-couponDiscount: {
-  type: Number,
-  default: 0,
-  min: 0,
-},
+    couponCode: {
+      type: String,
+      default: null,
+      trim: true,
+    },
 
-rewardPointsUsed: {
-  type: Number,
-  default: 0,
-  min: 0,
-},
+    couponDiscount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
 
-rewardDiscount: {
-  type: Number,
-  default: 0,
-  min: 0,
-},
-rewardPointsEarned: {
-  type: Number,
-  default: 0,
-  min: 0,
-},
+    rewardPointsUsed: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
 
-totalAmount: {
-  type: Number,
-  required: true,
-},
+    rewardDiscount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    rewardPointsEarned: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    totalAmount: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+
+    // =====================================================
+    // PAYMENT
+    // =====================================================
 
     paymentMethod: {
       type: String,
       default: "online",
     },
 
-   paymentStatus: {
-  type: String,
-  enum: [
-    "pending",
-    "paid",
-    "refunded",
-  ],
-  default: "pending",
-},
-    razorpayOrderId: {
-  type: String,
-  default: null,
-},
+    paymentStatus: {
+      type: String,
+      enum: [
+        "pending",
+        "paid",
+        "refunded",
+      ],
+      default: "pending",
+    },
 
-razorpayPaymentId: {
-  type: String,
-  default: null,
-},
+    razorpayOrderId: {
+      type: String,
+      default: null,
+    },
+
+    razorpayPaymentId: {
+      type: String,
+      default: null,
+    },
+
+    // =====================================================
+    // INVENTORY
+    // =====================================================
+
     inventoryDeducted: {
-  type: Boolean,
-  default: false,
-},
+      type: Boolean,
+      default: false,
+    },
+
+    // =====================================================
+    // ORDER STATUS
+    // =====================================================
 
     orderStatus: {
-  type: String,
-  enum: [
-    "pending",
-    "confirmed",
-    "processing",
-    "shipped",
-    "delivered",
-    "cancelled",
-  ],
-  default: "pending",
-},
+      type: String,
+      enum: [
+        "pending",
+        "confirmed",
+        "processing",
+        "shipped",
+        "delivered",
+        "cancelled",
+      ],
+      default: "pending",
+    },
   },
   {
     timestamps: true,
   }
 );
 
+// =========================================================
+// INDEX
+// =========================================================
+
 orderSchema.index({
   userId: 1,
   createdAt: -1,
 });
 
-module.exports = mongoose.model("Order", orderSchema);
+// =========================================================
+// MODEL
+// =========================================================
+
+module.exports = mongoose.model(
+  "Order",
+  orderSchema
+);
