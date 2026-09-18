@@ -113,10 +113,40 @@ const orderSchema = new mongoose.Schema(
     },
 
     deliveryCharge: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
+  type: Number,
+  default: 0,
+  min: 0,
+},
+
+deliveryMethod: {
+  type: String,
+  enum: ["own_delivery", "courier"],
+  default: "own_delivery",
+},
+
+shippingProvider: {
+  type: String,
+  default: null,
+},
+
+trackingId: {
+  type: String,
+  default: null,
+},
+
+deliveryStatus: {
+  type: String,
+  enum: [
+    "pending",
+    "assigned",
+    "picked_up",
+    "in_transit",
+    "out_for_delivery",
+    "delivered",
+    "cancelled",
+  ],
+  default: "pending",
+},
 
     couponCode: {
       type: String,

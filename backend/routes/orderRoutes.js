@@ -49,13 +49,14 @@ function getEffectivePrice(product) {
 router.post("/", authMiddleware, async (req, res) => {
   try {
     const {
-      customer,
-      shippingAddress,
-      items,
-      couponCode,
-      rewardPointsUsed,
-      paymentMethod,
-    } = req.body;
+  customer,
+  shippingAddress,
+  items,
+  couponCode,
+  rewardPointsUsed,
+  paymentMethod,
+  deliveryMethod,
+} = req.body;
 
     console.log("========================================");
     console.log("🔥 CREATE ORDER ROUTE RUNNING");
@@ -249,8 +250,15 @@ router.post("/", authMiddleware, async (req, res) => {
        DELIVERY CHARGE
     ========================================= */
 
-    const deliveryCharge =
-      calculatedSubtotal < 999 ? 100 : 0;
+    const normalizedDeliveryMethod =
+  deliveryMethod === "courier"
+    ? "courier"
+    : "own_delivery";
+
+const deliveryCharge =
+  normalizedDeliveryMethod === "own_delivery"
+    ? (calculatedSubtotal < 999 ? 100 : 0)
+    : (calculatedSubtotal < 999 ? 100 : 0);
 
     /* =========================================
        USER
@@ -363,9 +371,20 @@ router.post("/", authMiddleware, async (req, res) => {
 
       rewardDiscount: rewardDiscount,
 
-      deliveryCharge: deliveryCharge,
+      deliveryCharge: Number(deliveryCharge || 0),
 
-      totalAmount: finalAmount,
+deliveryMethod: normalizedDeliveryMethod,
+
+shippingProvider:
+  normalizedDeliveryMethod === "courier"
+    ? "Delhivery"
+    : null,
+
+trackingId: null,
+
+deliveryStatus: "pending",
+
+totalAmount: Number(finalAmount),
 
       paymentMethod:
         paymentMethod || "online",
@@ -1461,5 +1480,50 @@ router.post(
     }
   }
 );
+
+// =========================================================
+// UPDATE DELIVERY DETAILS
+// Admin: Own Delivery / Courier / Tracking ID
+router.patch("/orders/:id/delivery", authMiddleware, async (req, res) => {
+  try {
+    const { deliveryMethod } = req.body;
+
+    if (!deliveryMethod) {
+      return res.status(400).json({
+        message: "Delivery method is required",
+      });
+    }
+
+    if (!["local", "courier"].includes(deliveryMethod)) {
+      return res.status(400).json({
+        message: "Invalid delivery method",
+      });
+    }
+
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({
+        message: "Order not found",
+      });
+    }
+
+    order.deliveryMethod = deliveryMethod;
+
+    await order.save();
+
+    return res.status(200).json({
+      message: "Delivery method updated successfully",
+      order,
+    });
+  } catch (error) {
+    console.error("Delivery method update error:", error);
+
+    return res.status(500).json({
+      message: "Failed to update delivery method",
+      error: error.message,
+    });
+  }
+});
 
 module.exports = router;

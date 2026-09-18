@@ -226,17 +226,10 @@ function Cart() {
           </div>
 
 
-          <div className="summary-row">
-
-            <span>Shipping</span>
-
-            <span>FREE</span>
-
-          </div>
 
 
           <div className="summary-note">
-            Free shipping is included on your order.
+             shipping charges will be applicable based on Cart Value.
           </div>
 
 

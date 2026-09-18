@@ -451,6 +451,65 @@ function AdminDashboard() {
     }
   };
 
+  const updateDeliveryDetails = async (
+  orderId,
+  deliveryMethod,
+  courierProvider,
+  trackingId
+) => {
+  try {
+    const token = localStorage.getItem("token");
+
+    const response = await fetch(
+      `${API_URL}/api/admin/orders/${orderId}/delivery`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          deliveryMethod,
+          courierProvider:
+            deliveryMethod === "courier"
+              ? courierProvider || null
+              : null,
+          trackingId:
+            deliveryMethod === "courier"
+              ? trackingId || null
+              : null,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.message ||
+          "Failed to update delivery details"
+      );
+    }
+
+    setOrders((currentOrders) =>
+      currentOrders.map((order) =>
+        order._id === orderId
+          ? data.order
+          : order
+      )
+    );
+
+    alert("Delivery details updated successfully!");
+  } catch (error) {
+    console.error(
+      "Delivery update error:",
+      error
+    );
+
+    alert(error.message);
+  }
+};
+
   const handleDeleteOrder = async (orderId) => {
     if (
       !window.confirm(
@@ -1157,6 +1216,105 @@ function AdminDashboard() {
                     </select>
                     <p>Update fulfilment status</p>
                   </div>
+
+                  <div className="admin-detail">
+  <span>DELIVERY METHOD</span>
+
+  <select
+    value={order.deliveryMethod || "own_delivery"}
+    onChange={(e) => {
+      const method = e.target.value;
+
+      updateDeliveryDetails(
+        order._id,
+        method,
+        order.courierProvider || "",
+        order.trackingId || ""
+      );
+    }}
+    className="admin-status-select"
+  >
+    <option value="own_delivery">
+      Own Delivery
+    </option>
+
+    <option value="courier">
+      Courier
+    </option>
+  </select>
+
+  <p>
+    Admin selects delivery method
+  </p>
+</div>
+
+{order.deliveryMethod === "courier" && (
+  <>
+    <div className="admin-detail">
+      <span>COURIER</span>
+
+      <select
+        value={order.courierProvider || ""}
+        onChange={(e) =>
+          updateDeliveryDetails(
+            order._id,
+            "courier",
+            e.target.value,
+            order.trackingId || ""
+          )
+        }
+        className="admin-status-select"
+      >
+        <option value="">
+          Select Courier
+        </option>
+
+        <option value="delhivery">
+          Delhivery
+        </option>
+
+        <option value="other">
+          Other Courier
+        </option>
+      </select>
+    </div>
+
+    <div className="admin-detail">
+      <span>TRACKING ID</span>
+
+      <input
+        type="text"
+        value={order.trackingId || ""}
+        placeholder="Enter tracking ID"
+        onChange={(e) =>
+          setOrders((currentOrders) =>
+            currentOrders.map((item) =>
+              item._id === order._id
+                ? {
+                    ...item,
+                    trackingId:
+                      e.target.value,
+                  }
+                : item
+            )
+          )
+        }
+        onBlur={() =>
+          updateDeliveryDetails(
+            order._id,
+            "courier",
+            order.courierProvider || "",
+            order.trackingId || ""
+          )
+        }
+      />
+
+      <p>
+        Enter courier tracking / AWB number
+      </p>
+    </div>
+  </>
+)}
                 </div>
 
                 {/* DELIVERY */}

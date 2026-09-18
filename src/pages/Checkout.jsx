@@ -36,6 +36,7 @@ function Checkout() {
     city: "",
     state: "",
     pincode: "",
+    deliveryMethod: "own_delivery",
   });
 
   // =========================================================
@@ -1761,6 +1762,8 @@ const handleSubmit = async (e) => {
               </div>
 
             </div>
+
+          
 
             {/* =================================================
                 PAYMENT

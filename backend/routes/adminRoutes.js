@@ -5,7 +5,10 @@ const adminMiddleware = require("../middleware/adminMiddleware");
 
 const router = express.Router();
 
-// Get all orders - Admin only
+/* =========================================================
+   GET ALL ORDERS - ADMIN ONLY
+========================================================= */
+
 router.get(
   "/orders",
   authMiddleware,
@@ -29,7 +32,10 @@ router.get(
   }
 );
 
-// Update order status - Admin only
+/* =========================================================
+   UPDATE ORDER STATUS - ADMIN ONLY
+========================================================= */
+
 router.patch(
   "/orders/:id/status",
   authMiddleware,
@@ -80,16 +86,42 @@ router.patch(
   }
 );
 
+/* =========================================================
+   UPDATE DELIVERY METHOD - ADMIN ONLY
+========================================================= */
 
-// Delete order - Admin only
-// Delete order - Admin only
-router.delete(
-  "/orders/:id",
+// =========================================================
+// UPDATE DELIVERY METHOD - ADMIN ONLY
+// =========================================================
+
+router.patch(
+  "/orders/:id/delivery",
   authMiddleware,
   adminMiddleware,
   async (req, res) => {
     try {
-      const order = await Order.findById(req.params.id);
+      const { deliveryMethod } = req.body;
+
+      console.log("========== DELIVERY UPDATE ==========");
+      console.log("Order ID:", req.params.id);
+      console.log("Received deliveryMethod:", deliveryMethod);
+
+      // Validate
+      if (
+        !["own_delivery", "courier"].includes(
+          deliveryMethod
+        )
+      ) {
+        return res.status(400).json({
+          message:
+            "Invalid delivery method. Use own_delivery or courier.",
+        });
+      }
+
+      // Find order
+      const order = await Order.findById(
+        req.params.id
+      );
 
       if (!order) {
         return res.status(404).json({
@@ -97,18 +129,110 @@ router.delete(
         });
       }
 
-      await Order.findByIdAndDelete(req.params.id);
+      // Save delivery method
+      order.deliveryMethod = deliveryMethod;
 
-      res.status(200).json({
-        message: "Order deleted successfully",
-        orderId: req.params.id,
+      // If own delivery, clear courier details
+      if (deliveryMethod === "own_delivery") {
+        order.shippingProvider = null;
+        order.trackingId = null;
+        order.deliveryStatus = "pending";
+      }
+
+      // If courier, keep courier details ready
+      if (deliveryMethod === "courier") {
+        if (!order.deliveryStatus) {
+          order.deliveryStatus = "pending";
+        }
+      }
+
+      await order.save();
+
+      console.log(
+        "Saved deliveryMethod:",
+        order.deliveryMethod
+      );
+
+      console.log(
+        "Saved shippingProvider:",
+        order.shippingProvider
+      );
+
+      console.log(
+        "Saved trackingId:",
+        order.trackingId
+      );
+
+      console.log(
+        "Saved deliveryStatus:",
+        order.deliveryStatus
+      );
+
+      console.log("====================================");
+
+      return res.status(200).json({
+        message:
+          "Delivery method updated successfully",
+        order,
       });
     } catch (error) {
-      console.error("Delete order error:", error);
+      console.error(
+        "Delivery update error:",
+        error
+      );
+
+      return res.status(500).json({
+        message:
+          "Failed to update delivery method",
+        error: error.message,
+      });
+    }
+  }
+);
+
+/* =========================================================
+   DELETE ORDER - ADMIN ONLY
+========================================================= */
+
+router.delete(
+  "/orders/:id",
+  authMiddleware,
+  adminMiddleware,
+  async (req, res) => {
+    try {
+      const order = await Order.findById(
+        req.params.id
+      );
+
+      if (!order) {
+        return res.status(404).json({
+          message: "Order not found",
+        });
+      }
+
+      await Order.findByIdAndDelete(
+        req.params.id
+      );
+
+      res.status(200).json({
+        message:
+          "Order deleted successfully",
+
+        orderId:
+          req.params.id,
+      });
+    } catch (error) {
+      console.error(
+        "Delete order error:",
+        error
+      );
 
       res.status(500).json({
-        message: "Failed to delete order",
-        error: error.message,
+        message:
+          "Failed to delete order",
+
+        error:
+          error.message,
       });
     }
   }
