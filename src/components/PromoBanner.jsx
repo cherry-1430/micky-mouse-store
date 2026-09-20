@@ -7,7 +7,7 @@ function PromoBanner() {
       <div className="promo-content">
 
         <p className="promo-small-text">
-          MICKEY MOUSE • NEW SEASON
+          SPACE WEAR • NEW SEASON
         </p>
 
         <h2>
@@ -19,7 +19,7 @@ function PromoBanner() {
 
         <p className="promo-description">
           Discover our latest collection of premium
-          clothing inspired by timeless Mickey Mouse style.
+          clothing inspired by timeless Space Wear style.
           Made for everyday comfort and effortless confidence.
         </p>
 

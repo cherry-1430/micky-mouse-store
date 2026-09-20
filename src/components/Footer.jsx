@@ -11,8 +11,8 @@ function Footer() {
         <div className="footer-brand">
 
           <Link to="/" className="footer-logo">
-            <span>Micky</span>
-            <span>Mouse</span>
+            <span>Space</span>
+            <span>Wear</span>
           </Link>
 
           <p>
@@ -62,7 +62,7 @@ function Footer() {
   </a>
 
   <a href="mailto:mickymouse14@gmail.com">
-    ✉ mickymouse14@gmail.com
+    ✉ spacewear14@gmail.com
   </a>
   <a
   href="https://wa.me/918688243239?text=Hello%2C%20I%20need%20help%20with%20my%20order."

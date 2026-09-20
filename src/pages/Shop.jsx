@@ -195,7 +195,7 @@ function Shop() {
         <div className="shop-header-content">
 
           <p>
-            MICKEY MOUSE • PREMIUM COLLECTION
+            SPACE WEAR • PREMIUM COLLECTION
           </p>
 
           <h1>SHOP</h1>

@@ -53,7 +53,7 @@ function Cart() {
       <section className="cart-header">
 
         <div>
-          <p>MICKEY MOUSE • YOUR SELECTION</p>
+          <p>SPACE WEAR • YOUR SELECTION</p>
           <h1>YOUR CART</h1>
         </div>
 
@@ -105,7 +105,7 @@ function Cart() {
                   <div>
 
                     <p className="cart-category">
-                      MICKY MOUSE • {item.category || "COLLECTION"}
+                      SPACE WEAR • {item.category || "COLLECTION"}
                     </p>
 
                     <h3>

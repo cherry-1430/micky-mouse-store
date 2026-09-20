@@ -673,7 +673,7 @@ function AdminDashboard() {
       <body>
         <div class="label">
           <div class="header">
-            <h1>MICKEY MOUSE</h1>
+            <h1>SPACE WEAR</h1>
             <div class="order-id">
               ORDER #${order._id.slice(-8).toUpperCase()}
             </div>
@@ -861,7 +861,7 @@ function AdminDashboard() {
       <section className="admin-header">
         <div>
           <p className="admin-eyebrow">
-            MICKEY MOUSE • ADMIN PANEL
+            SPACE WEAR • ADMIN PANEL
           </p>
           <h1>ORDER MANAGEMENT</h1>
           <span>
@@ -870,7 +870,7 @@ function AdminDashboard() {
         </div>
 
         <div className="admin-header-mark">
-          <span>MM</span>
+          <span>SW</span>
         </div>
       </section>
 

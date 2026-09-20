@@ -17,7 +17,7 @@ function Newsletter() {
       <div className="newsletter-content">
 
         <p className="newsletter-small">
-          MICKEY MOUSE • NEWSLETTER
+          SPACE WEAR • NEWSLETTER
         </p>
 
         <h2>
@@ -28,7 +28,7 @@ function Newsletter() {
 
         <p className="newsletter-description">
           Subscribe for new collections, exclusive offers and
-          the latest Micky Mouse updates.
+          the latest Space Wear updates.
         </p>
 
         <form
@@ -49,13 +49,13 @@ function Newsletter() {
         </form>
 
         <p className="newsletter-note">
-          By subscribing, you agree to receive updates from Micky Mouse.
+          By subscribing, you agree to receive updates from SPACE WEAR.
         </p>
 
       </div>
 
       <div className="newsletter-decoration">
-        <span>MM</span>
+        <span>SW</span>
       </div>
     </section>
   );

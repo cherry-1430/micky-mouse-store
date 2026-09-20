@@ -29,7 +29,7 @@ function WhyChooseUs() {
   return (
     <section className="why-section">
       <div className="section-heading">
-        <p>THE MICKY MOUSE PROMISE</p>
+        <p>THE SPACE WEAR PROMISE</p>
         <h2>WHY CHOOSE US?</h2>
         <span>
           Everything you need for a simple, secure and enjoyable shopping

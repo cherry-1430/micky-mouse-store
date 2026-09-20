@@ -8,20 +8,20 @@ function Hero() {
       <div className="hero-content">
 
         <p className="hero-small-text">
-          MICKEY MOUSE • PREMIUM COLLECTION
+          SPACEWEAR • PREMIUM COLLECTION
         </p>
 
         <h1>
           WEAR
           <br />
-          YOUR
+          BEYOND
           <br />
-          <span>CHARACTER.</span>
+          <span>ORDINARY.</span>
         </h1>
 
         <p className="hero-description">
           Discover premium clothing inspired by the
-          timeless personality of Mickey Mouse —
+          timeless personality of Space Wear —
           designed for comfort, confidence and everyday style.
         </p>
 

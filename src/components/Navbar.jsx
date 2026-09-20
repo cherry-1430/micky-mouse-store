@@ -38,11 +38,11 @@ function Navbar() {
 
       <Link to="/" className="logo">
         <span className="logo-main">
-          Micky
+          Space
         </span>
 
         <span className="logo-sub">
-          Mouse
+          Wear
         </span>
       </Link>
 
