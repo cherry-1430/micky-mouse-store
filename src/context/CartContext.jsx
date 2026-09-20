@@ -372,8 +372,81 @@ export function CartProvider({ children }) {
      Runs when CartProvider loads.
   ===================================================== */
 
- useEffect(() => {
-  syncCartWithDatabase();
+useEffect(() => {
+  const syncStock = async () => {
+    try {
+      const savedCart =
+        localStorage.getItem("mickyMouseCart");
+
+      if (!savedCart) return;
+
+      const currentCart = JSON.parse(savedCart);
+
+      if (!currentCart.length) return;
+
+      const response = await fetch(
+        `${API_URL}/api/products`
+      );
+
+      if (!response.ok) {
+        console.error("Failed to fetch products");
+        return;
+      }
+
+      const products = await response.json();
+
+      const updatedCart = currentCart
+        .map((item) => {
+          const product = products.find(
+            (p) =>
+              String(p._id) === String(item.id)
+          );
+
+          if (!product) {
+            return item;
+          }
+
+          return {
+            ...item,
+            name: product.name,
+            stock: Number(product.stock || 0),
+            image: product.image,
+          };
+        })
+        .filter(Boolean);
+
+      setCart(updatedCart);
+
+      localStorage.setItem(
+        "mickyMouseCart",
+        JSON.stringify(updatedCart)
+      );
+
+      console.log(
+        "Stock synchronized:",
+        updatedCart
+      );
+
+    } catch (error) {
+      console.error(
+        "Stock synchronization error:",
+        error
+      );
+    }
+  };
+
+  // Run immediately
+  syncStock();
+
+  // Check database every 10 seconds
+  const interval = setInterval(
+    syncStock,
+    10000
+  );
+
+  return () => {
+    clearInterval(interval);
+  };
 }, []);
 
   /* =====================================================

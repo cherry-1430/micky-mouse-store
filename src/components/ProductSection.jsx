@@ -10,7 +10,10 @@ function ProductSection() {
   const { addToCart } = useCart();
 
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+const [loading, setLoading] = useState(true);
+
+const [selectedProduct, setSelectedProduct] = useState(null);
+const [selectedSize, setSelectedSize] = useState("");
 
   // ==========================================
   // LOAD FEATURED PRODUCTS
@@ -214,34 +217,18 @@ function ProductSection() {
 
                   {/* ADD TO CART */}
 
-                  <button
-                    className="add-cart-button"
-                    onClick={(e) => {
+                <button
+  className="add-cart-button"
+  onClick={(e) => {
+    e.preventDefault();
+    e.stopPropagation();
 
-                      e.preventDefault();
-                      e.stopPropagation();
-
-                      const size =
-                        product.sizes?.[0];
-
-                      // If no size exists,
-                      // do nothing.
-                      if (!size) {
-                        return;
-                      }
-
-                      // Directly add product
-                      // to cart.
-                      addToCart(
-                        product,
-                        size,
-                        1
-                      );
-
-                    }}
-                  >
-                    ADD TO CART
-                  </button>
+    setSelectedProduct(product);
+    setSelectedSize("");
+  }}
+>
+  ADD TO CART
+</button>
 
                 </div>
 
@@ -274,6 +261,70 @@ function ProductSection() {
           </div>
 
         )}
+
+        {selectedProduct && (
+  <div
+    className="size-modal-overlay"
+    onClick={() => setSelectedProduct(null)}
+  >
+    <div
+      className="size-modal"
+      onClick={(e) => e.stopPropagation()}
+    >
+
+      <button
+        className="size-modal-close"
+        onClick={() => setSelectedProduct(null)}
+      >
+        ×
+      </button>
+
+      <p>SELECT SIZE</p>
+
+      <h3>
+        {selectedProduct.name}
+      </h3>
+
+      <div className="size-modal-options">
+
+        {selectedProduct.sizes?.map((size) => (
+          <button
+            key={size}
+            className={
+              selectedSize === size
+                ? "selected-size"
+                : ""
+            }
+            onClick={() =>
+              setSelectedSize(size)
+            }
+          >
+            {size}
+          </button>
+        ))}
+
+      </div>
+
+     <button
+  className="size-modal-add"
+  disabled={!selectedSize}
+  onClick={() => {
+    if (!selectedSize) return;
+
+    addToCart(selectedProduct, selectedSize, 1);
+
+    setSelectedProduct(null);
+    setSelectedSize("");
+  }}
+>
+  {selectedSize
+    ? `ADD ${selectedSize} TO CART →`
+    : "SELECT A SIZE"}
+</button>
+
+    </div>
+  </div>
+)}
 
     </section>
   );
