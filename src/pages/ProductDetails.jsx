@@ -14,6 +14,7 @@ function ProductDetails() {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [addingToCart, setAddingToCart] = useState(false);
   const saveRecentlyViewed = (product) => {
   try {
     const existing =
@@ -97,8 +98,16 @@ function ProductDetails() {
   }
 
   const increaseQuantity = () => {
-    setQuantity((previous) => previous + 1);
-  };
+  const availableStock = Number(product.stock) || 0;
+
+  setQuantity((previous) => {
+    if (previous >= availableStock) {
+      return previous;
+    }
+
+    return previous + 1;
+  });
+};
 
   const decreaseQuantity = () => {
     setQuantity((previous) =>
@@ -117,14 +126,20 @@ function ProductDetails() {
         )
       : 0;
 
-  const handleAddToCart = () => {
-    if (!selectedSize) {
-      alert("Please select a size");
-      return;
-    }
+const handleAddToCart = () => {
+  if (!selectedSize) {
+    alert("Please select a size");
+    return;
+  }
 
-    addToCart(product, selectedSize, quantity);
-  };
+  setAddingToCart(true);
+
+  addToCart(product, selectedSize, quantity);
+
+  setTimeout(() => {
+    setAddingToCart(false);
+  }, 1200);
+};
 
   return (
     <main className="product-details-page">
@@ -156,6 +171,11 @@ function ProductDetails() {
             src={product.image}
             alt={product.name}
           />
+          {Number(product.stock) <= 0 && (
+  <span className="details-out-of-stock-badge">
+    OUT OF STOCK
+  </span>
+)}
 
           {discount > 0 && (
             <span className="details-sale-badge">
@@ -295,20 +315,25 @@ function ProductDetails() {
             <div className="quantity-control">
 
               <button
-                onClick={decreaseQuantity}
-                aria-label="Decrease quantity"
-              >
-                −
-              </button>
+  onClick={decreaseQuantity}
+  aria-label="Decrease quantity"
+  disabled={Number(product.stock) <= 0}
+>
+  −
+</button>
 
-              <span>{quantity}</span>
+<span>{quantity}</span>
 
-              <button
-                onClick={increaseQuantity}
-                aria-label="Increase quantity"
-              >
-                +
-              </button>
+<button
+  onClick={increaseQuantity}
+  aria-label="Increase quantity"
+  disabled={
+    Number(product.stock) <= 0 ||
+    quantity >= Number(product.stock)
+  }
+>
+  +
+</button>
 
             </div>
 
@@ -317,13 +342,35 @@ function ProductDetails() {
 
           {/* ADD TO CART */}
 
-          <button
-            className="details-cart-button"
-            onClick={handleAddToCart}
-          >
-            ADD TO CART
-            <span>→</span>
-          </button>
+          {Number(product.stock) <= 0 ? (
+  <button
+    type="button"
+    className="details-cart-button out-of-stock-button"
+    disabled
+  >
+    OUT OF STOCK
+  </button>
+) : (
+<button
+  className={`details-cart-button ${
+    addingToCart ? "adding-to-cart" : ""
+  }`}
+  onClick={handleAddToCart}
+  disabled={addingToCart}
+>
+  {addingToCart ? (
+    <>
+      <span className="cart-success-icon">✓</span>
+      ADDED TO CART
+    </>
+  ) : (
+    <>
+      ADD TO CART
+      <span>→</span>
+    </>
+  )}
+</button>
+)}
 
 
           {/* PRODUCT DETAILS */}

@@ -6,6 +6,7 @@ import { useWishlist } from "../context/useWishlist";
 import { useCart } from "../context/useCart";
 
 import FlashSale from "../components/FlashSale";
+import { animateToCart } from "../utils/cartAnimation";
 
 function Shop() {
   const { toggleWishlist, isInWishlist } = useWishlist();
@@ -51,21 +52,38 @@ function Shop() {
     "Unisex",
   ];
 
-  useEffect(() => {
-    async function loadProducts() {
-      try {
-        const data = await getProducts();
+useEffect(() => {
+  let isMounted = true;
 
+  async function loadProducts() {
+    try {
+      const data = await getProducts();
+
+      if (isMounted) {
         setProducts(data);
-      } catch (error) {
+      }
+    } catch (error) {
+      if (isMounted) {
         setError("Failed to load products");
-      } finally {
+      }
+    } finally {
+      if (isMounted) {
         setLoading(false);
       }
     }
+  }
 
+  loadProducts();
+
+  const interval = setInterval(() => {
     loadProducts();
-  }, []);
+  }, 30000); // refresh every 30 seconds
+
+  return () => {
+    isMounted = false;
+    clearInterval(interval);
+  };
+}, []);
 
   useEffect(() => {
     const urlSearch = searchParams.get("search") || "";
@@ -567,6 +585,11 @@ function Shop() {
                         src={product.image}
                         alt={product.name}
                       />
+                      {Number(product.stock) <= 0 && (
+  <span className="out-of-stock-badge">
+    OUT OF STOCK
+  </span>
+)}
 
                       <span className="product-index">
                         {String(index + 1).padStart(
@@ -703,30 +726,44 @@ function Shop() {
 
                       {/* ADD TO CART */}
 
-                      <button
-                        className="shop-cart-button"
-                        onClick={(e) => {
+                  {/* STOCK / ADD TO CART */}
 
-                          e.preventDefault();
-                          e.stopPropagation();
+{Number(product.stock) <= 0 ? (
+  <button
+    type="button"
+    className="shop-cart-button out-of-stock-button"
+    disabled
+    onClick={(e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    }}
+  >
+    OUT OF STOCK
+  </button>
+) : (
+ <button
+  type="button"
+  className="shop-cart-button"
+  onClick={(e) => {
+    e.preventDefault();
+    e.stopPropagation();
 
-                          const size =
-                            product.sizes?.[0];
+    if (Number(product.stock) <= 0) {
+      return;
+    }
 
-                          if (!size) {
-                            return;
-                          }
+    if (!product.sizes || product.sizes.length === 0) {
+      alert("No sizes available for this product.");
+      return;
+    }
 
-                          addToCart(
-                            product,
-                            size,
-                            1
-                          );
-
-                        }}
-                      >
-                        ADD TO CART →
-                      </button>
+    // Open product details so customer can select size
+    window.location.href = `/product/${product._id}`;
+  }}
+>
+  ADD TO CART →
+</button>
+)}
 
                     </div>
 

@@ -91,73 +91,70 @@ export function CartProvider({ children }) {
         item.size === size
     );
 
-    if (existingItem) {
-      const updatedCart = cart.map((item) => {
-        if (
-          item.id === product._id &&
-          item.size === size
-        ) {
-          return {
-            ...item,
+  if (existingItem) {
+  const updatedCart = cart.map((item) => {
+    if (
+      item.id === product._id &&
+      item.size === size
+    ) {
+      return {
+        ...item,
 
-            price: effectivePrice,
+        name: product.name,
 
-            originalPrice:
-              Number(product.price),
+        stock: Number(product.stock || 0),
 
-            salePrice:
-              Number(product.salePrice || 0),
+        price: effectivePrice,
 
-            saleStart:
-              product.saleStart || null,
+        originalPrice: Number(product.price),
 
-            saleEnd:
-              product.saleEnd || null,
+        salePrice: Number(product.salePrice || 0),
 
-            isFlashSale:
-              Boolean(product.isFlashSale),
+        saleStart: product.saleStart || null,
 
-            quantity:
-              Number(item.quantity) +
-              Number(quantity),
-          };
-        }
+        saleEnd: product.saleEnd || null,
 
-        return item;
-      });
+        isFlashSale: Boolean(product.isFlashSale),
 
-      saveCart(updatedCart);
-      return;
+        image: product.image,
+
+        quantity:
+          Number(item.quantity) + Number(quantity),
+      };
     }
 
+    return item;
+  });
+
+  saveCart(updatedCart);
+  return;
+}
+
     const newItem = {
-      id: product._id,
+  id: product._id,
 
-      name: product.name,
+  name: product.name,
 
-      price: effectivePrice,
+  stock: Number(product.stock || 0),
 
-      originalPrice:
-        Number(product.price),
+  price: effectivePrice,
 
-      salePrice:
-        Number(product.salePrice || 0),
+  originalPrice: Number(product.price),
 
-      saleStart:
-        product.saleStart || null,
+  salePrice: Number(product.salePrice || 0),
 
-      saleEnd:
-        product.saleEnd || null,
+  saleStart: product.saleStart || null,
 
-      isFlashSale:
-        Boolean(product.isFlashSale),
+  saleEnd: product.saleEnd || null,
 
-      image: product.image,
+  isFlashSale: Boolean(product.isFlashSale),
 
-      size,
+  image: product.image,
 
-      quantity: Number(quantity),
-    };
+  size,
+
+  quantity: Number(quantity),
+};
 
     saveCart([
       ...cart,
@@ -237,8 +234,8 @@ export function CartProvider({ children }) {
      Cart = ₹1299
   ===================================================== */
 
-  const syncCartWithDatabase = async () => {
-    if (cart.length === 0) {
+  const syncCartWithDatabase = async (currentCart = cart) => {
+    if (currentCart.length === 0) {
       return {
         success: true,
         changed: false,
@@ -260,7 +257,7 @@ export function CartProvider({ children }) {
 
       let changed = false;
 
-      const updatedCart = cart
+      const updatedCart = currentCart
         .map((item) => {
           const product = products.find(
             (p) =>
@@ -299,59 +296,45 @@ export function CartProvider({ children }) {
            * Detect any important product change
            */
 
-          if (
-            Number(item.price) !==
-              latestPrice ||
-            Number(item.originalPrice) !==
-              latestOriginalPrice ||
-            Number(item.salePrice || 0) !==
-              latestSalePrice ||
-            Boolean(item.isFlashSale) !==
-              latestIsFlashSale ||
-            item.saleStart !==
-              latestSaleStart ||
-            item.saleEnd !==
-              latestSaleEnd
-          ) {
-            changed = true;
-          }
+     if (
+  Number(item.price) !== latestPrice ||
+  Number(item.originalPrice) !== latestOriginalPrice ||
+  Number(item.salePrice || 0) !== latestSalePrice ||
+  Boolean(item.isFlashSale) !== latestIsFlashSale ||
+  item.saleStart !== latestSaleStart ||
+  item.saleEnd !== latestSaleEnd ||
+  Number(item.stock || 0) !== Number(product.stock || 0)
+) {
+  changed = true;
+}
 
           /*
            * Update cart with latest DB data
            */
 
-          return {
-            ...item,
+  return {
+  ...item,
 
-            name: product.name,
+  name: product.name,
 
-            price: latestPrice,
+  stock: Number(product.stock || 0),
 
-            originalPrice:
-              latestOriginalPrice,
+  price: latestPrice,
 
-            salePrice:
-              latestSalePrice,
+  originalPrice: latestOriginalPrice,
 
-            saleStart:
-              latestSaleStart,
+  salePrice: latestSalePrice,
 
-            saleEnd:
-              latestSaleEnd,
+  saleStart: latestSaleStart,
 
-            isFlashSale:
-              latestIsFlashSale,
+  saleEnd: latestSaleEnd,
 
-            image: product.image,
+  isFlashSale: latestIsFlashSale,
 
-            /*
-             * Keep current cart quantity.
-             * Stock is validated separately
-             * by checkout/backend.
-             */
-            quantity:
-              Number(item.quantity),
-          };
+  image: product.image,
+
+  quantity: Number(item.quantity),
+};
         })
         .filter(Boolean);
 
@@ -389,9 +372,9 @@ export function CartProvider({ children }) {
      Runs when CartProvider loads.
   ===================================================== */
 
-  useEffect(() => {
-    syncCartWithDatabase();
-  }, []);
+ useEffect(() => {
+  syncCartWithDatabase();
+}, []);
 
   /* =====================================================
      FLASH SALE TIMER SYNC

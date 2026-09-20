@@ -96,7 +96,7 @@ async function startServer() {
 
     const server = app.listen(PORT, "0.0.0.0", () => {
       console.log(
-        `Micky Mouse backend running on port ${PORT}`
+        `Space Wear backend running on port ${PORT}`
       );
     });
 

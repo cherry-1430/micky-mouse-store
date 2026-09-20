@@ -12789,3 +12789,130 @@ textarea:focus {
 .delivery-cancelled {
   background: #f8d7da;
 }
+
+.out-of-stock-badge,
+.details-out-of-stock-badge {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  z-index: 5;
+  padding: 8px 12px;
+  background: #000;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.shop-product-image,
+.product-details-image {
+  position: relative;
+}
+
+.details-cart-button {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.details-cart-button:hover {
+  transform: translateY(-2px);
+}
+
+.details-cart-button.adding-to-cart {
+  transform: scale(0.98);
+}
+
+.cart-success-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-right: 8px;
+
+  animation: cartCheck 0.4s ease;
+}
+
+@keyframes cartCheck {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+
+  60% {
+    transform: scale(1.3);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* =========================================
+   ADD TO CART FLY ANIMATION
+========================================= */
+
+.fly-to-cart {
+  position: fixed;
+  z-index: 99999;
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 10px;
+  pointer-events: none;
+
+  animation: flyToCart 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes flyToCart {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+
+  40% {
+    transform: translate(
+      calc(var(--cart-x) / 2),
+      calc(var(--cart-y) / 2 - 100px)
+    ) scale(0.7);
+    opacity: 0.9;
+  }
+
+  100% {
+    transform: translate(
+      var(--cart-x),
+      var(--cart-y)
+    ) scale(0.15);
+    opacity: 0;
+  }
+}
+
+
+/* Cart icon bounce */
+
+.cart-bounce {
+  animation: cartBounce 0.5s ease;
+}
+
+@keyframes cartBounce {
+  0% {
+    transform: scale(1);
+  }
+
+  30% {
+    transform: scale(1.35);
+  }
+
+  50% {
+    transform: scale(0.9);
+  }
+
+  70% {
+    transform: scale(1.15);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}

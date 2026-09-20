@@ -202,21 +202,21 @@ function Navbar() {
 
         {/* CART */}
 
-        <Link
-          to="/cart"
-          className="navbar-cart"
-          aria-label="Shopping Cart"
-          title="Shopping Cart"
-        >
-          🛒
+      <Link
+  to="/cart"
+  className="navbar-cart"
+  id="navbar-cart"
+  aria-label="Shopping Cart"
+  title="Shopping Cart"
+>
+  🛒
 
-          {cartCount > 0 && (
-            <span className="cart-count">
-              {cartCount}
-            </span>
-          )}
-
-        </Link>
+  {cartCount > 0 && (
+    <span className="cart-count">
+      {cartCount}
+    </span>
+  )}
+</Link>
 
       </div>
 
