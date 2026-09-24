@@ -11,6 +11,7 @@ function Navbar() {
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [cartAnimation, setCartAnimation] = useState(null);
 
   const handleSearch = (event) => {
     event.preventDefault();
@@ -30,6 +31,27 @@ function Navbar() {
     setSearch("");
     setSearchOpen(false);
   };
+
+
+  const animateToCart = (product) => {
+  const cartElement = document.getElementById("navbar-cart");
+
+  if (!cartElement) return;
+
+  const cartRect = cartElement.getBoundingClientRect();
+
+  setCartAnimation({
+    image: product.image,
+    startX: window.innerWidth / 2 - 40,
+    startY: window.innerHeight / 2 - 40,
+    endX: cartRect.left + cartRect.width / 2 - 40,
+    endY: cartRect.top + cartRect.height / 2 - 40,
+  });
+
+  setTimeout(() => {
+    setCartAnimation(null);
+  }, 800);
+};
 
   return (
     <nav className="navbar">

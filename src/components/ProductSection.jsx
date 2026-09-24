@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 
 import { getProducts } from "../api/productApi";
@@ -14,6 +14,121 @@ const [loading, setLoading] = useState(true);
 
 const [selectedProduct, setSelectedProduct] = useState(null);
 const [selectedSize, setSelectedSize] = useState("");
+const [cartAnimation, setCartAnimation] = useState(null);
+const productImageRefs = useRef({});
+
+const animateProductToCart = (productId) => {
+  const productElement =
+    document.querySelector(
+      `[data-product-id="${productId}"]`
+    );
+
+  const cartElement =
+    document.getElementById("navbar-cart");
+
+  if (!productElement || !cartElement) {
+    console.log("Animation elements not found");
+    return;
+  }
+
+  const productImage =
+    productElement.querySelector("img");
+
+  if (!productImage) {
+    console.log("Product image not found");
+    return;
+  }
+
+  const productRect =
+    productImage.getBoundingClientRect();
+
+  const cartRect =
+    cartElement.getBoundingClientRect();
+
+  // Clone the actual product image
+  const flyingImage =
+    productImage.cloneNode(true);
+
+  flyingImage.style.position = "fixed";
+  flyingImage.style.left = `${productRect.left}px`;
+  flyingImage.style.top = `${productRect.top}px`;
+  flyingImage.style.width = `${productRect.width}px`;
+  flyingImage.style.height = `${productRect.height}px`;
+
+  flyingImage.style.objectFit = "cover";
+  flyingImage.style.borderRadius = "8px";
+
+  flyingImage.style.zIndex = "999999";
+  flyingImage.style.pointerEvents = "none";
+
+  flyingImage.style.boxShadow =
+    "0 10px 30px rgba(0,0,0,0.3)";
+
+  document.body.appendChild(flyingImage);
+
+  // Distance from product to cart
+  const moveX =
+    cartRect.left +
+    cartRect.width / 2 -
+    (productRect.left +
+      productRect.width / 2);
+
+  const moveY =
+    cartRect.top +
+    cartRect.height / 2 -
+    (productRect.top +
+      productRect.height / 2);
+
+  const animation =
+    flyingImage.animate(
+      [
+        {
+          transform:
+            "translate(0, 0) scale(1)",
+          opacity: 1,
+        },
+        {
+          transform:
+            `translate(${moveX * 0.6}px, ${moveY * 0.6}px) scale(0.6)`,
+          opacity: 1,
+        },
+        {
+          transform:
+            `translate(${moveX}px, ${moveY}px) scale(0.15)`,
+          opacity: 0.2,
+        },
+      ],
+      {
+        duration: 900,
+        easing:
+          "cubic-bezier(0.4, 0, 0.2, 1)",
+        fill: "forwards",
+      }
+    );
+
+  animation.onfinish = () => {
+    flyingImage.remove();
+
+    // Small cart bounce
+    cartElement.animate(
+      [
+        {
+          transform: "scale(1)",
+        },
+        {
+          transform: "scale(1.25)",
+        },
+        {
+          transform: "scale(1)",
+        },
+      ],
+      {
+        duration: 300,
+        easing: "ease-out",
+      }
+    );
+  };
+};
 
   // ==========================================
   // LOAD FEATURED PRODUCTS
@@ -140,7 +255,10 @@ const [selectedSize, setSelectedSize] = useState("");
                   PRODUCT IMAGE
                   ================================= */}
 
-              <div className="product-image">
+            <div
+  className="product-image"
+  data-product-id={product._id}
+>
 
                 <img
                   src={product.image}
@@ -305,13 +423,90 @@ const [selectedSize, setSelectedSize] = useState("");
 
       </div>
 
-     <button
+   <button
   className="size-modal-add"
   disabled={!selectedSize}
   onClick={() => {
     if (!selectedSize) return;
 
-    addToCart(selectedProduct, selectedSize, 1);
+    // ==========================================
+    // EXISTING CART FUNCTIONALITY
+    // ==========================================
+
+    addToCart(
+      selectedProduct,
+      selectedSize,
+      1
+    );
+    animateProductToCart(selectedProduct._id);
+
+    // ==========================================
+    // FIND PRODUCT IMAGE
+    // ==========================================
+
+    const productElement =
+      productImageRefs.current[
+        selectedProduct._id
+      ];
+
+    // ==========================================
+    // FIND NAVBAR CART
+    // ==========================================
+
+    const cartElement =
+      document.getElementById("navbar-cart");
+
+    if (
+      productElement &&
+      cartElement
+    ) {
+      const productRect =
+        productElement.getBoundingClientRect();
+
+      const cartRect =
+        cartElement.getBoundingClientRect();
+
+      // Product image center
+      const startX =
+        productRect.left +
+        productRect.width / 2;
+
+      const startY =
+        productRect.top +
+        productRect.height / 2;
+
+      // Navbar cart center
+      const endX =
+        cartRect.left +
+        cartRect.width / 2;
+
+      const endY =
+        cartRect.top +
+        cartRect.height / 2;
+
+      // ========================================
+      // START FLYING IMAGE
+      // ========================================
+
+      setCartAnimation({
+        image: selectedProduct.image,
+
+        startX,
+        startY,
+
+        moveX: endX - startX,
+        moveY: endY - startY,
+      });
+
+      // Remove animation after 900ms
+      setTimeout(() => {
+        setCartAnimation(null);
+      }, 900);
+    }
+
+    // ==========================================
+    // CLOSE SIZE MODAL
+    // ==========================================
 
     setSelectedProduct(null);
     setSelectedSize("");
@@ -325,6 +520,8 @@ const [selectedSize, setSelectedSize] = useState("");
     </div>
   </div>
 )}
+
+
 
     </section>
   );

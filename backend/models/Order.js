@@ -99,6 +99,38 @@ const orderSchema = new mongoose.Schema(
           type: Number,
           required: true,
         },
+        returnStatus: {
+  type: String,
+  enum: [
+    "none",
+    "requested",
+    "approved",
+    "rejected",
+    "picked_up",
+    "completed",
+  ],
+  default: "none",
+},
+
+returnReason: {
+  type: String,
+  default: null,
+},
+
+returnComments: {
+  type: String,
+  default: "",
+},
+
+returnRequestedAt: {
+  type: Date,
+  default: null,
+},
+
+returnProcessedAt: {
+  type: Date,
+  default: null,
+},
       },
     ],
 
@@ -113,40 +145,40 @@ const orderSchema = new mongoose.Schema(
     },
 
     deliveryCharge: {
-  type: Number,
-  default: 0,
-  min: 0,
-},
+      type: Number,
+      default: 0,
+      min: 0,
+    },
 
-deliveryMethod: {
-  type: String,
-  enum: ["own_delivery", "courier"],
-  default: "own_delivery",
-},
+    deliveryMethod: {
+      type: String,
+      enum: ["own_delivery", "courier"],
+      default: "own_delivery",
+    },
 
-shippingProvider: {
-  type: String,
-  default: null,
-},
+    shippingProvider: {
+      type: String,
+      default: null,
+    },
 
-trackingId: {
-  type: String,
-  default: null,
-},
+    trackingId: {
+      type: String,
+      default: null,
+    },
 
-deliveryStatus: {
-  type: String,
-  enum: [
-    "pending",
-    "assigned",
-    "picked_up",
-    "in_transit",
-    "out_for_delivery",
-    "delivered",
-    "cancelled",
-  ],
-  default: "pending",
-},
+    deliveryStatus: {
+      type: String,
+      enum: [
+        "pending",
+        "assigned",
+        "picked_up",
+        "in_transit",
+        "out_for_delivery",
+        "delivered",
+        "cancelled",
+      ],
+      default: "pending",
+    },
 
     couponCode: {
       type: String,
@@ -214,6 +246,21 @@ deliveryStatus: {
     },
 
     // =====================================================
+    // REFUND
+    // =====================================================
+
+    refundAmount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    refundId: {
+      type: String,
+      default: null,
+    },
+
+    // =====================================================
     // INVENTORY
     // =====================================================
 
@@ -238,7 +285,41 @@ deliveryStatus: {
       ],
       default: "pending",
     },
+
+    // =====================================================
+    // RETURN
+    // =====================================================
+
+    returnStatus: {
+      type: String,
+      enum: [
+        "not_requested",
+        "requested",
+        "approved",
+        "rejected",
+        "picked_up",
+        "received",
+        "refunded",
+      ],
+      default: "not_requested",
+    },
+
+    returnReason: {
+      type: String,
+      default: null,
+    },
+
+    returnRequestedAt: {
+      type: Date,
+      default: null,
+    },
+
+    returnProcessedAt: {
+      type: Date,
+      default: null,
+    },
   },
+
   {
     timestamps: true,
   }

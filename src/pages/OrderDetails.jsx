@@ -8,13 +8,29 @@ function OrderDetails() {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
   const [cancelling, setCancelling] = useState(false);
-const [cancelError, setCancelError] = useState("");
+  const [cancelError, setCancelError] = useState("");
+
+  // ==========================================
+  // RETURN STATES
+  // ==========================================
+
+  const [returnItem, setReturnItem] = useState(null);
+  const [returnReason, setReturnReason] = useState("");
+  const [returnComment, setReturnComment] = useState("");
+  const [returning, setReturning] = useState(false);
+  const [returnError, setReturnError] = useState("");
+
+  // ==========================================
+  // FETCH ORDER
+  // ==========================================
 
   useEffect(() => {
     const fetchOrder = async () => {
       try {
-        const token = localStorage.getItem("token");
+        const token =
+          localStorage.getItem("token");
 
         const response = await fetch(
           `${API_URL}/api/orders/${id}`,
@@ -25,15 +41,23 @@ const [cancelError, setCancelError] = useState("");
           }
         );
 
-        const data = await response.json();
+        const data =
+          await response.json();
 
         if (!response.ok) {
-          throw new Error(data.message || "Failed to fetch order");
+          throw new Error(
+            data.message ||
+              "Failed to fetch order"
+          );
         }
 
         setOrder(data);
       } catch (error) {
-        console.error("Order details error:", error);
+        console.error(
+          "Order details error:",
+          error
+        );
+
         setError(error.message);
       } finally {
         setLoading(false);
@@ -43,70 +67,215 @@ const [cancelError, setCancelError] = useState("");
     fetchOrder();
   }, [id]);
 
-  const handleCancelOrder = async () => {
-  const confirmed = window.confirm(
-    "Are you sure you want to cancel this order?"
-  );
+  // ==========================================
+  // CANCEL ORDER
+  // ==========================================
 
-  if (!confirmed) return;
+  const handleCancelOrder =
+    async () => {
+      const confirmed =
+        window.confirm(
+          "Are you sure you want to cancel this order?"
+        );
 
-  try {
-    setCancelling(true);
-    setCancelError("");
+      if (!confirmed) return;
 
-    const token = localStorage.getItem("token");
+      try {
+        setCancelling(true);
+        setCancelError("");
 
-    const response = await fetch(
-      `${API_URL}/api/orders/${id}/cancel`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        const token =
+          localStorage.getItem(
+            "token"
+          );
+
+        const response =
+          await fetch(
+            `${API_URL}/api/orders/${id}/cancel`,
+            {
+              method: "POST",
+              headers: {
+                Authorization:
+                  `Bearer ${token}`,
+              },
+            }
+          );
+
+        const data =
+          await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            data.message ||
+              "Failed to cancel order"
+          );
+        }
+
+        setOrder(data.order);
+
+        alert(
+          "Order cancelled successfully."
+        );
+      } catch (error) {
+        console.error(
+          "Cancel order error:",
+          error
+        );
+
+        setCancelError(
+          error.message
+        );
+      } finally {
+        setCancelling(false);
       }
-    );
+    };
 
-    const data = await response.json();
+  // ==========================================
+  // OPEN RETURN MODAL
+  // ==========================================
 
-    if (!response.ok) {
-      throw new Error(
-        data.message || "Failed to cancel order"
-      );
-    }
+  const openReturnModal = (item) => {
+    setReturnItem(item);
+    setReturnReason("");
+    setReturnComment("");
+    setReturnError("");
+  };
 
-    setOrder(data.order);
+  // ==========================================
+  // CLOSE RETURN MODAL
+  // ==========================================
 
-    alert("Order cancelled successfully.");
-  } catch (error) {
-    console.error("Cancel order error:", error);
-    setCancelError(error.message);
-  } finally {
-    setCancelling(false);
-  }
-};
+  const closeReturnModal = () => {
+    if (returning) return;
+
+    setReturnItem(null);
+    setReturnReason("");
+    setReturnComment("");
+    setReturnError("");
+  };
+
+  // ==========================================
+  // SUBMIT RETURN
+  // ==========================================
+
+  const handleReturnSubmit =
+    async () => {
+      if (!returnItem) return;
+
+      if (!returnReason) {
+        setReturnError(
+          "Please select a return reason."
+        );
+        return;
+      }
+
+      try {
+        setReturning(true);
+        setReturnError("");
+
+        const token =
+          localStorage.getItem(
+            "token"
+          );
+
+        const response =
+          await fetch(
+            `${API_URL}/api/orders/${id}/items/${returnItem._id}/return`,
+            {
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json",
+
+                Authorization:
+                  `Bearer ${token}`,
+              },
+
+              body: JSON.stringify({
+                reason:
+                  returnReason,
+
+                comment:
+                  returnComment,
+              }),
+            }
+          );
+
+        const data =
+          await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            data.message ||
+              "Failed to submit return request"
+          );
+        }
+
+        setOrder(data.order);
+
+        closeReturnModal();
+
+        alert(
+          "Return request submitted successfully."
+        );
+      } catch (error) {
+        console.error(
+          "Return request error:",
+          error
+        );
+
+        setReturnError(
+          error.message
+        );
+      } finally {
+        setReturning(false);
+      }
+    };
+
+  // ==========================================
+  // LOADING
+  // ==========================================
 
   if (loading) {
     return (
       <main className="order-details-page">
         <div className="order-details-loading">
-          <span>MICKEY MOUSE • ORDER</span>
-          <h1>Loading Order...</h1>
+          <span>
+            MICKEY MOUSE • ORDER
+          </span>
+
+          <h1>
+            Loading Order...
+          </h1>
         </div>
       </main>
     );
   }
 
+  // ==========================================
+  // ERROR
+  // ==========================================
+
   if (error) {
     return (
       <main className="order-details-page">
         <div className="order-details-error">
-          <span>ORDER • ERROR</span>
-          <h1>Unable to Load Order</h1>
+
+          <span>
+            ORDER • ERROR
+          </span>
+
+          <h1>
+            Unable to Load Order
+          </h1>
+
           <p>{error}</p>
 
           <Link to="/my-orders">
             ← BACK TO MY ORDERS
           </Link>
+
         </div>
       </main>
     );
@@ -116,27 +285,39 @@ const [cancelError, setCancelError] = useState("");
     return null;
   }
 
-  const orderDate = new Date(order.createdAt).toLocaleDateString(
-    "en-IN",
-    {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-    }
-  );
+  // ==========================================
+  // DATE / TIME
+  // ==========================================
 
-  const orderTime = new Date(order.createdAt).toLocaleTimeString(
-    "en-IN",
-    {
-      hour: "2-digit",
-      minute: "2-digit",
-    }
-  );
+  const orderDate =
+    new Date(
+      order.createdAt
+    ).toLocaleDateString(
+      "en-IN",
+      {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      }
+    );
+
+  const orderTime =
+    new Date(
+      order.createdAt
+    ).toLocaleTimeString(
+      "en-IN",
+      {
+        hour: "2-digit",
+        minute: "2-digit",
+      }
+    );
 
   return (
     <main className="order-details-page">
 
-      {/* HEADER */}
+      {/* ==========================================
+          HEADER
+      ========================================== */}
 
       <section className="order-details-header">
 
@@ -149,7 +330,9 @@ const [cancelError, setCancelError] = useState("");
             ← MY ORDERS
           </Link>
 
-          <p>MICKEY MOUSE • ORDER CONFIRMATION</p>
+          <p>
+            MICKEY MOUSE • ORDER CONFIRMATION
+          </p>
 
           <h1>
             ORDER
@@ -158,8 +341,9 @@ const [cancelError, setCancelError] = useState("");
           </h1>
 
           <span>
-            Complete information about your purchase,
-            payment and delivery.
+            Complete information about
+            your purchase, payment and
+            delivery.
           </span>
 
         </div>
@@ -171,34 +355,51 @@ const [cancelError, setCancelError] = useState("");
       </section>
 
 
-      {/* ORDER OVERVIEW */}
+      {/* ==========================================
+          CONTENT
+      ========================================== */}
 
       <section className="order-details-content">
+
+        {/* ORDER OVERVIEW */}
 
         <div className="order-overview">
 
           <div>
             <span>ORDER ID</span>
+
             <strong>
-              #{order._id.slice(-8).toUpperCase()}
+              #
+              {order._id
+                .slice(-8)
+                .toUpperCase()}
             </strong>
           </div>
 
           <div>
             <span>DATE</span>
-            <strong>{orderDate}</strong>
+
+            <strong>
+              {orderDate}
+            </strong>
           </div>
 
           <div>
             <span>TIME</span>
-            <strong>{orderTime}</strong>
+
+            <strong>
+              {orderTime}
+            </strong>
           </div>
 
           <div>
             <span>TOTAL</span>
+
             <strong>
               ₹
-              {order.totalAmount?.toLocaleString(
+              {Number(
+                order.totalAmount || 0
+              ).toLocaleString(
                 "en-IN"
               )}
             </strong>
@@ -207,213 +408,275 @@ const [cancelError, setCancelError] = useState("");
         </div>
 
 
-        {/* STATUS */}
+        {/* ==========================================
+            ORDER STATUS
+        ========================================== */}
 
-       {/* STATUS */}
+        <div className="order-status-panel">
 
-<div className="order-status-panel">
+          <div className="order-status-heading">
 
-  <div className="order-status-heading">
-    <div>
-      <span>ORDER PROGRESS</span>
-      <h2>YOUR ORDER STATUS</h2>
-    </div>
+            <div>
+              <span>
+                ORDER PROGRESS
+              </span>
 
-    <span
-  className={`details-status-badge delivery-${order.orderStatus}`}
->
-      {order.orderStatus}
-    </span>
-  </div>
+              <h2>
+                YOUR ORDER STATUS
+              </h2>
+            </div>
 
-  {order.orderStatus === "cancelled" ? (
-    <div className="order-cancelled-status">
-      <div className="cancelled-icon">×</div>
+            <span
+              className={`details-status-badge delivery-${order.orderStatus}`}
+            >
+              {order.orderStatus}
+            </span>
 
-      <div>
-        <strong>ORDER CANCELLED</strong>
-        <p>
-          This order has been cancelled and will not be processed.
-        </p>
-      </div>
-    </div>
-  ) : (
-    <div className="order-progress">
-
-      <div
-        className={`progress-step ${
-          ["confirmed", "processing", "shipped", "delivered"].includes(
-            order.orderStatus
-          )
-            ? "completed"
-            : ""
-        }`}
-      >
-        <span>01</span>
-        <strong>CONFIRMED</strong>
-      </div>
-
-      <div
-        className={`progress-step ${
-  ["confirmed", "processing", "shipped", "delivered"].includes(
-    order.orderStatus
-  )
-    ? "completed"
-    : ""
-} ${
-  order.orderStatus === "confirmed" ? "current" : ""
-}`}
-      >
-        <span>02</span>
-        <strong>PROCESSING</strong>
-      </div>
-
-      <div
-        className={`progress-step ${
-  ["processing", "shipped", "delivered"].includes(
-    order.orderStatus
-  )
-    ? "completed"
-    : ""
-} ${
-  order.orderStatus === "processing" ? "current" : ""
-}`}
-      >
-        <span>03</span>
-        <strong>SHIPPED</strong>
-      </div>
-
-      <div
-       className={`progress-step ${
-  ["shipped", "delivered"].includes(order.orderStatus)
-    ? "completed"
-    : ""
-} ${
-  order.orderStatus === "shipped" ? "current" : ""
-}`}
-      >
-        <span>04</span>
-        <strong>DELIVERED</strong>
-  <div className={`progress-step ${
-  order.orderStatus === "delivered"
-    ? "completed"
-    : ""
-} ${
-  order.orderStatus === "delivered" ? "current" : ""
-}`}>
-      </div>
-
-    </div>
-    </div>
-  )}
-
-</div>
-
-{/* DELIVERY STATUS */}
-
-<div className="delivery-status-panel">
-
-  <div className="order-status-heading">
-    <div>
-      <span>DELIVERY INFORMATION</span>
-      <h2>DELIVERY STATUS</h2>
-    </div>
-
-    <span
-  className={`details-status-badge delivery-${
-    order.orderStatus === "delivered"
-      ? "delivered"
-      : order.deliveryStatus || "pending"
-  }`}
->
-  {(
-    order.orderStatus === "delivered"
-      ? "delivered"
-      : order.deliveryStatus || "pending"
-  )
-    .replaceAll("_", " ")
-    .toUpperCase()}
-</span>
-  </div>
-  </div>
-
-  <div className="delivery-status-content">
-
-  <div className="delivery-status-icon">
-    🚚
-  </div>
-
-  <div className="delivery-status-info">
-
-    <strong>
-      {order.orderStatus === "delivered"
-        ? "Order Delivered"
-        : order.deliveryStatus === "assigned"
-        ? "Delivery Assigned"
-        : order.deliveryStatus === "picked_up"
-        ? "Order Picked Up"
-        : order.deliveryStatus === "in_transit"
-        ? "Order In Transit"
-        : order.deliveryStatus === "out_for_delivery"
-        ? "Out for Delivery"
-        : order.deliveryStatus === "cancelled"
-        ? "Delivery Cancelled"
-        : "Delivery Pending"}
-    </strong>
-
-    <p>
-      {order.orderStatus === "delivered"
-        ? "Your order has been successfully delivered."
-        : order.deliveryStatus === "assigned"
-        ? "A delivery person has been assigned to your order."
-        : order.deliveryStatus === "picked_up"
-        ? "Your order has been picked up for delivery."
-        : order.deliveryStatus === "in_transit"
-        ? "Your order is currently on the way."
-        : order.deliveryStatus === "out_for_delivery"
-        ? "Your order is out for delivery and will arrive soon."
-        : order.deliveryStatus === "cancelled"
-        ? "The delivery for this order has been cancelled."
-        : "Your order is waiting for delivery processing."}
-    </p>
-
-    {order.deliveryMethod && (
-      <p>
-        DELIVERY METHOD:{" "}
-        <strong>
-          {order.deliveryMethod === "courier"
-            ? "COURIER"
-            : "OWN DELIVERY"}
-        </strong>
-      </p>
-    )}
-
-    {order.shippingProvider && (
-      <p>
-        SHIPPING PROVIDER:{" "}
-        <strong>
-          {order.shippingProvider}
-        </strong>
-      </p>
-    )}
-
-    {order.trackingId && (
-      <p>
-        TRACKING ID:{" "}
-        <strong>
-          {order.trackingId}
-        </strong>
-      </p>
-    )}
-
-  </div>
-
-</div>
+          </div>
 
 
+          {order.orderStatus ===
+          "cancelled" ? (
+
+            <div className="order-cancelled-status">
+
+              <div className="cancelled-icon">
+                ×
+              </div>
+
+              <div>
+
+                <strong>
+                  ORDER CANCELLED
+                </strong>
+
+                <p>
+                  This order has been
+                  cancelled and will not
+                  be processed.
+                </p>
+
+              </div>
+
+            </div>
+
+          ) : (
+
+            <div className="order-progress">
+
+              {[
+                "confirmed",
+                "processing",
+                "shipped",
+                "delivered",
+              ].map(
+                (
+                  status,
+                  index
+                ) => {
+
+                  const statusOrder = [
+                    "confirmed",
+                    "processing",
+                    "shipped",
+                    "delivered",
+                  ];
+
+                  const currentIndex =
+                    statusOrder.indexOf(
+                      order.orderStatus
+                    );
+
+                  const thisIndex =
+                    index;
+
+                  const completed =
+                    currentIndex >=
+                    thisIndex;
+
+                  const current =
+                    currentIndex ===
+                    thisIndex;
+
+                  return (
+                    <div
+                      key={status}
+                      className={`progress-step ${
+                        completed
+                          ? "completed"
+                          : ""
+                      } ${
+                        current
+                          ? "current"
+                          : ""
+                      }`}
+                    >
+                      <span>
+                        {String(
+                          index + 1
+                        ).padStart(
+                          2,
+                          "0"
+                        )}
+                      </span>
+
+                      <strong>
+                        {status.toUpperCase()}
+                      </strong>
+                    </div>
+                  );
+                }
+              )}
+
+            </div>
+
+          )}
+
+        </div>
 
 
-        {/* MAIN GRID */}
+        {/* ==========================================
+            DELIVERY STATUS
+        ========================================== */}
+
+        <div className="delivery-status-panel">
+
+          <div className="order-status-heading">
+
+            <div>
+
+              <span>
+                DELIVERY INFORMATION
+              </span>
+
+              <h2>
+                DELIVERY STATUS
+              </h2>
+
+            </div>
+
+            <span
+              className={`details-status-badge delivery-${
+                order.orderStatus ===
+                "delivered"
+                  ? "delivered"
+                  : order.deliveryStatus ||
+                    "pending"
+              }`}
+            >
+              {(
+                order.orderStatus ===
+                "delivered"
+                  ? "delivered"
+                  : order.deliveryStatus ||
+                    "pending"
+              )
+                .replaceAll(
+                  "_",
+                  " "
+                )
+                .toUpperCase()}
+            </span>
+
+          </div>
+
+
+          <div className="delivery-status-content">
+
+            <div className="delivery-status-icon">
+              🚚
+            </div>
+
+            <div className="delivery-status-info">
+
+              <strong>
+
+                {order.orderStatus ===
+                "delivered"
+                  ? "Order Delivered"
+                  : order.deliveryStatus ===
+                    "assigned"
+                  ? "Delivery Assigned"
+                  : order.deliveryStatus ===
+                    "picked_up"
+                  ? "Order Picked Up"
+                  : order.deliveryStatus ===
+                    "in_transit"
+                  ? "Order In Transit"
+                  : order.deliveryStatus ===
+                    "out_for_delivery"
+                  ? "Out for Delivery"
+                  : order.deliveryStatus ===
+                    "cancelled"
+                  ? "Delivery Cancelled"
+                  : "Delivery Pending"}
+
+              </strong>
+
+              <p>
+
+                {order.orderStatus ===
+                "delivered"
+                  ? "Your order has been successfully delivered."
+                  : order.deliveryStatus ===
+                    "assigned"
+                  ? "A delivery person has been assigned to your order."
+                  : order.deliveryStatus ===
+                    "picked_up"
+                  ? "Your order has been picked up for delivery."
+                  : order.deliveryStatus ===
+                    "in_transit"
+                  ? "Your order is currently on the way."
+                  : order.deliveryStatus ===
+                    "out_for_delivery"
+                  ? "Your order is out for delivery and will arrive soon."
+                  : order.deliveryStatus ===
+                    "cancelled"
+                  ? "The delivery for this order has been cancelled."
+                  : "Your order is waiting for delivery processing."}
+
+              </p>
+
+              {order.deliveryMethod && (
+                <p>
+                  DELIVERY METHOD:{" "}
+                  <strong>
+                    {order.deliveryMethod ===
+                    "courier"
+                      ? "COURIER"
+                      : "OWN DELIVERY"}
+                  </strong>
+                </p>
+              )}
+
+              {order.shippingProvider && (
+                <p>
+                  SHIPPING PROVIDER:{" "}
+                  <strong>
+                    {order.shippingProvider}
+                  </strong>
+                </p>
+              )}
+
+              {order.trackingId && (
+                <p>
+                  TRACKING ID:{" "}
+                  <strong>
+                    {order.trackingId}
+                  </strong>
+                </p>
+              )}
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        {/* ==========================================
+            MAIN GRID
+        ========================================== */}
 
         <div className="order-details-grid">
 
@@ -422,9 +685,17 @@ const [cancelError, setCancelError] = useState("");
           <section className="order-products-section">
 
             <div className="order-section-heading">
+
               <div>
-                <span>YOUR PURCHASE</span>
-                <h2>ORDERED ITEMS</h2>
+
+                <span>
+                  YOUR PURCHASE
+                </span>
+
+                <h2>
+                  ORDERED ITEMS
+                </h2>
+
               </div>
 
               <span>
@@ -433,91 +704,191 @@ const [cancelError, setCancelError] = useState("");
                   ? "ITEM"
                   : "ITEMS"}
               </span>
+
             </div>
 
 
             <div className="order-detail-items">
 
-              {order.items.map((item) => (
+              {order.items.map(
+                (item) => {
 
-                <div
-                  className="order-detail-item"
-                  key={item._id}
-                >
+                  const canReturn =
+                    order.orderStatus ===
+                      "delivered" &&
+                    (!item.returnStatus ||
+                      item.returnStatus ===
+                        "not_requested");
 
-                  <div className="order-detail-image">
+                  return (
 
-                    {item.productId?.image ? (
-                      <img
-                        src={item.productId.image}
-                        alt={
-                          item.productId?.name ||
-                          "Product"
-                        }
-                      />
-                    ) : (
-                      <span>MM</span>
-                    )}
+                    <div
+                      className="order-detail-item"
+                      key={item._id}
+                    >
 
-                  </div>
+                      {/* IMAGE */}
+
+                      <div className="order-detail-image">
+
+                        {item.image ? (
+
+                          <img
+                            src={
+                              item.image
+                            }
+                            alt={
+                              item.name ||
+                              "Product"
+                            }
+                          />
+
+                        ) : item.productId?.image ? (
+
+                          <img
+                            src={
+                              item.productId
+                                .image
+                            }
+                            alt={
+                              item.productId
+                                ?.name ||
+                              "Product"
+                            }
+                          />
+
+                        ) : (
+
+                          <span>
+                            MM
+                          </span>
+
+                        )}
+
+                      </div>
 
 
-                  <div className="order-detail-product-info">
+                      {/* PRODUCT INFO */}
 
-                    <span>
-                      {item.productId?.category ||
-                        "MICKEY MOUSE"}
-                    </span>
+                      <div className="order-detail-product-info">
 
-                    <h3>
-                      {item.productId?.name ||
-                        "Product"}
-                    </h3>
+                        <span>
+                          {item.productId
+                            ?.category ||
+                            "MICKEY MOUSE"}
+                        </span>
 
-                    {item.size && (
-                      <p>
-                        SIZE: <strong>{item.size}</strong>
-                      </p>
-                    )}
+                        <h3>
+                          {item.name ||
+                            item.productId
+                              ?.name ||
+                            "Product"}
+                        </h3>
 
-                    <p>
-                      QUANTITY:{" "}
-                      <strong>{item.quantity}</strong>
-                    </p>
+                        {item.size && (
+                          <p>
+                            SIZE:{" "}
+                            <strong>
+                              {item.size}
+                            </strong>
+                          </p>
+                        )}
 
-                  </div>
+                        <p>
+                          QUANTITY:{" "}
+                          <strong>
+                            {item.quantity}
+                          </strong>
+                        </p>
 
 
-                  <div className="order-detail-item-price">
+                        {/* RETURN STATUS */}
 
-                    <span>
-                      ₹
-                      {item.price?.toLocaleString(
-                        "en-IN"
-                      )}{" "}
-                      / ITEM
-                    </span>
+                        {item.returnStatus &&
+                          item.returnStatus !==
+                            "not_requested" && (
 
-                    <strong>
-                      ₹
-                      {(
-                        item.price *
-                        item.quantity
-                      ).toLocaleString("en-IN")}
-                    </strong>
+                            <p
+                              className={`return-status return-${item.returnStatus}`}
+                            >
+                              RETURN:{" "}
+                              {item.returnStatus
+                                .replaceAll(
+                                  "_",
+                                  " "
+                                )
+                                .toUpperCase()}
+                            </p>
 
-                  </div>
+                          )}
 
-                </div>
+                      </div>
 
-              ))}
+
+                      {/* PRICE + RETURN */}
+
+                      <div className="order-detail-item-price">
+
+                        <span>
+                          ₹
+                          {Number(
+                            item.price ||
+                              0
+                          ).toLocaleString(
+                            "en-IN"
+                          )}{" "}
+                          / ITEM
+                        </span>
+
+                        <strong>
+                          ₹
+                          {(
+                            Number(
+                              item.price ||
+                                0
+                            ) *
+                            Number(
+                              item.quantity ||
+                                0
+                            )
+                          ).toLocaleString(
+                            "en-IN"
+                          )}
+                        </strong>
+
+
+                        {canReturn && (
+
+                          <button
+                            type="button"
+                            className="return-item-button"
+                            onClick={() =>
+                              openReturnModal(
+                                item
+                              )
+                            }
+                          >
+                            RETURN ITEM
+                          </button>
+
+                        )}
+
+                      </div>
+
+                    </div>
+
+                  );
+                }
+              )}
 
             </div>
 
           </section>
 
 
-          {/* SUMMARY */}
+          {/* ==========================================
+              SUMMARY
+          ========================================== */}
 
           <aside className="order-summary-section">
 
@@ -525,52 +896,132 @@ const [cancelError, setCancelError] = useState("");
               PAYMENT
             </span>
 
-            <h2>ORDER SUMMARY</h2>
-
+            <h2>
+              ORDER SUMMARY
+            </h2>
 
             <div className="order-summary-row">
-              <span>Subtotal</span>
+
+              <span>
+                Subtotal
+              </span>
+
               <strong>
                 ₹
-                {order.totalAmount?.toLocaleString(
+                {Number(
+                  order.subtotal ||
+                    order.totalAmount ||
+                    0
+                ).toLocaleString(
                   "en-IN"
                 )}
               </strong>
+
             </div>
 
             <div className="order-summary-row">
-              <span>Shipping</span>
-              <strong>FREE</strong>
+
+              <span>
+                Shipping
+              </span>
+
+              <strong>
+                ₹
+                {Number(
+                  order.deliveryCharge ||
+                    0
+                ).toLocaleString(
+                  "en-IN"
+                )}
+              </strong>
+
             </div>
 
+            {Number(
+              order.couponDiscount ||
+                0
+            ) > 0 && (
+
+              <div className="order-summary-row">
+
+                <span>
+                  Coupon Discount
+                </span>
+
+                <strong>
+                  − ₹
+                  {Number(
+                    order.couponDiscount
+                  ).toLocaleString(
+                    "en-IN"
+                  )}
+                </strong>
+
+              </div>
+
+            )}
+
+            {Number(
+              order.rewardDiscount ||
+                0
+            ) > 0 && (
+
+              <div className="order-summary-row">
+
+                <span>
+                  Reward Discount
+                </span>
+
+                <strong>
+                  − ₹
+                  {Number(
+                    order.rewardDiscount
+                  ).toLocaleString(
+                    "en-IN"
+                  )}
+                </strong>
+
+              </div>
+
+            )}
 
             <div className="order-summary-divider"></div>
 
-
             <div className="order-summary-total">
-              <span>TOTAL</span>
+
+              <span>
+                TOTAL
+              </span>
 
               <strong>
                 ₹
-                {order.totalAmount?.toLocaleString(
+                {Number(
+                  order.totalAmount ||
+                    0
+                ).toLocaleString(
                   "en-IN"
                 )}
               </strong>
+
             </div>
 
 
             <div className="payment-status-box">
 
-              <span>PAYMENT STATUS</span>
+              <span>
+                PAYMENT STATUS
+              </span>
 
               <strong
                 className={
-                  order.paymentStatus === "paid"
+                  order.paymentStatus ===
+                  "paid"
                     ? "payment-paid"
                     : "payment-unpaid"
                 }
               >
-                {order.paymentStatus === "paid"
+                {order.paymentStatus ===
+                "paid"
                   ? "✓ PAYMENT CONFIRMED"
                   : order.paymentStatus}
               </strong>
@@ -587,11 +1038,20 @@ const [cancelError, setCancelError] = useState("");
             <div className="order-section-heading">
 
               <div>
-                <span>DELIVERY INFORMATION</span>
-                <h2>SHIPPING ADDRESS</h2>
+
+                <span>
+                  DELIVERY INFORMATION
+                </span>
+
+                <h2>
+                  SHIPPING ADDRESS
+                </h2>
+
               </div>
 
-              <span>01</span>
+              <span>
+                01
+              </span>
 
             </div>
 
@@ -599,27 +1059,33 @@ const [cancelError, setCancelError] = useState("");
             <div className="shipping-address">
 
               <strong>
-                {order.shippingAddress?.name ||
-                  order.userId?.name ||
+                {order.shippingAddress
+                  ?.name ||
+                  order.userId
+                    ?.name ||
                   "Customer"}
               </strong>
 
               <p>
-                {order.shippingAddress?.address}
-                <br />
-                {order.shippingAddress?.city},{" "}
-                {order.shippingAddress?.state}
-                <br />
-                PIN:{" "}
-                {order.shippingAddress?.pincode}
-              </p>
 
-              {order.shippingAddress?.phone && (
-                <p>
-                  PHONE:{" "}
-                  {order.shippingAddress.phone}
-                </p>
-              )}
+                {order.shippingAddress
+                  ?.address}
+
+                <br />
+
+                {order.shippingAddress
+                  ?.city}
+                ,{" "}
+                {order.shippingAddress
+                  ?.state}
+
+                <br />
+
+                PIN:{" "}
+                {order.shippingAddress
+                  ?.pincode}
+
+              </p>
 
             </div>
 
@@ -628,46 +1094,222 @@ const [cancelError, setCancelError] = useState("");
         </div>
 
 
-        {/* FOOTER ACTIONS */}
+        {/* ==========================================
+            FOOTER ACTIONS
+        ========================================== */}
 
         {cancelError && (
-  <p className="order-cancel-error">
-    {cancelError}
-  </p>
-)}
+          <p className="order-cancel-error">
+            {cancelError}
+          </p>
+        )}
 
         <div className="order-details-actions">
 
-  <Link
-    to="/my-orders"
-    className="order-details-orders-button"
-  >
-    ← MY ORDERS
-  </Link>
+          <Link
+            to="/my-orders"
+            className="order-details-orders-button"
+          >
+            ← MY ORDERS
+          </Link>
 
-  {["pending", "confirmed", "processing"].includes(
-    order.orderStatus
-  ) && (
-    <button
-      type="button"
-      className="cancel-order-button"
-      onClick={handleCancelOrder}
-      disabled={cancelling}
-    >
-      {cancelling ? "CANCELLING..." : "CANCEL ORDER"}
-    </button>
-  )}
+          {[
+            "pending",
+            "confirmed",
+            "processing",
+          ].includes(
+            order.orderStatus
+          ) && (
 
-  <Link
-    to="/shop"
-    className="order-details-shop-button"
-  >
-    CONTINUE SHOPPING →
-  </Link>
+            <button
+              type="button"
+              className="cancel-order-button"
+              onClick={
+                handleCancelOrder
+              }
+              disabled={
+                cancelling
+              }
+            >
+              {cancelling
+                ? "CANCELLING..."
+                : "CANCEL ORDER"}
+            </button>
 
-</div>
+          )}
+
+          <Link
+            to="/shop"
+            className="order-details-shop-button"
+          >
+            CONTINUE SHOPPING →
+          </Link>
+
+        </div>
 
       </section>
+
+
+      {/* ==========================================
+          RETURN MODAL
+      ========================================== */}
+
+      {returnItem && (
+
+        <div
+          className="return-modal-overlay"
+          onClick={
+            closeReturnModal
+          }
+        >
+
+          <div
+            className="return-modal"
+            onClick={(e) =>
+              e.stopPropagation()
+            }
+          >
+
+            <button
+              type="button"
+              className="return-modal-close"
+              onClick={
+                closeReturnModal
+              }
+            >
+              ×
+            </button>
+
+
+            <span className="return-modal-label">
+              RETURN REQUEST
+            </span>
+
+            <h2>
+              Return{" "}
+              {returnItem.name}
+            </h2>
+
+            <p>
+              Please select the reason
+              for returning this item.
+            </p>
+
+
+            <label>
+              RETURN REASON
+            </label>
+
+            <select
+              value={
+                returnReason
+              }
+              onChange={(e) =>
+                setReturnReason(
+                  e.target.value
+                )
+              }
+            >
+
+              <option value="">
+                Select a reason
+              </option>
+
+              <option value="wrong_size">
+                Wrong size
+              </option>
+
+              <option value="wrong_product">
+                Wrong product received
+              </option>
+
+              <option value="damaged">
+                Product damaged
+              </option>
+
+              <option value="defective">
+                Product defective
+              </option>
+
+              <option value="not_as_expected">
+                Not as expected
+              </option>
+
+              <option value="changed_mind">
+                Changed my mind
+              </option>
+
+              <option value="other">
+                Other
+              </option>
+
+            </select>
+
+
+            <label>
+              ADDITIONAL COMMENTS
+            </label>
+
+            <textarea
+              value={
+                returnComment
+              }
+              onChange={(e) =>
+                setReturnComment(
+                  e.target.value
+                )
+              }
+              placeholder="Tell us more about the return..."
+              rows="4"
+            />
+
+
+            {returnError && (
+
+              <p className="return-modal-error">
+                {returnError}
+              </p>
+
+            )}
+
+
+            <div className="return-modal-actions">
+
+              <button
+                type="button"
+                className="return-modal-cancel"
+                onClick={
+                  closeReturnModal
+                }
+                disabled={
+                  returning
+                }
+              >
+                CANCEL
+              </button>
+
+              <button
+                type="button"
+                className="return-modal-submit"
+                onClick={
+                  handleReturnSubmit
+                }
+                disabled={
+                  returning
+                }
+              >
+                {returning
+                  ? "SUBMITTING..."
+                  : "SUBMIT RETURN REQUEST →"}
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      )}
 
     </main>
   );

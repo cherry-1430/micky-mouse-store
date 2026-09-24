@@ -1,11 +1,16 @@
 const express = require("express");
-console.log("🔥🔥🔥 ORDER ROUTES FILE LOADED - DELIVERY FIX VERSION 🔥🔥🔥");
+
+console.log(
+  "🔥🔥🔥 ORDER ROUTES FILE LOADED - DELIVERY + RETURN VERSION 🔥🔥🔥"
+);
+
 const Order = require("../models/Order");
 const Product = require("../models/Product");
 const Coupon = require("../models/Coupon");
 const User = require("../models/User");
 
 const authMiddleware = require("../middleware/authMiddleware");
+
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
 
@@ -43,20 +48,37 @@ function getEffectivePrice(product) {
 }
 
 /* =========================================================
+   HELPER: ADMIN CHECK
+========================================================= */
+
+function adminOnly(req, res, next) {
+  if (
+    !req.user ||
+    String(req.user.role || "").toLowerCase() !== "admin"
+  ) {
+    return res.status(403).json({
+      message: "Admin access required",
+    });
+  }
+
+  next();
+}
+
+/* =========================================================
    CREATE ORDER
 ========================================================= */
 
 router.post("/", authMiddleware, async (req, res) => {
   try {
     const {
-  customer,
-  shippingAddress,
-  items,
-  couponCode,
-  rewardPointsUsed,
-  paymentMethod,
-  deliveryMethod,
-} = req.body;
+      customer,
+      shippingAddress,
+      items,
+      couponCode,
+      rewardPointsUsed,
+      paymentMethod,
+      deliveryMethod,
+    } = req.body;
 
     console.log("========================================");
     console.log("🔥 CREATE ORDER ROUTE RUNNING");
@@ -251,14 +273,12 @@ router.post("/", authMiddleware, async (req, res) => {
     ========================================= */
 
     const normalizedDeliveryMethod =
-  deliveryMethod === "courier"
-    ? "courier"
-    : "own_delivery";
+      deliveryMethod === "courier"
+        ? "courier"
+        : "own_delivery";
 
-const deliveryCharge =
-  normalizedDeliveryMethod === "own_delivery"
-    ? (calculatedSubtotal < 999 ? 100 : 0)
-    : (calculatedSubtotal < 999 ? 100 : 0);
+    const deliveryCharge =
+      calculatedSubtotal < 999 ? 100 : 0;
 
     /* =========================================
        USER
@@ -373,18 +393,19 @@ const deliveryCharge =
 
       deliveryCharge: Number(deliveryCharge || 0),
 
-deliveryMethod: normalizedDeliveryMethod,
+      deliveryMethod:
+        normalizedDeliveryMethod,
 
-shippingProvider:
-  normalizedDeliveryMethod === "courier"
-    ? "Delhivery"
-    : null,
+      shippingProvider:
+        normalizedDeliveryMethod === "courier"
+          ? "Delhivery"
+          : null,
 
-trackingId: null,
+      trackingId: null,
 
-deliveryStatus: "pending",
+      deliveryStatus: "pending",
 
-totalAmount: Number(finalAmount),
+      totalAmount: Number(finalAmount),
 
       paymentMethod:
         paymentMethod || "online",
@@ -392,6 +413,20 @@ totalAmount: Number(finalAmount),
       paymentStatus: "pending",
 
       orderStatus: "pending",
+
+      /* RETURN */
+
+      returnStatus: "not_requested",
+
+      returnReason: null,
+
+      returnRequestedAt: null,
+
+      returnProcessedAt: null,
+
+      refundAmount: 0,
+
+      refundId: null,
     });
 
     /* =========================================
@@ -415,9 +450,6 @@ totalAmount: Number(finalAmount),
 
     /* =========================================
        FORCE DATABASE UPDATE
-       
-       This bypasses Mongoose document
-       conversion for these two fields.
     ========================================= */
 
     await Order.collection.updateOne(
@@ -467,10 +499,8 @@ totalAmount: Number(finalAmount),
 
     return res.status(201).json({
       message: "Order created successfully",
-
       order: finalOrder,
     });
-
   } catch (error) {
     console.error(
       "🔥 ORDER CREATION ERROR:",
@@ -495,16 +525,12 @@ router.get(
     try {
       const orders =
         await Order.find()
-          .populate(
-            "items.productId"
-          )
+          .populate("items.productId")
           .sort({
             createdAt: -1,
           });
 
-      return res.status(200).json(
-        orders
-      );
+      return res.status(200).json(orders);
     } catch (error) {
       console.error(
         "Get all orders error:",
@@ -514,7 +540,6 @@ router.get(
       return res.status(500).json({
         message:
           "Failed to fetch orders",
-
         error:
           error.message,
       });
@@ -541,9 +566,7 @@ router.get(
           })
           .lean();
 
-      return res.status(200).json(
-        orders
-      );
+      return res.status(200).json(orders);
     } catch (error) {
       console.error(
         "My orders error:",
@@ -553,6 +576,599 @@ router.get(
       return res.status(500).json({
         message:
           "Failed to fetch your orders",
+        error:
+          error.message,
+      });
+    }
+  }
+);
+
+/* =========================================================
+   ADMIN - GET RETURN REQUESTS
+========================================================= */
+
+router.get(
+  "/admin/returns",
+  authMiddleware,
+  adminOnly,
+  async (req, res) => {
+    try {
+      const orders =
+        await Order.find({
+          returnStatus: {
+            $in: [
+              "requested",
+              "approved",
+              "picked_up",
+              "received",
+            ],
+          },
+        })
+          .populate(
+            "userId",
+            "name email"
+          )
+          .populate(
+            "items.productId"
+          )
+          .sort({
+            returnRequestedAt: -1,
+          });
+
+      return res.status(200).json(
+        orders
+      );
+    } catch (error) {
+      console.error(
+        "Get return requests error:",
+        error
+      );
+
+      return res.status(500).json({
+        message:
+          "Failed to fetch return requests",
+        error:
+          error.message,
+      });
+    }
+  }
+);
+
+/* =========================================================
+   REQUEST RETURN
+   CUSTOMER
+========================================================= */
+
+router.post(
+  "/:id/return",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const { reason } = req.body;
+
+      if (
+        !reason ||
+        !String(reason).trim()
+      ) {
+        return res.status(400).json({
+          message:
+            "Return reason is required",
+        });
+      }
+
+      const order =
+        await Order.findOne({
+          _id:
+            req.params.id,
+
+          userId:
+            req.user.userId,
+        });
+
+      if (!order) {
+        return res.status(404).json({
+          message:
+            "Order not found",
+        });
+      }
+
+      /* ONLY DELIVERED ORDERS */
+
+      if (
+        order.orderStatus !==
+        "delivered"
+      ) {
+        return res.status(400).json({
+          message:
+            "Only delivered orders can be returned",
+        });
+      }
+
+      /* PREVENT DUPLICATE RETURN */
+
+      if (
+        order.returnStatus &&
+        order.returnStatus !==
+          "not_requested"
+      ) {
+        return res.status(400).json({
+          message:
+            "Return request has already been submitted",
+        });
+      }
+
+      order.returnStatus =
+        "requested";
+
+      order.returnReason =
+        String(reason).trim();
+
+      order.returnRequestedAt =
+        new Date();
+
+      await order.save();
+
+      return res.status(200).json({
+        message:
+          "Return request submitted successfully",
+
+        order,
+      });
+    } catch (error) {
+      console.error(
+        "Return request error:",
+        error
+      );
+
+      return res.status(500).json({
+        message:
+          "Failed to submit return request",
+
+        error:
+          error.message,
+      });
+    }
+  }
+);
+
+/* =========================================================
+   ADMIN - APPROVE RETURN
+========================================================= */
+
+router.patch(
+  "/admin/:id/return/approve",
+  authMiddleware,
+  adminOnly,
+  async (req, res) => {
+    try {
+      const order =
+        await Order.findById(
+          req.params.id
+        );
+
+      if (!order) {
+        return res.status(404).json({
+          message:
+            "Order not found",
+        });
+      }
+
+      if (
+        order.returnStatus !==
+        "requested"
+      ) {
+        return res.status(400).json({
+          message:
+            "This order does not have a pending return request",
+        });
+      }
+
+      order.returnStatus =
+        "approved";
+
+      order.returnProcessedAt =
+        new Date();
+
+      await order.save();
+
+      return res.status(200).json({
+        message:
+          "Return request approved successfully",
+
+        order,
+      });
+    } catch (error) {
+      console.error(
+        "Approve return error:",
+        error
+      );
+
+      return res.status(500).json({
+        message:
+          "Failed to approve return",
+
+        error:
+          error.message,
+      });
+    }
+  }
+);
+
+/* =========================================================
+   ADMIN - REJECT RETURN
+========================================================= */
+
+router.patch(
+  "/admin/:id/return/reject",
+  authMiddleware,
+  adminOnly,
+  async (req, res) => {
+    try {
+      const { reason } =
+        req.body;
+
+      const order =
+        await Order.findById(
+          req.params.id
+        );
+
+      if (!order) {
+        return res.status(404).json({
+          message:
+            "Order not found",
+        });
+      }
+
+      if (
+        order.returnStatus !==
+        "requested"
+      ) {
+        return res.status(400).json({
+          message:
+            "This order does not have a pending return request",
+        });
+      }
+
+      order.returnStatus =
+        "rejected";
+
+      if (
+        reason &&
+        String(reason).trim()
+      ) {
+        order.returnReason =
+          `${order.returnReason || ""} | Admin: ${String(
+            reason
+          ).trim()}`;
+      }
+
+      order.returnProcessedAt =
+        new Date();
+
+      await order.save();
+
+      return res.status(200).json({
+        message:
+          "Return request rejected",
+
+        order,
+      });
+    } catch (error) {
+      console.error(
+        "Reject return error:",
+        error
+      );
+
+      return res.status(500).json({
+        message:
+          "Failed to reject return",
+
+        error:
+          error.message,
+      });
+    }
+  }
+);
+
+/* =========================================================
+   ADMIN - MARK RETURN PICKED UP
+========================================================= */
+
+router.patch(
+  "/admin/:id/return/picked-up",
+  authMiddleware,
+  adminOnly,
+  async (req, res) => {
+    try {
+      const order =
+        await Order.findById(
+          req.params.id
+        );
+
+      if (!order) {
+        return res.status(404).json({
+          message:
+            "Order not found",
+        });
+      }
+
+      if (
+        order.returnStatus !==
+        "approved"
+      ) {
+        return res.status(400).json({
+          message:
+            "Return must be approved first",
+        });
+      }
+
+      order.returnStatus =
+        "picked_up";
+
+      order.returnProcessedAt =
+        new Date();
+
+      await order.save();
+
+      return res.status(200).json({
+        message:
+          "Return marked as picked up",
+
+        order,
+      });
+    } catch (error) {
+      console.error(
+        "Return pickup error:",
+        error
+      );
+
+      return res.status(500).json({
+        message:
+          "Failed to update return",
+
+        error:
+          error.message,
+      });
+    }
+  }
+);
+
+/* =========================================================
+   ADMIN - MARK RETURN RECEIVED
+========================================================= */
+
+router.patch(
+  "/admin/:id/return/received",
+  authMiddleware,
+  adminOnly,
+  async (req, res) => {
+    try {
+      const order =
+        await Order.findById(
+          req.params.id
+        );
+
+      if (!order) {
+        return res.status(404).json({
+          message:
+            "Order not found",
+        });
+      }
+
+      if (
+        ![
+          "approved",
+          "picked_up",
+        ].includes(
+          order.returnStatus
+        )
+      ) {
+        return res.status(400).json({
+          message:
+            "Return is not ready to be marked as received",
+        });
+      }
+
+      /* =========================================
+         RESTORE STOCK
+         Product is returned to inventory
+      ========================================= */
+
+      if (
+        order.inventoryDeducted
+      ) {
+        for (
+          const item of
+            order.items
+        ) {
+          await Product.findByIdAndUpdate(
+            item.productId,
+            {
+              $inc: {
+                stock:
+                  Number(
+                    item.quantity
+                  ),
+              },
+            }
+          );
+        }
+
+        order.inventoryDeducted =
+          false;
+      }
+
+      order.returnStatus =
+        "received";
+
+      order.returnProcessedAt =
+        new Date();
+
+      await order.save();
+
+      return res.status(200).json({
+        message:
+          "Returned product marked as received",
+
+        order,
+      });
+    } catch (error) {
+      console.error(
+        "Return received error:",
+        error
+      );
+
+      return res.status(500).json({
+        message:
+          "Failed to update return status",
+
+        error:
+          error.message,
+      });
+    }
+  }
+);
+
+/* =========================================================
+   ADMIN - PROCESS RETURN REFUND
+========================================================= */
+
+router.post(
+  "/admin/:id/return/refund",
+  authMiddleware,
+  adminOnly,
+  async (req, res) => {
+    try {
+      const order =
+        await Order.findById(
+          req.params.id
+        );
+
+      if (!order) {
+        return res.status(404).json({
+          message:
+            "Order not found",
+        });
+      }
+
+      if (
+        order.returnStatus !==
+        "received"
+      ) {
+        return res.status(400).json({
+          message:
+            "Product must be received before refund",
+        });
+      }
+
+      if (
+        order.paymentStatus !==
+        "paid"
+      ) {
+        return res.status(400).json({
+          message:
+            "This order does not have a completed online payment",
+        });
+      }
+
+      if (
+        order.refundId
+      ) {
+        return res.status(400).json({
+          message:
+            "Refund has already been processed",
+        });
+      }
+
+      if (
+        !order.razorpayPaymentId
+      ) {
+        return res.status(400).json({
+          message:
+            "Razorpay payment ID not found",
+        });
+      }
+
+      const refundAmount =
+        Math.round(
+          Number(
+            order.totalAmount
+          ) * 100
+        );
+
+      if (
+        !Number.isFinite(
+          refundAmount
+        ) ||
+        refundAmount <= 0
+      ) {
+        return res.status(400).json({
+          message:
+            "Invalid refund amount",
+        });
+      }
+
+      /* =========================================
+         RAZORPAY REFUND
+      ========================================= */
+
+      const refund =
+        await razorpay
+          .payments.refund(
+            order.razorpayPaymentId,
+            {
+              amount:
+                refundAmount,
+
+              speed:
+                "normal",
+            }
+          );
+
+      /* =========================================
+         SAVE REFUND DETAILS
+      ========================================= */
+
+      order.returnStatus =
+        "refunded";
+
+      order.paymentStatus =
+        "refunded";
+
+      order.refundAmount =
+        Number(
+          order.totalAmount
+        );
+
+      order.refundId =
+        refund.id;
+
+      order.returnProcessedAt =
+        new Date();
+
+      await order.save();
+
+      return res.status(200).json({
+        message:
+          "Refund processed successfully",
+
+        refundId:
+          refund.id,
+
+        refundAmount:
+          order.refundAmount,
+
+        order,
+      });
+    } catch (error) {
+      console.error(
+        "Return refund error:",
+        error
+      );
+
+      return res.status(500).json({
+        message:
+          "Failed to process refund",
 
         error:
           error.message,
@@ -689,12 +1305,11 @@ router.post(
         });
       }
 
-      /* ===================================================
-         STOCK CHECK
-      =================================================== */
+      /* STOCK CHECK */
 
       for (
-        const item of order.items
+        const item of
+          order.items
       ) {
         const product =
           await Product.findById(
@@ -726,15 +1341,7 @@ router.post(
         }
       }
 
-      /* ===================================================
-         RAZORPAY AMOUNT
-         
-         IMPORTANT:
-         DO NOT calculate delivery charge again here.
-         
-         The correct final amount is already stored
-         in MongoDB as order.totalAmount.
-      =================================================== */
+      /* RAZORPAY AMOUNT */
 
       const finalAmount =
         Number(
@@ -745,10 +1352,6 @@ router.post(
         Math.round(
           finalAmount * 100
         );
-
-      /* ===================================================
-         PAYMENT DEBUG
-      =================================================== */
 
       console.log("");
       console.log("========================================");
@@ -802,10 +1405,6 @@ router.post(
 
       console.log("========================================");
 
-      /* ===================================================
-         VALIDATE PAYMENT AMOUNT
-      =================================================== */
-
       if (
         !Number.isFinite(
           finalAmount
@@ -830,10 +1429,6 @@ router.post(
         });
       }
 
-      /* ===================================================
-         CREATE RAZORPAY ORDER
-      =================================================== */
-
       const razorpayOrder =
         await razorpay.orders.create({
           amount:
@@ -845,10 +1440,6 @@ router.post(
           receipt:
             order._id.toString(),
         });
-
-      /* ===================================================
-         SAVE RAZORPAY ORDER ID
-      =================================================== */
 
       order.razorpayOrderId =
         razorpayOrder.id;
@@ -865,7 +1456,6 @@ router.post(
           "Razorpay order created",
 
         razorpayOrder:
-
           razorpayOrder,
 
         keyId:
@@ -953,9 +1543,7 @@ router.post(
         });
       }
 
-      /* ===================================================
-         VERIFY PAYMENT SIGNATURE
-      =================================================== */
+      /* VERIFY SIGNATURE */
 
       const generatedSignature =
         crypto
@@ -981,14 +1569,13 @@ router.post(
         });
       }
 
-      /* ===================================================
-         INVENTORY DEDUCTION
-      =================================================== */
+      /* INVENTORY DEDUCTION */
 
       const deductedItems = [];
 
       for (
-        const item of order.items
+        const item of
+          order.items
       ) {
         const updatedProduct =
           await Product.findOneAndUpdate(
@@ -1021,8 +1608,6 @@ router.post(
           );
 
         if (!updatedProduct) {
-          /* Restore previously deducted items */
-
           for (
             const deducted of
               deductedItems
@@ -1058,9 +1643,7 @@ router.post(
       order.inventoryDeducted =
         true;
 
-      /* ===================================================
-         USER
-      =================================================== */
+      /* USER */
 
       const user =
         await User.findById(
@@ -1096,9 +1679,7 @@ router.post(
         });
       }
 
-      /* ===================================================
-         REWARD POINTS VALIDATION
-      =================================================== */
+      /* REWARD POINT VALIDATION */
 
       if (
         Number(
@@ -1136,9 +1717,7 @@ router.post(
         });
       }
 
-      /* ===================================================
-         DEDUCT REWARD POINTS
-      =================================================== */
+      /* DEDUCT REWARD POINTS */
 
       if (
         Number(
@@ -1151,9 +1730,7 @@ router.post(
           );
       }
 
-      /* ===================================================
-         EARN REWARD POINTS
-      =================================================== */
+      /* EARN REWARD POINTS */
 
       const earnedPoints =
         Math.floor(
@@ -1170,9 +1747,7 @@ router.post(
 
       await user.save();
 
-      /* ===================================================
-         COUPON USAGE
-      =================================================== */
+      /* COUPON USAGE */
 
       if (order.couponCode) {
         await Coupon.findOneAndUpdate(
@@ -1212,9 +1787,7 @@ router.post(
         );
       }
 
-      /* ===================================================
-         COMPLETE ORDER
-      =================================================== */
+      /* COMPLETE ORDER */
 
       order.razorpayPaymentId =
         razorpay_payment_id;
@@ -1291,9 +1864,7 @@ router.post(
         });
       }
 
-      /* ===================================================
-         REFUND
-      =================================================== */
+      /* REFUND */
 
       if (
         order.paymentStatus ===
@@ -1322,6 +1893,14 @@ router.post(
             "Razorpay refund created:",
             refund.id
           );
+
+          order.refundId =
+            refund.id;
+
+          order.refundAmount =
+            Number(
+              order.totalAmount
+            );
         } catch (
           refundError
         ) {
@@ -1340,9 +1919,7 @@ router.post(
         }
       }
 
-      /* ===================================================
-         RESTORE INVENTORY
-      =================================================== */
+      /* RESTORE INVENTORY */
 
       if (
         order.inventoryDeducted
@@ -1368,9 +1945,7 @@ router.post(
           false;
       }
 
-      /* ===================================================
-         RESTORE REWARD POINTS
-      =================================================== */
+      /* RESTORE REWARD POINTS */
 
       const user =
         await User.findById(
@@ -1414,9 +1989,7 @@ router.post(
 
       await user.save();
 
-      /* ===================================================
-         RESTORE COUPON USAGE
-      =================================================== */
+      /* RESTORE COUPON USAGE */
 
       if (order.couponCode) {
         await Coupon.findOneAndUpdate(
@@ -1437,9 +2010,7 @@ router.post(
         );
       }
 
-      /* ===================================================
-         UPDATE ORDER
-      =================================================== */
+      /* UPDATE ORDER */
 
       order.orderStatus =
         "cancelled";
@@ -1481,49 +2052,221 @@ router.post(
   }
 );
 
-// =========================================================
-// UPDATE DELIVERY DETAILS
-// Admin: Own Delivery / Courier / Tracking ID
-router.patch("/orders/:id/delivery", authMiddleware, async (req, res) => {
-  try {
-    const { deliveryMethod } = req.body;
+/* =========================================================
+   UPDATE DELIVERY DETAILS
+   ADMIN
+========================================================= */
 
-    if (!deliveryMethod) {
-      return res.status(400).json({
-        message: "Delivery method is required",
+router.patch(
+  "/:id/delivery",
+  authMiddleware,
+  adminOnly,
+  async (req, res) => {
+    try {
+      const {
+        deliveryMethod,
+        shippingProvider,
+        trackingId,
+        deliveryStatus,
+      } = req.body;
+
+      if (!deliveryMethod) {
+        return res.status(400).json({
+          message:
+            "Delivery method is required",
+        });
+      }
+
+      if (
+        ![
+          "own_delivery",
+          "courier",
+        ].includes(
+          deliveryMethod
+        )
+      ) {
+        return res.status(400).json({
+          message:
+            "Invalid delivery method",
+        });
+      }
+
+      const order =
+        await Order.findById(
+          req.params.id
+        );
+
+      if (!order) {
+        return res.status(404).json({
+          message:
+            "Order not found",
+        });
+      }
+
+      order.deliveryMethod =
+        deliveryMethod;
+
+      if (
+        shippingProvider !==
+        undefined
+      ) {
+        order.shippingProvider =
+          shippingProvider ||
+          null;
+      }
+
+      if (
+        trackingId !==
+        undefined
+      ) {
+        order.trackingId =
+          trackingId ||
+          null;
+      }
+
+      if (
+        deliveryStatus !==
+        undefined
+      ) {
+        const allowedStatuses = [
+          "pending",
+          "assigned",
+          "picked_up",
+          "in_transit",
+          "out_for_delivery",
+          "delivered",
+          "cancelled",
+        ];
+
+        if (
+          !allowedStatuses.includes(
+            deliveryStatus
+          )
+        ) {
+          return res.status(400).json({
+            message:
+              "Invalid delivery status",
+          });
+        }
+
+        order.deliveryStatus =
+          deliveryStatus;
+
+        /*
+         * Keep order status synchronized
+         * when delivery becomes delivered.
+         */
+
+        if (
+          deliveryStatus ===
+          "delivered"
+        ) {
+          order.orderStatus =
+            "delivered";
+        }
+      }
+
+      await order.save();
+
+      return res.status(200).json({
+        message:
+          "Delivery details updated successfully",
+
+        order,
+      });
+    } catch (error) {
+      console.error(
+        "Delivery update error:",
+        error
+      );
+
+      return res.status(500).json({
+        message:
+          "Failed to update delivery details",
+
+        error:
+          error.message,
       });
     }
-
-    if (!["local", "courier"].includes(deliveryMethod)) {
-      return res.status(400).json({
-        message: "Invalid delivery method",
-      });
-    }
-
-    const order = await Order.findById(req.params.id);
-
-    if (!order) {
-      return res.status(404).json({
-        message: "Order not found",
-      });
-    }
-
-    order.deliveryMethod = deliveryMethod;
-
-    await order.save();
-
-    return res.status(200).json({
-      message: "Delivery method updated successfully",
-      order,
-    });
-  } catch (error) {
-    console.error("Delivery method update error:", error);
-
-    return res.status(500).json({
-      message: "Failed to update delivery method",
-      error: error.message,
-    });
   }
-});
+);
+
+/* =========================================================
+   RETURN ITEM
+========================================================= */
+
+router.post(
+  "/:id/items/:itemId/return",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const { reason, comments } = req.body;
+
+      if (!reason) {
+        return res.status(400).json({
+          message: "Return reason is required",
+        });
+      }
+
+      const order = await Order.findOne({
+        _id: req.params.id,
+        userId: req.user.userId,
+      });
+
+      if (!order) {
+        return res.status(404).json({
+          message: "Order not found",
+        });
+      }
+
+      if (order.orderStatus !== "delivered") {
+        return res.status(400).json({
+          message: "Only delivered orders can be returned",
+        });
+      }
+
+      const item = order.items.id(req.params.itemId);
+
+      if (!item) {
+        return res.status(404).json({
+          message: "Order item not found",
+        });
+      }
+
+      if (
+        item.returnStatus &&
+        item.returnStatus !== "none"
+      ) {
+        return res.status(400).json({
+          message:
+            "A return request has already been submitted for this item",
+        });
+      }
+
+      item.returnStatus = "requested";
+      item.returnReason = reason;
+      item.returnComments = comments || "";
+      item.returnRequestedAt = new Date();
+
+      await order.save();
+
+      return res.status(200).json({
+        message: "Return request submitted successfully",
+        order,
+      });
+    } catch (error) {
+      console.error("Return request error:", error);
+
+      return res.status(500).json({
+        message: "Failed to submit return request",
+        error: error.message,
+      });
+    }
+  }
+);
+
+/* =========================================================
+   EXPORT
+========================================================= */
 
 module.exports = router;
