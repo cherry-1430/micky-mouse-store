@@ -2406,21 +2406,19 @@ router.patch(
   authMiddleware,
   async (req, res) => {
     try {
-      /* =========================================
-         ADMIN CHECK
-      ========================================= */
+      console.log("=================================");
+      console.log("ADMIN RETURN STATUS UPDATE");
+      console.log("Order ID:", req.params.orderId);
+      console.log("Item ID:", req.params.itemId);
+      console.log("Request Body:", req.body);
+      console.log("Return Status:", req.body?.returnStatus);
+      console.log("=================================");
 
-      if (req.user.role !== "admin") {
-        return res.status(403).json({
-          message: "Admin access required",
-        });
-      }
-
-      /* =========================================
-         GET RETURN STATUS
-      ========================================= */
-
-      const { returnStatus } = req.body;
+      const returnStatus = String(
+        req.body?.returnStatus || ""
+      )
+        .trim()
+        .toLowerCase();
 
       const allowedStatuses = [
         "requested",
@@ -2432,13 +2430,11 @@ router.patch(
 
       if (!allowedStatuses.includes(returnStatus)) {
         return res.status(400).json({
-          message: `Invalid return status: ${returnStatus}`,
+          message: "Invalid return status",
+          received: req.body?.returnStatus ?? null,
+          body: req.body,
         });
       }
-
-      /* =========================================
-         FIND ORDER
-      ========================================= */
 
       const order = await Order.findById(
         req.params.orderId
@@ -2450,10 +2446,6 @@ router.patch(
         });
       }
 
-      /* =========================================
-         FIND ITEM
-      ========================================= */
-
       const item = order.items.id(
         req.params.itemId
       );
@@ -2464,39 +2456,22 @@ router.patch(
         });
       }
 
-      /* =========================================
-         CHECK RETURN REQUEST
-      ========================================= */
-
-      if (
-        returnStatus === "approved" ||
-        returnStatus === "rejected"
-      ) {
-        if (item.returnStatus !== "requested") {
-          return res.status(400).json({
-            message:
-              "This item does not have a pending return request",
-          });
-        }
+      if (item.returnStatus !== "requested") {
+        return res.status(400).json({
+          message:
+            "This item does not have a pending return request",
+          currentStatus: item.returnStatus,
+        });
       }
 
-      /* =========================================
-         UPDATE RETURN STATUS
-      ========================================= */
-
       item.returnStatus = returnStatus;
-
       item.returnProcessedAt = new Date();
 
-      /* =========================================
-         SAVE ORDER
-      ========================================= */
+      if (returnStatus === "approved") {
+        item.returnApprovedAt = new Date();
+      }
 
       await order.save();
-
-      /* =========================================
-         RESPONSE
-      ========================================= */
 
       return res.status(200).json({
         message:
@@ -2505,20 +2480,16 @@ router.patch(
             : returnStatus === "rejected"
             ? "Return rejected successfully"
             : "Return status updated successfully",
-
         order,
       });
-
     } catch (error) {
       console.error(
-        "Return status update error:",
+        "ADMIN RETURN STATUS ERROR:",
         error
       );
 
       return res.status(500).json({
-        message:
-          "Failed to update return status",
-
+        message: "Failed to update return status",
         error: error.message,
       });
     }

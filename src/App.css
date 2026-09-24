@@ -14346,3 +14346,160 @@ textarea:focus {
   }
 
 }
+
+/* ================================
+   RETURN STATUS
+================================ */
+
+.return-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  margin: 8px 0 0;
+  padding: 6px 12px;
+
+  border-radius: 20px;
+  border: 1px solid transparent;
+
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  line-height: 1.2;
+
+  width: fit-content;
+  text-transform: uppercase;
+
+  transition: all 0.2s ease;
+}
+
+/* Small status indicator */
+.return-status::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+
+/* ================================
+   PENDING
+================================ */
+
+.return-pending {
+  background: #fff7ed;
+  color: #c2410c;
+  border-color: #fed7aa;
+}
+
+.return-pending::before {
+  background: #f97316;
+}
+
+
+/* ================================
+   APPROVED
+================================ */
+
+.return-approved,
+.return-return_approved {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: #a7f3d0;
+}
+
+.return-approved::before,
+.return-return_approved::before {
+  background: #10b981;
+}
+
+
+/* ================================
+   REJECTED
+================================ */
+
+.return-rejected,
+.return-return_rejected {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+.return-rejected::before,
+.return-return_rejected::before {
+  background: #ef4444;
+}
+
+
+/* ================================
+   COMPLETED
+================================ */
+
+.return-completed,
+.return-return_completed {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+
+.return-completed::before,
+.return-return_completed::before {
+  background: #3b82f6;
+}
+
+
+/* ================================
+   PROCESSING
+================================ */
+
+.return-processing {
+  background: #f5f3ff;
+  color: #6d28d9;
+  border-color: #ddd6fe;
+}
+
+.return-processing::before {
+  background: #8b5cf6;
+}
+
+
+/* ================================
+   REFUNDED
+================================ */
+
+.return-refunded {
+  background: #f0fdf4;
+  color: #15803d;
+  border-color: #bbf7d0;
+}
+
+.return-refunded::before {
+  background: #22c55e;
+}
+
+
+/* ================================
+   CANCELLED
+================================ */
+
+.return-cancelled {
+  background: #f8fafc;
+  color: #475569;
+  border-color: #cbd5e1;
+}
+
+.return-cancelled::before {
+  background: #64748b;
+}
+
+
+/* ================================
+   HOVER
+================================ */
+
+.return-status:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+}
