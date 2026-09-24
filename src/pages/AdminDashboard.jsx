@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import API_URL from "../api/apiConfig";
 
 function AdminDashboard() {
@@ -6,11 +6,16 @@ function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedOrderDate, setSelectedOrderDate] = useState("");
+  const [orderNotifications, setOrderNotifications] = useState([]);
+  const [showOrderNotifications, setShowOrderNotifications] = useState(false);
+  const orderSnapshotRef = useRef(null);
 
   const [products, setProducts] = useState([]);
   const [returnRequests, setReturnRequests] = useState([]);
 const [returnLoading, setReturnLoading] = useState(true);
 const [returnError, setReturnError] = useState("");
+  const [returnSearch, setReturnSearch] = useState("");
+  const [returnStatusFilter, setReturnStatusFilter] = useState("all");
   const [productLoading, setProductLoading] = useState(true);
   const [showProductForm, setShowProductForm] = useState(false);
   const [productImage, setProductImage] = useState(null);
@@ -52,6 +57,33 @@ const [returnError, setReturnError] = useState("");
       ...current,
       [name]: type === "checkbox" ? checked : value,
     }));
+  };
+
+  const addOrderNotification = (notification) => {
+    setOrderNotifications((current) => [
+      notification,
+      ...current.filter((item) => item.id !== notification.id),
+    ].slice(0, 20));
+  };
+
+  const requestBrowserNotification = (title, body) => {
+    if (!("Notification" in window)) return;
+
+    const show = () => {
+      try {
+        new Notification(title, { body });
+      } catch (notificationError) {
+        console.warn("Browser notification unavailable:", notificationError);
+      }
+    };
+
+    if (Notification.permission === "granted") {
+      show();
+    } else if (Notification.permission === "default") {
+      Notification.requestPermission().then((permission) => {
+        if (permission === "granted") show();
+      }).catch(() => {});
+    }
   };
 
   const fetchReturnRequests = async () => {
@@ -750,7 +782,9 @@ const [returnError, setReturnError] = useState("");
   };
 
   useEffect(() => {
-    const fetchOrders = async () => {
+    let mounted = true;
+
+    const fetchOrders = async (isBackgroundRefresh = false) => {
       try {
         const token = localStorage.getItem("token");
 
@@ -769,16 +803,93 @@ const [returnError, setReturnError] = useState("");
           throw new Error(data.message || "Failed to fetch orders");
         }
 
+        if (!mounted) return;
+
+        const snapshot = new Map(
+          data.map((order) => [
+            order._id,
+            {
+              status: order.orderStatus,
+              paymentStatus: order.paymentStatus,
+            },
+          ])
+        );
+
+        const previous = orderSnapshotRef.current;
+
+        if (previous && isBackgroundRefresh) {
+          data.forEach((order) => {
+            const oldOrder = previous.get(order._id);
+
+            if (!oldOrder) {
+              const customerName =
+                `${order.customer?.firstName || ""} ${
+                  order.customer?.lastName || ""
+                }`.trim() ||
+                order.userId?.name ||
+                "Customer";
+
+              addOrderNotification({
+                id: `new-${order._id}`,
+                type: "new",
+                title: "NEW ORDER",
+                message: `Order #${order._id.slice(-8).toUpperCase()} from ${customerName}`,
+                time: new Date().toISOString(),
+              });
+
+              requestBrowserNotification(
+                "SPACE WEAR — New Order",
+                `Order #${order._id.slice(-8).toUpperCase()} received from ${customerName}.`
+              );
+            } else if (
+              oldOrder.status !== order.orderStatus ||
+              oldOrder.paymentStatus !== order.paymentStatus
+            ) {
+              addOrderNotification({
+                id: `update-${order._id}-${order.orderStatus}-${order.paymentStatus}`,
+                type: "update",
+                title: "ORDER UPDATED",
+                message: `Order #${order._id.slice(-8).toUpperCase()} is now ${String(
+                  order.orderStatus || "updated"
+                ).replaceAll("_", " ")}`,
+                time: new Date().toISOString(),
+              });
+
+              requestBrowserNotification(
+                "SPACE WEAR — Order Updated",
+                `Order #${order._id.slice(-8).toUpperCase()} status changed.`
+              );
+            }
+          });
+        }
+
+        orderSnapshotRef.current = snapshot;
         setOrders(data);
       } catch (error) {
         console.error("Admin orders error:", error);
-        setError(error.message);
+
+        if (!isBackgroundRefresh) {
+          setError(error.message);
+        }
       } finally {
-        setLoading(false);
+        if (!isBackgroundRefresh) {
+          setLoading(false);
+        }
       }
     };
 
-    fetchOrders();
+    fetchOrders(false);
+
+    const interval = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        fetchOrders(true);
+      }
+    }, 30000);
+
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
   }, []);
 
   useEffect(() => {
@@ -2240,331 +2351,331 @@ const updateReturnStatus = async (
       </section>
 
       {/* =====================================================
-    RETURN REQUESTS
+    ADVANCED RETURN MANAGEMENT
 ===================================================== */}
 
 <section className="admin-returns-section">
 
   <div className="admin-section-heading">
-
     <div>
       <p>RETURN MANAGEMENT</p>
-
-      <h2>RETURN REQUESTS</h2>
+      <h2>RETURNS CONTROL CENTER</h2>
     </div>
 
-    <span>
-      {returnRequests.length}{" "}
-      {returnRequests.length === 1
-        ? "ORDER"
-        : "ORDERS"}
-    </span>
-
+    <div className="advanced-return-header-actions">
+      <button
+        type="button"
+        className="return-toolbar-button"
+        onClick={() => {
+          setReturnLoading(true);
+          fetchReturnRequests();
+        }}
+      >
+        ↻ REFRESH
+      </button>
+    </div>
   </div>
 
+  {(() => {
+    const returnItems = returnRequests.flatMap((order) =>
+      (order.items || [])
+        .map((item, itemIndex) => ({ order, item, itemIndex }))
+        .filter(
+          ({ item }) =>
+            item.returnStatus &&
+            item.returnStatus !== "not_requested"
+        )
+    );
 
-  {returnLoading ? (
+    const statusCounts = {
+      requested: returnItems.filter(
+        ({ item }) => item.returnStatus === "requested"
+      ).length,
+      approved: returnItems.filter(
+        ({ item }) => item.returnStatus === "approved"
+      ).length,
+      picked_up: returnItems.filter(
+        ({ item }) => item.returnStatus === "picked_up"
+      ).length,
+      completed: returnItems.filter(
+        ({ item }) => item.returnStatus === "completed"
+      ).length,
+      rejected: returnItems.filter(
+        ({ item }) => item.returnStatus === "rejected"
+      ).length,
+    };
 
-    <div className="admin-empty-state">
-      <p>Loading return requests...</p>
-    </div>
+    const returnValue = returnItems.reduce(
+      (total, { item }) =>
+        total +
+        Number(item.price || 0) * Number(item.quantity || 0),
+      0
+    );
 
-  ) : returnError ? (
-
-    <div className="admin-empty-state">
-      <span>RETURN ERROR</span>
-
-      <h2>Unable to Load Returns</h2>
-
-      <p>{returnError}</p>
-    </div>
-
-  ) : returnRequests.length === 0 ? (
-
-    <div className="admin-empty-state">
-
-      <span>NO RETURN REQUESTS</span>
-
-      <h2>No returns found</h2>
-
-      <p>
-        Customer return requests will appear here.
-      </p>
-
-    </div>
-
-  ) : (
-
-    <div className="admin-orders-list">
-
-      {returnRequests.map((order) => {
-
+    const filteredReturnItems = returnItems.filter(
+      ({ order, item }) => {
         const customerName =
           `${order.customer?.firstName || ""} ${
             order.customer?.lastName || ""
           }`.trim() ||
           order.userId?.name ||
-          "Customer";
+          "";
 
-        return (
+        const searchable = [
+          order._id,
+          customerName,
+          order.customer?.email,
+          order.userId?.email,
+          item.name,
+          item.returnReason,
+          item.returnComment,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
 
-          <article
-            className="admin-order-card admin-return-card"
-            key={order._id}
+        const matchesSearch =
+          !returnSearch.trim() ||
+          searchable.includes(returnSearch.trim().toLowerCase());
+
+        const matchesStatus =
+          returnStatusFilter === "all" ||
+          item.returnStatus === returnStatusFilter;
+
+        return matchesSearch && matchesStatus;
+      }
+    );
+
+    const timelineSteps = [
+      ["requested", "Requested"],
+      ["approved", "Approved"],
+      ["picked_up", "Picked Up"],
+      ["completed", "Completed"],
+    ];
+
+    return (
+      <>
+        <div className="advanced-return-metrics">
+          <div>
+            <span>TOTAL RETURNS</span>
+            <strong>{returnItems.length}</strong>
+            <small>ALL REQUESTS</small>
+          </div>
+
+          <div className="return-metric-pending">
+            <span>PENDING REVIEW</span>
+            <strong>{statusCounts.requested}</strong>
+            <small>NEEDS ACTION</small>
+          </div>
+
+          <div>
+            <span>APPROVED</span>
+            <strong>{statusCounts.approved}</strong>
+            <small>READY FOR PICKUP</small>
+          </div>
+
+          <div>
+            <span>COMPLETED</span>
+            <strong>{statusCounts.completed}</strong>
+            <small>RETURNS CLOSED</small>
+          </div>
+
+          <div>
+            <span>REJECTED</span>
+            <strong>{statusCounts.rejected}</strong>
+            <small>REQUESTS DECLINED</small>
+          </div>
+
+          <div>
+            <span>RETURN VALUE</span>
+            <strong>₹{returnValue.toLocaleString("en-IN")}</strong>
+            <small>ITEM VALUE</small>
+          </div>
+        </div>
+
+        <div className="return-filter-row">
+          <input
+            type="search"
+            value={returnSearch}
+            onChange={(e) => setReturnSearch(e.target.value)}
+            placeholder="Search order, customer, email, product or reason..."
+          />
+
+          <select
+            value={returnStatusFilter}
+            onChange={(e) => setReturnStatusFilter(e.target.value)}
           >
+            <option value="all">ALL RETURN STATUSES</option>
+            <option value="requested">REQUESTED</option>
+            <option value="approved">APPROVED</option>
+            <option value="picked_up">PICKED UP</option>
+            <option value="completed">COMPLETED</option>
+            <option value="rejected">REJECTED</option>
+          </select>
 
-            {/* RETURN ORDER HEADER */}
+          <button
+            type="button"
+            className="return-toolbar-button"
+            onClick={() => {
+              setReturnSearch("");
+              setReturnStatusFilter("all");
+            }}
+          >
+            CLEAR
+          </button>
+        </div>
 
-            <div className="admin-order-top">
-
-              <div>
-
-                <span className="admin-order-label">
-                  RETURN REQUEST
-                </span>
-
-                <h3>
-                  #{order._id
-                    .slice(-8)
-                    .toUpperCase()}
-                </h3>
-
-              </div>
-
-
-              <div className="admin-order-date">
-
-                <span>ORDER DATE</span>
-
-                <strong>
-                  {new Date(
-                    order.createdAt
-                  ).toLocaleDateString(
-                    "en-IN",
-                    {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                    }
-                  )}
-                </strong>
-
-              </div>
-
-            </div>
-
-
-            {/* CUSTOMER */}
-
-            <div className="admin-order-details">
-
-              <div className="admin-detail">
-
-                <span>CUSTOMER</span>
-
-                <strong>
-                  {customerName}
-                </strong>
-
-                <p>
-                  {order.customer?.email ||
-                    order.userId?.email ||
-                    "No email"}
-                </p>
-
-              </div>
-
-
-              <div className="admin-detail">
-
-                <span>ORDER STATUS</span>
-
-                <strong>
-                  {order.orderStatus}
-                </strong>
-
-                <p>
-                  Payment:{" "}
-                  {order.paymentStatus}
-                </p>
-
-              </div>
-
-
-              <div className="admin-detail">
-
-                <span>ORDER TOTAL</span>
-
-                <strong>
-                  ₹
-                  {Number(
-                    order.totalAmount || 0
-                  ).toLocaleString("en-IN")}
-                </strong>
-
-              </div>
-
-            </div>
-
-
-            {/* RETURNED ITEMS */}
-
-            <div className="admin-return-items">
-
-              {order.items
-                .map((item, itemIndex) => ({
-                  item,
-                  itemIndex,
-                }))
-                .filter(
-                  ({ item }) =>
-                    item.returnStatus
+        <div className="return-status-chips">
+          {Object.entries(statusCounts).map(([status, count]) => (
+            <button
+              type="button"
+              key={status}
+              className={
+                returnStatusFilter === status
+                  ? "return-status-chip active"
+                  : "return-status-chip"
+              }
+              onClick={() =>
+                setReturnStatusFilter(
+                  returnStatusFilter === status ? "all" : status
                 )
-                .map(
-                  ({
-                    item,
-                    itemIndex,
-                  }) => (
+              }
+            >
+              {status.replaceAll("_", " ").toUpperCase()}
+              <strong>{count}</strong>
+            </button>
+          ))}
+        </div>
 
-                    <div
-                      className="admin-return-item"
-                      key={item._id}
-                    >
+        {returnLoading ? (
+          <div className="admin-empty-state">
+            <p>Loading return requests...</p>
+          </div>
+        ) : returnError ? (
+          <div className="admin-empty-state">
+            <span>RETURN ERROR</span>
+            <h2>Unable to Load Returns</h2>
+            <p>{returnError}</p>
+            <button
+              type="button"
+              onClick={() => {
+                setReturnError("");
+                setReturnLoading(true);
+                fetchReturnRequests();
+              }}
+            >
+              TRY AGAIN
+            </button>
+          </div>
+        ) : filteredReturnItems.length === 0 ? (
+          <div className="admin-empty-state">
+            <span>NO MATCHES</span>
+            <h2>No returns found</h2>
+            <p>Try changing your search or status filter.</p>
+          </div>
+        ) : (
+          <div className="admin-orders-list">
+            {filteredReturnItems.map(
+              ({ order, item, itemIndex }) => {
+                const customerName =
+                  `${order.customer?.firstName || ""} ${
+                    order.customer?.lastName || ""
+                  }`.trim() ||
+                  order.userId?.name ||
+                  "Customer";
 
-                      {/* IMAGE */}
+                const currentIndex =
+                  timelineSteps.findIndex(
+                    ([key]) => key === item.returnStatus
+                  );
 
+                return (
+                  <article
+                    className="admin-order-card admin-return-card advanced-return-card"
+                    key={`${order._id}-${item._id}`}
+                  >
+                    <div className="admin-order-top">
+                      <div>
+                        <span className="admin-order-label">
+                          RETURN REQUEST
+                        </span>
+                        <h3>
+                          #{order._id.slice(-8).toUpperCase()}
+                        </h3>
+                      </div>
+
+                      <div className="admin-order-date">
+                        <span>CUSTOMER</span>
+                        <strong>{customerName}</strong>
+                      </div>
+                    </div>
+
+                    <div className="return-item-grid">
                       <div className="admin-return-image">
-
                         {item.image ? (
-
                           <img
                             src={item.image}
-                            alt={
-                              item.name ||
-                              "Product"
-                            }
+                            alt={item.name || "Product"}
                           />
-
                         ) : (
-
-                          <span>
-                            MM
-                          </span>
-
+                          <span>SW</span>
                         )}
-
                       </div>
 
-
-                      {/* PRODUCT INFO */}
-
                       <div className="admin-return-info">
-
-                        <span>
-                          RETURN ITEM
-                        </span>
-
-                        <h3>
-                          {item.name ||
-                            "Product"}
-                        </h3>
-
-                        {item.size && (
-                          <p>
-                            SIZE:{" "}
-                            <strong>
-                              {item.size}
-                            </strong>
-                          </p>
-                        )}
-
+                        <span>PRODUCT</span>
+                        <h3>{item.name || "Product"}</h3>
                         <p>
                           QUANTITY:{" "}
-                          <strong>
-                            {item.quantity}
-                          </strong>
+                          <strong>{item.quantity || 0}</strong>
                         </p>
-
                         <p>
-                          PRICE:{" "}
+                          VALUE:{" "}
                           <strong>
                             ₹
-                            {Number(
-                              item.price || 0
-                            ).toLocaleString(
-                              "en-IN"
-                            )}
+                            {(
+                              Number(item.price || 0) *
+                              Number(item.quantity || 0)
+                            ).toLocaleString("en-IN")}
                           </strong>
                         </p>
-
                       </div>
 
-
-                      {/* RETURN INFORMATION */}
-
                       <div className="admin-return-info">
-
-                        <span>
-                          RETURN REASON
-                        </span>
-
+                        <span>RETURN REASON</span>
                         <strong>
-                          {item.returnReason ||
-                            "Not provided"}
+                          {item.returnReason || "Not provided"}
                         </strong>
-
                         {item.returnComment && (
-                          <p>
-                            {item.returnComment}
-                          </p>
+                          <p>{item.returnComment}</p>
                         )}
-
                         {item.returnRequestedAt && (
                           <p>
                             Requested:{" "}
                             {new Date(
                               item.returnRequestedAt
-                            ).toLocaleDateString(
-                              "en-IN",
-                              {
-                                day: "2-digit",
-                                month: "short",
-                                year: "numeric",
-                              }
-                            )}
+                            ).toLocaleDateString("en-IN", {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                            })}
                           </p>
                         )}
-
                       </div>
 
-
-                      {/* RETURN STATUS / ACTION */}
-
                       <div className="admin-return-actions">
-
-                        <span>
-                          STATUS
-                        </span>
+                        <span>STATUS</span>
 
                         <strong
                           className={`admin-return-status status-${item.returnStatus}`}
                         >
-                          {String(
-                            item.returnStatus
-                          )
-                            .replaceAll(
-                              "_",
-                              " "
-                            )
+                          {String(item.returnStatus || "unknown")
+                            .replaceAll("_", " ")
                             .toUpperCase()}
                         </strong>
 
-
-                        {item.returnStatus ===
-                          "requested" && (
-
+                        {item.returnStatus === "requested" && (
                           <div className="admin-return-buttons">
-
                             <button
                               type="button"
                               className="admin-return-approve"
@@ -2579,7 +2690,6 @@ const updateReturnStatus = async (
                               ✓ APPROVE
                             </button>
 
-
                             <button
                               type="button"
                               className="admin-return-reject"
@@ -2593,15 +2703,10 @@ const updateReturnStatus = async (
                             >
                               ✕ REJECT
                             </button>
-
                           </div>
-
                         )}
 
-
-                        {item.returnStatus ===
-                          "approved" && (
-
+                        {item.returnStatus === "approved" && (
                           <button
                             type="button"
                             className="admin-return-pickup"
@@ -2615,13 +2720,9 @@ const updateReturnStatus = async (
                           >
                             MARK PICKED UP
                           </button>
-
                         )}
 
-
-                        {item.returnStatus ===
-                          "picked_up" && (
-
+                        {item.returnStatus === "picked_up" && (
                           <button
                             type="button"
                             className="admin-return-complete"
@@ -2635,26 +2736,110 @@ const updateReturnStatus = async (
                           >
                             MARK COMPLETED
                           </button>
-
                         )}
-
                       </div>
-
                     </div>
 
-                  )
-                )}
+                    <div className="return-timeline">
+                      {timelineSteps.map(([key, label], index) => (
+                        <div
+                          key={key}
+                          className={
+                            index <= currentIndex
+                              ? "return-timeline-step done"
+                              : "return-timeline-step"
+                          }
+                        >
+                          <span>
+                            {index <= currentIndex ? "✓" : index + 1}
+                          </span>
+                          <strong>{label}</strong>
+                        </div>
+                      ))}
+                    </div>
+                  </article>
+                );
+              }
+            )}
+          </div>
+        )}
+      </>
+    );
+  })()}
 
-            </div>
+</section>
 
-          </article>
+{/* =====================================================
+    ADMIN ORDER NOTIFICATIONS
+===================================================== */}
 
-        );
+<section className="admin-order-notification-section">
 
-      })}
-
+  <div className="admin-section-heading">
+    <div>
+      <p>LIVE ORDER MONITOR</p>
+      <h2>ADMIN ORDER NOTIFICATIONS</h2>
     </div>
 
+    <button
+      type="button"
+      className="return-toolbar-button"
+      onClick={() => setShowOrderNotifications((current) => !current)}
+    >
+      {showOrderNotifications ? "HIDE" : "VIEW"} ALERTS
+      {orderNotifications.length > 0 && (
+        <strong className="notification-count">
+          {orderNotifications.length}
+        </strong>
+      )}
+    </button>
+  </div>
+
+  <div className="order-live-status">
+    <span className="live-dot" />
+    LIVE MONITORING
+    <small>Checks for new or changed orders every 30 seconds</small>
+  </div>
+
+  {showOrderNotifications && (
+    <div className="order-notification-panel">
+      {orderNotifications.length === 0 ? (
+        <p className="notification-empty">
+          No new order alerts yet.
+        </p>
+      ) : (
+        <>
+          <div className="notification-panel-header">
+            <strong>RECENT ALERTS</strong>
+            <button
+              type="button"
+              onClick={() => setOrderNotifications([])}
+            >
+              CLEAR ALL
+            </button>
+          </div>
+
+          {orderNotifications.map((notification) => (
+            <div
+              className={`order-notification-item notification-${notification.type}`}
+              key={notification.id}
+            >
+              <span className="notification-icon">
+                {notification.type === "new" ? "🛍️" : "↻"}
+              </span>
+
+              <div>
+                <strong>{notification.title}</strong>
+                <p>{notification.message}</p>
+                <small>
+                  {new Date(notification.time).toLocaleString("en-IN")}
+                </small>
+              </div>
+            </div>
+          ))}
+        </>
+      )}
+    </div>
   )}
 
 </section>
