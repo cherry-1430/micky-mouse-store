@@ -586,49 +586,80 @@ router.get(
 /* =========================================================
    ADMIN - GET RETURN REQUESTS
 ========================================================= */
+/* =========================================================
+   ADMIN - GET RETURN REQUESTS
+========================================================= */
 
 router.get(
   "/admin/returns",
   authMiddleware,
-  adminOnly,
   async (req, res) => {
     try {
-      const orders =
-        await Order.find({
-          returnStatus: {
-            $in: [
-              "requested",
-              "approved",
-              "picked_up",
-              "received",
-            ],
-          },
-        })
-          .populate(
-            "userId",
-            "name email"
-          )
-          .populate(
-            "items.productId"
-          )
-          .sort({
-            returnRequestedAt: -1,
-          });
+      console.log("=================================");
+      console.log("🔥 ADMIN RETURN REQUESTS API");
+      console.log("USER:", req.user);
+      console.log("=================================");
 
-      return res.status(200).json(
-        orders
+      if (req.user.role !== "admin") {
+        return res.status(403).json({
+          message: "Admin access required",
+        });
+      }
+
+      const orders = await Order.find({
+        "items.returnStatus": {
+          $in: [
+            "requested",
+            "approved",
+            "rejected",
+            "picked_up",
+            "completed",
+            "received",
+            "refunded",
+          ],
+        },
+      })
+        .populate("userId", "name email")
+        .populate("items.productId")
+        .sort({
+          updatedAt: -1,
+        });
+
+      console.log(
+        "🔥 RETURN ORDERS FOUND:",
+        orders.length
       );
+
+      orders.forEach((order) => {
+        console.log(
+          "ORDER:",
+          order._id.toString()
+        );
+
+        order.items.forEach((item) => {
+          if (item.returnStatus) {
+            console.log(
+              "RETURN ITEM:",
+              item.name,
+              "STATUS:",
+              item.returnStatus
+            );
+          }
+        });
+      });
+
+      return res.status(200).json(orders);
+
     } catch (error) {
       console.error(
-        "Get return requests error:",
+        "🔥 GET RETURN REQUESTS ERROR:",
         error
       );
 
       return res.status(500).json({
         message:
           "Failed to fetch return requests",
-        error:
-          error.message,
+        error: error.message,
       });
     }
   }
@@ -2259,6 +2290,195 @@ router.post(
 
       return res.status(500).json({
         message: "Failed to submit return request",
+        error: error.message,
+      });
+    }
+  }
+);
+
+/* =========================================================
+   ADMIN - GET ALL RETURN REQUESTS
+========================================================= */
+
+router.get(
+  "/admin/returns",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const orders = await Order.find({
+        "items.returnStatus": {
+          $in: [
+            "requested",
+            "approved",
+            "received",
+            "rejected",
+            "refunded",
+          ],
+        },
+      })
+        .populate("userId", "name email")
+        .sort({ createdAt: -1 })
+        .lean();
+
+      const returnRequests = [];
+
+      orders.forEach((order) => {
+        order.items.forEach((item) => {
+          if (
+            item.returnStatus &&
+            item.returnStatus !== "not_requested"
+          ) {
+            returnRequests.push({
+              orderId: order._id,
+              orderNumber: order._id
+                .toString()
+                .slice(-8)
+                .toUpperCase(),
+
+              itemId: item._id,
+
+              customer: order.customer,
+
+              productId: item.productId,
+              productName: item.name,
+              productImage: item.image,
+              size: item.size,
+              quantity: item.quantity,
+              price: item.price,
+
+              returnStatus: item.returnStatus,
+              returnReason: item.returnReason,
+              returnComment: item.returnComment,
+
+              returnRequestedAt:
+                item.returnRequestedAt,
+
+              returnProcessedAt:
+                item.returnProcessedAt,
+
+              paymentStatus:
+                order.paymentStatus,
+
+              totalAmount:
+                order.totalAmount,
+
+              razorpayPaymentId:
+                order.razorpayPaymentId,
+
+              createdAt:
+                order.createdAt,
+            });
+          }
+        });
+      });
+
+      return res.status(200).json({
+        success: true,
+        returns: returnRequests,
+      });
+
+    } catch (error) {
+      console.error(
+        "Admin returns error:",
+        error
+      );
+
+      return res.status(500).json({
+        success: false,
+        message:
+          "Failed to fetch return requests",
+        error: error.message,
+      });
+    }
+  }
+);
+
+/* =========================================================
+   ADMIN - UPDATE RETURN STATUS
+========================================================= */
+
+router.patch(
+  "/admin/returns/:orderId/:itemId",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const {
+        orderId,
+        itemId,
+      } = req.params;
+
+      const {
+        status,
+      } = req.body;
+
+      const allowedStatuses = [
+        "approved",
+        "rejected",
+        "received",
+      ];
+
+      if (
+        !allowedStatuses.includes(status)
+      ) {
+        return res.status(400).json({
+          message:
+            "Invalid return status",
+        });
+      }
+
+      const order =
+        await Order.findById(orderId);
+
+      if (!order) {
+        return res.status(404).json({
+          message:
+            "Order not found",
+        });
+      }
+
+      const item =
+        order.items.id(itemId);
+
+      if (!item) {
+        return res.status(404).json({
+          message:
+            "Order item not found",
+        });
+      }
+
+      if (
+        item.returnStatus ===
+        "refunded"
+      ) {
+        return res.status(400).json({
+          message:
+            "This return has already been refunded",
+        });
+      }
+
+      item.returnStatus = status;
+
+      item.returnProcessedAt =
+        new Date();
+
+      await order.save();
+
+      return res.status(200).json({
+        success: true,
+        message:
+          `Return ${status} successfully`,
+        order,
+      });
+
+    } catch (error) {
+      console.error(
+        "Update return status error:",
+        error
+      );
+
+      return res.status(500).json({
+        message:
+          "Failed to update return status",
         error: error.message,
       });
     }

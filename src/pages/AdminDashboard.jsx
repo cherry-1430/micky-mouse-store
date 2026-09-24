@@ -8,6 +8,9 @@ function AdminDashboard() {
   const [selectedOrderDate, setSelectedOrderDate] = useState("");
 
   const [products, setProducts] = useState([]);
+  const [returnRequests, setReturnRequests] = useState([]);
+const [returnLoading, setReturnLoading] = useState(true);
+const [returnError, setReturnError] = useState("");
   const [productLoading, setProductLoading] = useState(true);
   const [showProductForm, setShowProductForm] = useState(false);
   const [productImage, setProductImage] = useState(null);
@@ -50,6 +53,93 @@ function AdminDashboard() {
       [name]: type === "checkbox" ? checked : value,
     }));
   };
+
+const fetchReturnRequests = async () => {
+  try {
+    setReturnLoading(true);
+    setReturnError("");
+
+    const token = localStorage.getItem("token");
+
+    console.log("=================================");
+    console.log("🔥 FETCHING RETURN REQUESTS");
+    console.log("API:", `${API_URL}/api/orders/admin/returns`);
+    console.log("TOKEN EXISTS:", !!token);
+    console.log("=================================");
+
+    const response = await fetch(
+      `${API_URL}/api/orders/admin/returns`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    console.log(
+      "🔥 RETURN RESPONSE STATUS:",
+      response.status
+    );
+
+    const responseText = await response.text();
+
+    console.log(
+      "🔥 RETURN RESPONSE:",
+      responseText
+    );
+
+    let data;
+
+    try {
+      data = JSON.parse(responseText);
+    } catch (parseError) {
+      throw new Error(
+        `Server returned invalid response. Status: ${response.status}`
+      );
+    }
+
+    if (!response.ok) {
+      throw new Error(
+        data.message ||
+          `Failed to fetch return requests (${response.status})`
+      );
+    }
+
+    if (!Array.isArray(data)) {
+      throw new Error(
+        "Invalid return requests response from server"
+      );
+    }
+
+    console.log(
+      "🔥 RETURN REQUESTS FOUND:",
+      data.length
+    );
+
+    console.log(
+      "🔥 RETURN DATA:",
+      data
+    );
+
+    setReturnRequests(data);
+
+  } catch (error) {
+    console.error(
+      "🔥 RETURN REQUESTS ERROR:",
+      error
+    );
+
+    setReturnError(
+      error.message ||
+        "Failed to fetch return requests"
+    );
+
+  } finally {
+    setReturnLoading(false);
+  }
+};
 
   useEffect(() => {
     const fetchCoupons = async () => {
@@ -770,6 +860,72 @@ function AdminDashboard() {
 
     fetchProducts();
   }, []);
+
+  useEffect(() => {
+  fetchReturnRequests();
+}, []);
+
+
+const updateReturnStatus = async (
+  orderId,
+  itemId,
+  returnStatus
+) => {
+  try {
+    const token = localStorage.getItem("token");
+
+    const response = await fetch(
+      `${API_URL}/api/orders/admin/returns/${orderId}/${itemId}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          returnStatus,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.message || "Failed to update return status"
+      );
+    }
+
+    setReturnRequests((currentRequests) =>
+      currentRequests.map((order) => {
+        if (order._id !== orderId) {
+          return order;
+        }
+
+        return {
+          ...order,
+          items: order.items.map((item) =>
+            item._id === itemId
+              ? {
+                  ...item,
+                  returnStatus,
+                }
+              : item
+          ),
+        };
+      })
+    );
+
+    alert(
+      returnStatus === "approved"
+        ? "Return approved successfully!"
+        : "Return rejected successfully!"
+    );
+  } catch (error) {
+    console.error("Return status update error:", error);
+    alert(error.message);
+  }
+};
 
   if (loading) {
     return (
@@ -2139,6 +2295,426 @@ function AdminDashboard() {
           )}
         </div>
       </section>
+
+      {/* =====================================================
+    RETURN REQUESTS
+===================================================== */}
+
+<section className="admin-returns-section">
+
+  <div className="admin-section-heading">
+
+    <div>
+      <p>RETURN MANAGEMENT</p>
+
+      <h2>RETURN REQUESTS</h2>
+    </div>
+
+    <span>
+      {returnRequests.length}{" "}
+      {returnRequests.length === 1
+        ? "ORDER"
+        : "ORDERS"}
+    </span>
+
+  </div>
+
+
+  {returnLoading ? (
+
+    <div className="admin-empty-state">
+      <p>Loading return requests...</p>
+    </div>
+
+  ) : returnError ? (
+
+    <div className="admin-empty-state">
+      <span>RETURN ERROR</span>
+
+      <h2>Unable to Load Returns</h2>
+
+      <p>{returnError}</p>
+    </div>
+
+  ) : returnRequests.length === 0 ? (
+
+    <div className="admin-empty-state">
+
+      <span>NO RETURN REQUESTS</span>
+
+      <h2>No returns found</h2>
+
+      <p>
+        Customer return requests will appear here.
+      </p>
+
+    </div>
+
+  ) : (
+
+    <div className="admin-orders-list">
+
+      {returnRequests.map((order) => {
+
+        const customerName =
+          `${order.customer?.firstName || ""} ${
+            order.customer?.lastName || ""
+          }`.trim() ||
+          order.userId?.name ||
+          "Customer";
+
+        return (
+
+          <article
+            className="admin-order-card admin-return-card"
+            key={order._id}
+          >
+
+            {/* RETURN ORDER HEADER */}
+
+            <div className="admin-order-top">
+
+              <div>
+
+                <span className="admin-order-label">
+                  RETURN REQUEST
+                </span>
+
+                <h3>
+                  #{order._id
+                    .slice(-8)
+                    .toUpperCase()}
+                </h3>
+
+              </div>
+
+
+              <div className="admin-order-date">
+
+                <span>ORDER DATE</span>
+
+                <strong>
+                  {new Date(
+                    order.createdAt
+                  ).toLocaleDateString(
+                    "en-IN",
+                    {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    }
+                  )}
+                </strong>
+
+              </div>
+
+            </div>
+
+
+            {/* CUSTOMER */}
+
+            <div className="admin-order-details">
+
+              <div className="admin-detail">
+
+                <span>CUSTOMER</span>
+
+                <strong>
+                  {customerName}
+                </strong>
+
+                <p>
+                  {order.customer?.email ||
+                    order.userId?.email ||
+                    "No email"}
+                </p>
+
+              </div>
+
+
+              <div className="admin-detail">
+
+                <span>ORDER STATUS</span>
+
+                <strong>
+                  {order.orderStatus}
+                </strong>
+
+                <p>
+                  Payment:{" "}
+                  {order.paymentStatus}
+                </p>
+
+              </div>
+
+
+              <div className="admin-detail">
+
+                <span>ORDER TOTAL</span>
+
+                <strong>
+                  ₹
+                  {Number(
+                    order.totalAmount || 0
+                  ).toLocaleString("en-IN")}
+                </strong>
+
+              </div>
+
+            </div>
+
+
+            {/* RETURNED ITEMS */}
+
+            <div className="admin-return-items">
+
+              {order.items
+                .map((item, itemIndex) => ({
+                  item,
+                  itemIndex,
+                }))
+                .filter(
+                  ({ item }) =>
+                    item.returnStatus
+                )
+                .map(
+                  ({
+                    item,
+                    itemIndex,
+                  }) => (
+
+                    <div
+                      className="admin-return-item"
+                      key={item._id}
+                    >
+
+                      {/* IMAGE */}
+
+                      <div className="admin-return-image">
+
+                        {item.image ? (
+
+                          <img
+                            src={item.image}
+                            alt={
+                              item.name ||
+                              "Product"
+                            }
+                          />
+
+                        ) : (
+
+                          <span>
+                            MM
+                          </span>
+
+                        )}
+
+                      </div>
+
+
+                      {/* PRODUCT INFO */}
+
+                      <div className="admin-return-info">
+
+                        <span>
+                          RETURN ITEM
+                        </span>
+
+                        <h3>
+                          {item.name ||
+                            "Product"}
+                        </h3>
+
+                        {item.size && (
+                          <p>
+                            SIZE:{" "}
+                            <strong>
+                              {item.size}
+                            </strong>
+                          </p>
+                        )}
+
+                        <p>
+                          QUANTITY:{" "}
+                          <strong>
+                            {item.quantity}
+                          </strong>
+                        </p>
+
+                        <p>
+                          PRICE:{" "}
+                          <strong>
+                            ₹
+                            {Number(
+                              item.price || 0
+                            ).toLocaleString(
+                              "en-IN"
+                            )}
+                          </strong>
+                        </p>
+
+                      </div>
+
+
+                      {/* RETURN INFORMATION */}
+
+                      <div className="admin-return-info">
+
+                        <span>
+                          RETURN REASON
+                        </span>
+
+                        <strong>
+                          {item.returnReason ||
+                            "Not provided"}
+                        </strong>
+
+                        {item.returnComment && (
+                          <p>
+                            {item.returnComment}
+                          </p>
+                        )}
+
+                        {item.returnRequestedAt && (
+                          <p>
+                            Requested:{" "}
+                            {new Date(
+                              item.returnRequestedAt
+                            ).toLocaleDateString(
+                              "en-IN",
+                              {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                              }
+                            )}
+                          </p>
+                        )}
+
+                      </div>
+
+
+                      {/* RETURN STATUS / ACTION */}
+
+                      <div className="admin-return-actions">
+
+                        <span>
+                          STATUS
+                        </span>
+
+                        <strong
+                          className={`admin-return-status status-${item.returnStatus}`}
+                        >
+                          {String(
+                            item.returnStatus
+                          )
+                            .replaceAll(
+                              "_",
+                              " "
+                            )
+                            .toUpperCase()}
+                        </strong>
+
+
+                        {item.returnStatus ===
+                          "requested" && (
+
+                          <div className="admin-return-buttons">
+
+                            <button
+                              type="button"
+                              className="admin-return-approve"
+                              onClick={() =>
+                                updateReturnStatus(
+                                  order._id,
+                                  item._id,
+                                  "approved"
+                                )
+                              }
+                            >
+                              ✓ APPROVE
+                            </button>
+
+
+                            <button
+                              type="button"
+                              className="admin-return-reject"
+                              onClick={() =>
+                                updateReturnStatus(
+                                  order._id,
+                                  item._id,
+                                  "rejected"
+                                )
+                              }
+                            >
+                              ✕ REJECT
+                            </button>
+
+                          </div>
+
+                        )}
+
+
+                        {item.returnStatus ===
+                          "approved" && (
+
+                          <button
+                            type="button"
+                            className="admin-return-pickup"
+                            onClick={() =>
+                              updateReturnStatus(
+                                order._id,
+                                item._id,
+                                "picked_up"
+                              )
+                            }
+                          >
+                            MARK PICKED UP
+                          </button>
+
+                        )}
+
+
+                        {item.returnStatus ===
+                          "picked_up" && (
+
+                          <button
+                            type="button"
+                            className="admin-return-complete"
+                            onClick={() =>
+                              updateReturnStatus(
+                                order._id,
+                                item._id,
+                                "completed"
+                              )
+                            }
+                          >
+                            MARK COMPLETED
+                          </button>
+
+                        )}
+
+                      </div>
+
+                    </div>
+
+                  )
+                )}
+
+            </div>
+
+          </article>
+
+        );
+
+      })}
+
+    </div>
+
+  )}
+
+</section>
     </main>
   );
 }
