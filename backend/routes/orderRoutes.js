@@ -2397,88 +2397,128 @@ router.get(
    ADMIN - UPDATE RETURN STATUS
 ========================================================= */
 
+/* =========================================================
+   ADMIN - UPDATE RETURN STATUS
+========================================================= */
+
 router.patch(
   "/admin/returns/:orderId/:itemId",
   authMiddleware,
   async (req, res) => {
     try {
-      const {
-        orderId,
-        itemId,
-      } = req.params;
+      /* =========================================
+         ADMIN CHECK
+      ========================================= */
 
-      const {
-        status,
-      } = req.body;
-
-      const allowedStatuses = [
-        "approved",
-        "rejected",
-        "received",
-      ];
-
-      if (
-        !allowedStatuses.includes(status)
-      ) {
-        return res.status(400).json({
-          message:
-            "Invalid return status",
+      if (req.user.role !== "admin") {
+        return res.status(403).json({
+          message: "Admin access required",
         });
       }
 
-      const order =
-        await Order.findById(orderId);
+      /* =========================================
+         GET RETURN STATUS
+      ========================================= */
+
+      const { returnStatus } = req.body;
+
+      const allowedStatuses = [
+        "requested",
+        "approved",
+        "rejected",
+        "picked_up",
+        "completed",
+      ];
+
+      if (!allowedStatuses.includes(returnStatus)) {
+        return res.status(400).json({
+          message: `Invalid return status: ${returnStatus}`,
+        });
+      }
+
+      /* =========================================
+         FIND ORDER
+      ========================================= */
+
+      const order = await Order.findById(
+        req.params.orderId
+      );
 
       if (!order) {
         return res.status(404).json({
-          message:
-            "Order not found",
+          message: "Order not found",
         });
       }
 
-      const item =
-        order.items.id(itemId);
+      /* =========================================
+         FIND ITEM
+      ========================================= */
+
+      const item = order.items.id(
+        req.params.itemId
+      );
 
       if (!item) {
         return res.status(404).json({
-          message:
-            "Order item not found",
+          message: "Order item not found",
         });
       }
+
+      /* =========================================
+         CHECK RETURN REQUEST
+      ========================================= */
 
       if (
-        item.returnStatus ===
-        "refunded"
+        returnStatus === "approved" ||
+        returnStatus === "rejected"
       ) {
-        return res.status(400).json({
-          message:
-            "This return has already been refunded",
-        });
+        if (item.returnStatus !== "requested") {
+          return res.status(400).json({
+            message:
+              "This item does not have a pending return request",
+          });
+        }
       }
 
-      item.returnStatus = status;
+      /* =========================================
+         UPDATE RETURN STATUS
+      ========================================= */
 
-      item.returnProcessedAt =
-        new Date();
+      item.returnStatus = returnStatus;
+
+      item.returnProcessedAt = new Date();
+
+      /* =========================================
+         SAVE ORDER
+      ========================================= */
 
       await order.save();
 
+      /* =========================================
+         RESPONSE
+      ========================================= */
+
       return res.status(200).json({
-        success: true,
         message:
-          `Return ${status} successfully`,
+          returnStatus === "approved"
+            ? "Return approved successfully"
+            : returnStatus === "rejected"
+            ? "Return rejected successfully"
+            : "Return status updated successfully",
+
         order,
       });
 
     } catch (error) {
       console.error(
-        "Update return status error:",
+        "Return status update error:",
         error
       );
 
       return res.status(500).json({
         message:
           "Failed to update return status",
+
         error: error.message,
       });
     }
