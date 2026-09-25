@@ -1,7 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import API_URL from "../api/apiConfig";
+import { registerAdminPushNotifications } from "../utils/adminPush";
 
 function AdminDashboard() {
+
+  useEffect(() => {
+  registerAdminPushNotifications();
+}, []);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");

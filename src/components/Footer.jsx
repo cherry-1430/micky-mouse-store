@@ -61,7 +61,7 @@ function Footer() {
     📞 8688243239
   </a>
 
-  <a href="mailto:mickymouse14@gmail.com">
+  <a href="mailtospacewear14@gmail.com">
     ✉ spacewear14@gmail.com
   </a>
   <a
@@ -103,7 +103,7 @@ function Footer() {
       <div className="footer-bottom">
 
         <p>
-          © 2026 Micky Mouse. All rights reserved.
+          © 2026 Space Wear. All rights reserved.
         </p>
 
         <div className="footer-legal">

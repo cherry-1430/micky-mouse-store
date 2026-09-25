@@ -5,6 +5,7 @@ console.log(
 );
 
 const Order = require("../models/Order");
+const { sendPushToAdmins } = require("../services/adminPushService");
 const Product = require("../models/Product");
 const Coupon = require("../models/Coupon");
 const User = require("../models/User");
@@ -435,6 +436,30 @@ router.post("/", authMiddleware, async (req, res) => {
 
     const savedOrder = await order.save();
 
+    sendPushToAdmins({
+  title: "🛍️ SPACE WEAR — NEW ORDER",
+  body: `Order #${savedOrder._id
+    .toString()
+    .slice(-8)
+    .toUpperCase()} received — ₹${Number(
+    savedOrder.totalAmount || 0
+  ).toLocaleString("en-IN")} — ${
+    savedOrder.paymentStatus || "pending"
+  }`,
+  tag: `new-order-${savedOrder._id}`,
+  url: "/admin",
+  data: {
+    type: "new_order",
+    orderId: savedOrder._id.toString(),
+    paymentStatus: savedOrder.paymentStatus,
+  },
+}).catch((error) => {
+  console.error(
+    "Admin push notification failed:",
+    error.message
+  );
+});
+
     console.log("========================================");
     console.log("AFTER MONGOOSE SAVE");
     console.log("ORDER ID:", savedOrder._id);
@@ -521,6 +546,7 @@ router.post("/", authMiddleware, async (req, res) => {
 router.get(
   "/",
   authMiddleware,
+  adminOnly,
   async (req, res) => {
     try {
       const orders =
@@ -1215,6 +1241,7 @@ router.post(
 router.delete(
   "/:id",
   authMiddleware,
+  adminOnly,
   async (req, res) => {
     try {
       const order =
@@ -2303,6 +2330,7 @@ router.post(
 router.get(
   "/admin/returns",
   authMiddleware,
+  adminOnly,
   async (req, res) => {
     try {
       const orders = await Order.find({
@@ -2404,6 +2432,7 @@ router.get(
 router.patch(
   "/admin/returns/:orderId/:itemId",
   authMiddleware,
+  adminOnly,
   async (req, res) => {
     try {
       console.log("=================================");

@@ -11,6 +11,7 @@ const uploadRoutes = require("./routes/uploadRoutes");
 const userRoutes = require("./routes/userRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const couponRoutes = require("./routes/couponRoutes");
+const adminPushRoutes = require("./routes/adminPushRoutes");
 
 const app = express();
 
@@ -53,6 +54,7 @@ app.use("/api/uploads", uploadRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/coupons", couponRoutes);
+app.use("/api/admin/push", adminPushRoutes);
 
 // --------------------------------------------------
 // TEST ROUTE
