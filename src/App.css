@@ -15782,3 +15782,599 @@ textarea:focus {
     gap: 8px;
   }
 }
+
+.admin-inventory-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 20px 0;
+  padding: 16px;
+  border: 1px solid #ddd;
+  background: #fff;
+}
+
+.admin-inventory-toolbar input {
+  width: 320px;
+  max-width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #ccc;
+  outline: none;
+  font-size: 14px;
+}
+
+.admin-inventory-toolbar input:focus {
+  border-color: #111;
+}
+
+.admin-stock-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.admin-stock-controls button {
+  min-width: 38px;
+  min-height: 36px;
+  padding: 8px 12px;
+  border: 1px solid #111;
+  background: #fff;
+  color: #111;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.admin-stock-controls button:hover {
+  background: #111;
+  color: #fff;
+  border-radius: 50px;
+}
+
+.admin-stock-controls button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.admin-stock-controls strong {
+  min-width: 45px;
+  text-align: center;
+  font-size: 16px;
+}
+
+.admin-recent-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+  flex-wrap: wrap;
+}
+
+.admin-recent-toolbar input {
+  width: 320px;
+  padding: 11px 14px;
+  border: 1px solid #d5d5d5;
+  background: #fff;
+  font-size: 14px;
+  outline: none;
+}
+
+.admin-recent-toolbar select {
+  padding: 11px 14px;
+  border: 1px solid #d5d5d5;
+  background: #fff;
+  font-size: 14px;
+  outline: none;
+}
+
+.admin-recent-toolbar input:focus,
+.admin-recent-toolbar select:focus {
+  border-color: #111;
+}
+
+.admin-recent-toolbar span {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.admin-order-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.65);
+}
+
+.admin-order-modal {
+  width: min(900px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  background: #fff;
+  padding: 28px;
+}
+
+.admin-order-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 20px;
+  margin-bottom: 24px;
+}
+
+.admin-order-modal-header span,
+.admin-modal-info > span,
+.admin-modal-products > span,
+.admin-modal-delivery > span {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+}
+
+.admin-order-modal-header h2 {
+  margin: 6px 0 0;
+}
+
+.admin-order-modal-close {
+  width: 38px;
+  height: 38px;
+  border: 1px solid #111;
+  background: #fff;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.admin-order-modal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.admin-modal-info {
+  padding: 18px;
+  border: 1px solid #ddd;
+}
+
+.admin-modal-info strong {
+  display: block;
+  margin-top: 8px;
+}
+
+.admin-modal-info p {
+  margin: 5px 0 0;
+  color: #666;
+}
+
+.admin-modal-products {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #ddd;
+}
+
+.admin-modal-product {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 16px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.admin-modal-product p {
+  margin: 5px 0 0;
+  color: #666;
+  font-size: 13px;
+}
+
+.admin-modal-delivery {
+  margin-top: 24px;
+  padding: 18px;
+  border: 1px solid #ddd;
+}
+
+.admin-modal-delivery strong {
+  display: block;
+  margin-top: 8px;
+}
+
+.admin-modal-delivery p {
+  margin: 6px 0 0;
+  color: #666;
+}
+
+@media (max-width: 700px) {
+  .admin-order-modal-overlay {
+    padding: 10px;
+  }
+
+  .admin-order-modal {
+    padding: 18px;
+  }
+
+  .admin-order-modal-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-modal-product {
+    flex-direction: column;
+  }
+}
+
+.admin-low-stock-list {
+  border: 1px solid #ddd;
+  margin-top: 24px;
+}
+
+.admin-low-stock-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 22px 28px;
+  border-bottom: 1px solid #ddd;
+}
+
+.admin-low-stock-item:last-child {
+  border-bottom: none;
+}
+
+.admin-low-stock-item > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-low-stock-item strong {
+  font-size: 16px;
+}
+
+.admin-low-stock-item span {
+  font-size: 12px;
+  color: #777;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.admin-low-stock-value {
+  text-align: right;
+}
+
+.admin-low-stock-value strong {
+  display: block;
+}
+
+.admin-low-stock-item.out-of-stock
+  .admin-low-stock-value strong {
+  color: #d00000;
+}
+
+.admin-low-stock-empty {
+  border: 1px solid #ddd;
+  padding: 32px;
+  margin-top: 24px;
+}
+
+.admin-support-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  min-height: 550px;
+  border: 1px solid #ddd;
+  background: #fff;
+}
+
+.admin-support-conversations {
+  border-right: 1px solid #ddd;
+  overflow-y: auto;
+}
+
+.admin-support-list-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 18px;
+  border-bottom: 1px solid #ddd;
+}
+
+.admin-support-conversation {
+  width: 100%;
+  display: block;
+  padding: 16px;
+  text-align: left;
+  border: 0;
+  border-bottom: 1px solid #eee;
+  background: #fff;
+  cursor: pointer;
+}
+
+.admin-support-conversation:hover,
+.admin-support-conversation.active {
+  background: #f5f5f5;
+}
+
+.admin-support-conversation strong,
+.admin-support-conversation span {
+  display: block;
+}
+
+.admin-support-conversation span {
+  margin-top: 4px;
+  color: #777;
+  font-size: 12px;
+}
+
+.admin-support-conversation small {
+  display: inline-block;
+  margin-top: 8px;
+  font-weight: 700;
+}
+
+.admin-support-conversation p {
+  margin: 8px 0 0;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-support-chat {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.admin-support-chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px;
+  border-bottom: 1px solid #ddd;
+}
+
+.admin-support-chat-header strong,
+.admin-support-chat-header span {
+  display: block;
+}
+
+.admin-support-chat-header span {
+  margin-top: 4px;
+  color: #777;
+  font-size: 12px;
+}
+
+.admin-support-messages {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  min-height: 350px;
+  max-height: 500px;
+}
+
+.admin-support-message {
+  display: flex;
+  margin-bottom: 14px;
+}
+
+.admin-support-message.customer {
+  justify-content: flex-start;
+}
+
+.admin-support-message.admin {
+  justify-content: flex-end;
+}
+
+.admin-support-message-bubble {
+  max-width: 70%;
+  padding: 12px 16px;
+  background: #f1f1f1;
+}
+
+.admin-support-message.admin
+  .admin-support-message-bubble {
+  background: #111;
+  color: #fff;
+}
+
+.admin-support-message-bubble p {
+  margin: 7px 0;
+}
+
+.admin-support-message-bubble small {
+  opacity: 0.65;
+  font-size: 10px;
+}
+
+.admin-support-composer {
+  display: flex;
+  gap: 10px;
+  padding: 16px;
+  border-top: 1px solid #ddd;
+}
+
+.admin-support-composer textarea {
+  flex: 1;
+  resize: none;
+  padding: 12px;
+  border: 1px solid #ccc;
+  font-family: inherit;
+}
+
+.admin-support-composer button {
+  align-self: stretch;
+  padding: 0 24px;
+  border: 0;
+  background: #111;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.admin-support-composer button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.admin-support-empty-chat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #777;
+  text-align: center;
+}
+
+@media (max-width: 800px) {
+  .admin-support-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-support-conversations {
+    max-height: 300px;
+    border-right: 0;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .admin-support-message-bubble {
+    max-width: 85%;
+  }
+}
+
+.customer-support-button {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 9990;
+  border: none;
+  padding: 14px 20px;
+  border-radius: 30px;
+  background: #111;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.customer-support-window {
+  position: fixed;
+  right: 24px;
+  bottom: 80px;
+  z-index: 9999;
+  width: 360px;
+  height: 520px;
+  background: #fff;
+  border: 1px solid #ddd;
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+}
+
+.customer-support-header {
+  padding: 16px;
+  background: #111;
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.customer-support-header strong,
+.customer-support-header span {
+  display: block;
+}
+
+.customer-support-header span {
+  margin-top: 4px;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.customer-support-header button {
+  border: none;
+  background: transparent;
+  color: #fff;
+  font-size: 25px;
+  cursor: pointer;
+}
+
+.customer-support-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.customer-support-message {
+  display: flex;
+  margin-bottom: 12px;
+}
+
+.customer-support-message.customer {
+  justify-content: flex-end;
+}
+
+.customer-support-message.admin {
+  justify-content: flex-start;
+}
+
+.customer-support-message > div {
+  max-width: 80%;
+  padding: 10px 13px;
+  background: #f1f1f1;
+}
+
+.customer-support-message.customer > div {
+  background: #111;
+  color: #fff;
+}
+
+.customer-support-message p {
+  margin: 5px 0;
+}
+
+.customer-support-message small {
+  font-size: 10px;
+  opacity: 0.6;
+}
+
+.customer-support-input {
+  padding: 12px;
+  border-top: 1px solid #ddd;
+  display: flex;
+  gap: 8px;
+}
+
+.customer-support-input textarea {
+  flex: 1;
+  resize: none;
+  border: 1px solid #ccc;
+  padding: 9px;
+  font-family: inherit;
+}
+
+.customer-support-input button {
+  border: none;
+  background: #111;
+  color: #fff;
+  padding: 0 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.customer-support-input button:disabled {
+  opacity: 0.4;
+}
+
+@media (max-width: 500px) {
+  .customer-support-window {
+    right: 10px;
+    bottom: 70px;
+    width: calc(100vw - 20px);
+    height: 70vh;
+  }
+
+  .customer-support-button {
+    right: 15px;
+    bottom: 15px;
+  }
+}

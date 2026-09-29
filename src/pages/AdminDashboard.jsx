@@ -16,6 +16,8 @@ function AdminDashboard() {
   const orderSnapshotRef = useRef(null);
 
   const [products, setProducts] = useState([]);
+  const [inventorySearch, setInventorySearch] = useState("");
+const [stockUpdating, setStockUpdating] = useState(null);
   const [returnRequests, setReturnRequests] = useState([]);
 const [returnLoading, setReturnLoading] = useState(true);
 const [returnError, setReturnError] = useState("");
@@ -26,6 +28,15 @@ const [returnError, setReturnError] = useState("");
   const [productImage, setProductImage] = useState(null);
   const [editingProduct, setEditingProduct] = useState(null);
   const [showEditForm, setShowEditForm] = useState(false);
+  const [recentOrderSearch, setRecentOrderSearch] = useState("");
+const [recentOrderStatus, setRecentOrderStatus] = useState("all");
+const [selectedRecentOrder, setSelectedRecentOrder] = useState(null);
+
+const [supportConversations, setSupportConversations] = useState([]);
+const [selectedConversation, setSelectedConversation] = useState(null);
+const [supportMessages, setSupportMessages] = useState([]);
+const [supportMessage, setSupportMessage] = useState("");
+const [supportLoading, setSupportLoading] = useState(false);
 
   const [productForm, setProductForm] = useState({
     name: "",
@@ -360,6 +371,57 @@ const [returnError, setReturnError] = useState("");
       alert(error.message);
     }
   };
+
+  const updateProductStock = async (productId, newStock) => {
+  const stock = Number(newStock);
+
+  if (!Number.isFinite(stock) || stock < 0) {
+    alert("Stock must be 0 or greater.");
+    return;
+  }
+
+  try {
+    setStockUpdating(productId);
+
+    const token = localStorage.getItem("token");
+
+    const response = await fetch(
+      `${API_URL}/api/products/${productId}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          stock: Math.floor(stock),
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.message || "Failed to update stock"
+      );
+    }
+
+    setProducts((currentProducts) =>
+      currentProducts.map((product) =>
+        product._id === productId
+          ? data
+          : product
+      )
+    );
+
+  } catch (error) {
+    console.error("Stock update error:", error);
+    alert(error.message);
+  } finally {
+    setStockUpdating(null);
+  }
+};
 
   const handleDeleteProduct = async (productId) => {
     if (!window.confirm("Are you sure you want to delete this product?")) {
@@ -1070,6 +1132,164 @@ const updateReturnStatus = async (
     (product) => Number(product.stock || 0) === 0
   );
 
+  const filteredInventoryProducts = products.filter((product) =>
+  `${product.name} ${product.category}`
+    .toLowerCase()
+    .includes(inventorySearch.toLowerCase())
+);
+
+const filteredRecentOrders = [...orders]
+  .sort(
+    (a, b) =>
+      new Date(b.createdAt || 0) -
+      new Date(a.createdAt || 0)
+  )
+  .filter((order) => {
+    const search = recentOrderSearch
+      .trim()
+      .toLowerCase();
+
+    if (!search) return true;
+
+    const orderId = order._id?.toLowerCase() || "";
+
+    const customerName =
+      order.customer?.name ||
+      order.userId?.name ||
+      `${order.customer?.firstName || ""} ${
+        order.customer?.lastName || ""
+      }`.trim();
+
+    const email =
+      order.customer?.email ||
+      order.userId?.email ||
+      "";
+
+    return (
+      orderId.includes(search) ||
+      customerName.toLowerCase().includes(search) ||
+      email.toLowerCase().includes(search)
+    );
+  })
+  .filter((order) => {
+    if (recentOrderStatus === "all") {
+      return true;
+    }
+
+    return (
+      (order.orderStatus || "pending") ===
+      recentOrderStatus
+    );
+  });
+
+const fetchSupportConversations = async () => {
+  try {
+    setSupportLoading(true);
+
+    const response = await fetch(
+      `${API_URL}/api/messages/conversations`
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch conversations");
+    }
+
+    const data = await response.json();
+
+    setSupportConversations(
+      Array.isArray(data) ? data : []
+    );
+  } catch (error) {
+    console.error(
+      "Support conversations error:",
+      error
+    );
+  } finally {
+    setSupportLoading(false);
+  }
+};
+
+const fetchSupportMessages = async (conversationId) => {
+  try {
+    const response = await fetch(
+      `${API_URL}/api/messages/conversations/${conversationId}/messages`
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch messages");
+    }
+
+    const data = await response.json();
+
+    setSupportMessages(
+      Array.isArray(data) ? data : []
+    );
+  } catch (error) {
+    console.error(
+      "Support messages error:",
+      error
+    );
+  }
+};
+
+const selectSupportConversation = async (
+  conversation
+) => {
+  setSelectedConversation(conversation);
+
+  await fetchSupportMessages(
+    conversation._id
+  );
+};
+
+const sendSupportMessage = async () => {
+  const message = supportMessage.trim();
+
+  if (!message || !selectedConversation) {
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `${API_URL}/api/messages/messages`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          conversationId:
+            selectedConversation._id,
+          senderType: "admin",
+          senderName: "SPACE WEAR Admin",
+          message,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        "Failed to send support message"
+      );
+    }
+
+    setSupportMessage("");
+
+    await fetchSupportMessages(
+      selectedConversation._id
+    );
+
+    await fetchSupportConversations();
+  } catch (error) {
+    console.error(
+      "Send support message error:",
+      error
+    );
+
+    alert("Failed to send message.");
+  }
+};
+
   return (
     <main className="admin-page">
 
@@ -1136,86 +1356,507 @@ const updateReturnStatus = async (
       </section>
 
       <section className="admin-recent-section">
-        <div className="admin-section-heading">
-          <div>
-            <span>LATEST ACTIVITY</span>
-            <h2>RECENT ORDERS</h2>
+  <div className="admin-section-heading">
+    <div>
+      <span>LATEST ACTIVITY</span>
+      <h2>RECENT ORDERS</h2>
+    </div>
+
+    <button
+      className="admin-view-all-button"
+      onClick={() =>
+        document
+          .querySelector(".admin-orders-section")
+          ?.scrollIntoView({
+            behavior: "smooth",
+          })
+      }
+    >
+      VIEW ALL →
+    </button>
+  </div>
+
+  {/* SEARCH + FILTER */}
+  <div className="admin-recent-toolbar">
+    <input
+      type="search"
+      placeholder="Search order, customer or email..."
+      value={recentOrderSearch}
+      onChange={(e) =>
+        setRecentOrderSearch(e.target.value)
+      }
+    />
+
+    <select
+      value={recentOrderStatus}
+      onChange={(e) =>
+        setRecentOrderStatus(e.target.value)
+      }
+    >
+      <option value="all">All Statuses</option>
+      <option value="pending">Pending</option>
+      <option value="confirmed">Confirmed</option>
+      <option value="processing">Processing</option>
+      <option value="shipped">Shipped</option>
+      <option value="delivered">Delivered</option>
+      <option value="cancelled">Cancelled</option>
+    </select>
+
+    <span>
+      {filteredRecentOrders.length}{" "}
+      {filteredRecentOrders.length === 1
+        ? "ORDER"
+        : "ORDERS"}
+    </span>
+  </div>
+
+  {/* ORDERS */}
+  {filteredRecentOrders.length === 0 ? (
+    <div className="admin-empty-state">
+      No matching orders found.
+    </div>
+  ) : (
+    <div className="admin-recent-orders">
+      {filteredRecentOrders
+        .slice(0, 5)
+        .map((order) => (
+          <div
+            className="admin-recent-order"
+            key={order._id}
+            onClick={() =>
+              setSelectedRecentOrder(order)
+            }
+            style={{ cursor: "pointer" }}
+          >
+            <div className="recent-order-main">
+              <span>ORDER</span>
+
+              <strong>
+                #{order._id.slice(-8).toUpperCase()}
+              </strong>
+            </div>
+
+            <div className="recent-order-customer">
+              <span>CUSTOMER</span>
+
+              <strong>
+                {order.customer?.name ||
+                  order.userId?.name ||
+                  `${order.customer?.firstName || ""} ${
+                    order.customer?.lastName || ""
+                  }`.trim() ||
+                  "Customer"}
+              </strong>
+            </div>
+
+            <div className="recent-order-total">
+              <span>TOTAL</span>
+
+              <strong>
+                ₹
+                {Number(
+                  order.totalAmount || 0
+                ).toLocaleString("en-IN")}
+              </strong>
+            </div>
+
+            <div className="recent-order-status">
+              <span
+                className={`admin-status-badge ${
+                  order.orderStatus || "pending"
+                }`}
+              >
+                {(
+                  order.orderStatus || "pending"
+                ).toUpperCase()}
+              </span>
+            </div>
+
+            <div className="recent-order-date">
+              {order.createdAt
+                ? new Date(
+                    order.createdAt
+                  ).toLocaleDateString("en-IN")
+                : "—"}
+            </div>
+          </div>
+        ))}
+    </div>
+  )}
+</section>
+<section className="admin-support-section">
+  <div className="admin-section-heading">
+    <div>
+      <span>CUSTOMER SERVICE</span>
+      <h2>CUSTOMER SUPPORT</h2>
+    </div>
+
+    <button
+      type="button"
+      onClick={fetchSupportConversations}
+    >
+      REFRESH
+    </button>
+  </div>
+
+  <div className="admin-support-layout">
+
+    {/* CONVERSATIONS */}
+    <div className="admin-support-conversations">
+      <div className="admin-support-list-header">
+        <strong>CONVERSATIONS</strong>
+        <span>
+          {supportConversations.length}
+        </span>
+      </div>
+
+      {supportLoading ? (
+        <div className="admin-empty-state">
+          Loading conversations...
+        </div>
+      ) : supportConversations.length === 0 ? (
+        <div className="admin-empty-state">
+          No customer conversations yet.
+        </div>
+      ) : (
+        supportConversations.map(
+          (conversation) => (
+            <button
+              type="button"
+              key={conversation._id}
+              className={`admin-support-conversation ${
+                selectedConversation?._id ===
+                conversation._id
+                  ? "active"
+                  : ""
+              }`}
+              onClick={() =>
+                selectSupportConversation(
+                  conversation
+                )
+              }
+            >
+              <div>
+                <strong>
+                  {conversation.customerName}
+                </strong>
+
+                <span>
+                  {conversation.customerEmail ||
+                    "No email"}
+                </span>
+              </div>
+
+              <small>
+                {conversation.status?.toUpperCase()}
+              </small>
+
+              <p>
+                {conversation.lastMessage ||
+                  "No messages"}
+              </p>
+            </button>
+          )
+        )
+      )}
+    </div>
+
+    {/* CHAT */}
+    <div className="admin-support-chat">
+
+      {!selectedConversation ? (
+        <div className="admin-support-empty-chat">
+          <h3>Select a conversation</h3>
+          <p>
+            Choose a customer conversation
+            to view messages.
+          </p>
+        </div>
+      ) : (
+        <>
+          <div className="admin-support-chat-header">
+            <div>
+              <strong>
+                {selectedConversation.customerName}
+              </strong>
+
+              <span>
+                {selectedConversation.customerEmail}
+              </span>
+            </div>
+
+            <span
+              className={`admin-status-badge ${
+                selectedConversation.status
+              }`}
+            >
+              {selectedConversation.status?.toUpperCase()}
+            </span>
           </div>
 
-          <button
-            className="admin-view-all-button"
-            onClick={() =>
-              document
-                .querySelector(".admin-orders-section")
-                ?.scrollIntoView({ behavior: "smooth" })
-            }
-          >
-            VIEW ALL →
-          </button>
+          <div className="admin-support-messages">
+            {supportMessages.length === 0 ? (
+              <div className="admin-empty-state">
+                No messages.
+              </div>
+            ) : (
+              supportMessages.map(
+                (message) => (
+                  <div
+                    key={message._id}
+                    className={`admin-support-message ${
+                      message.senderType
+                    }`}
+                  >
+                    <div className="admin-support-message-bubble">
+                      <strong>
+                        {message.senderName}
+                      </strong>
+
+                      <p>
+                        {message.message}
+                      </p>
+
+                      <small>
+                        {new Date(
+                          message.createdAt
+                        ).toLocaleString(
+                          "en-IN"
+                        )}
+                      </small>
+                    </div>
+                  </div>
+                )
+              )
+            )}
+          </div>
+
+          <div className="admin-support-composer">
+            <textarea
+              value={supportMessage}
+              onChange={(e) =>
+                setSupportMessage(
+                  e.target.value
+                )
+              }
+              placeholder="Type your reply..."
+              rows={3}
+              onKeyDown={(e) => {
+                if (
+                  e.key === "Enter" &&
+                  !e.shiftKey
+                ) {
+                  e.preventDefault();
+                  sendSupportMessage();
+                }
+              }}
+            />
+
+            <button
+              type="button"
+              onClick={sendSupportMessage}
+              disabled={
+                !supportMessage.trim()
+              }
+            >
+              SEND →
+            </button>
+          </div>
+        </>
+      )}
+
+    </div>
+  </div>
+</section>
+
+{selectedRecentOrder && (
+  <div
+    className="admin-order-modal-overlay"
+    onClick={() => setSelectedRecentOrder(null)}
+  >
+    <div
+      className="admin-order-modal"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="admin-order-modal-header">
+        <div>
+          <span>ORDER DETAILS</span>
+
+          <h2>
+            #
+            {selectedRecentOrder._id
+              ?.slice(-8)
+              .toUpperCase()}
+          </h2>
         </div>
 
-        {orders.length === 0 ? (
-          <div className="admin-empty-state">No orders yet.</div>
-        ) : (
-          <div className="admin-recent-orders">
-            {[...orders]
-              .sort(
-                (a, b) =>
-                  new Date(b.createdAt || 0) -
-                  new Date(a.createdAt || 0)
-              )
-              .slice(0, 5)
-              .map((order) => (
-                <div
-                  className="admin-recent-order"
-                  key={order._id}
-                >
-                  <div className="recent-order-main">
-                    <span>ORDER</span>
-                    <strong>
-                      #{order._id.slice(-8).toUpperCase()}
-                    </strong>
-                  </div>
+        <button
+          type="button"
+          onClick={() =>
+            setSelectedRecentOrder(null)
+          }
+          className="admin-order-modal-close"
+        >
+          ×
+        </button>
+      </div>
 
-                  <div className="recent-order-customer">
-                    <span>CUSTOMER</span>
-                    <strong>
-                      {order.customer?.name ||
-                        order.userId?.name ||
-                        `${order.customer?.firstName || ""} ${
-                          order.customer?.lastName || ""
-                        }`.trim() ||
-                        "Customer"}
-                    </strong>
-                  </div>
+      <div className="admin-order-modal-grid">
 
-                  <div className="recent-order-total">
-                    <span>TOTAL</span>
-                    <strong>
-                      ₹{Number(order.totalAmount || 0).toLocaleString("en-IN")}
-                    </strong>
-                  </div>
+        {/* CUSTOMER */}
+        <div className="admin-modal-info">
+          <span>CUSTOMER</span>
 
-                  <div className="recent-order-status">
-                    <span
-                      className={`admin-status-badge ${
-                        order.orderStatus || "pending"
-                      }`}
-                    >
-                      {(order.orderStatus || "pending").toUpperCase()}
-                    </span>
-                  </div>
+          <strong>
+            {selectedRecentOrder.customer?.name ||
+              selectedRecentOrder.userId?.name ||
+              `${selectedRecentOrder.customer?.firstName || ""} ${
+                selectedRecentOrder.customer?.lastName || ""
+              }`.trim() ||
+              "Customer"}
+          </strong>
 
-                  <div className="recent-order-date">
-                    {order.createdAt
-                      ? new Date(order.createdAt).toLocaleDateString("en-IN")
-                      : "—"}
-                  </div>
+          <p>
+            {selectedRecentOrder.customer?.email ||
+              selectedRecentOrder.userId?.email ||
+              "No email"}
+          </p>
+
+          <p>
+            {selectedRecentOrder.customer?.phone ||
+              selectedRecentOrder.userId?.phone ||
+              "No phone"}
+          </p>
+        </div>
+
+        {/* PAYMENT */}
+        <div className="admin-modal-info">
+          <span>PAYMENT</span>
+
+          <strong>
+            {(
+              selectedRecentOrder.paymentStatus ||
+              "pending"
+            ).toUpperCase()}
+          </strong>
+
+          <p>
+            ₹
+            {Number(
+              selectedRecentOrder.totalAmount || 0
+            ).toLocaleString("en-IN")}
+          </p>
+        </div>
+
+        {/* ORDER STATUS */}
+        <div className="admin-modal-info">
+          <span>ORDER STATUS</span>
+
+          <strong
+            className={`admin-status-badge ${
+              selectedRecentOrder.orderStatus ||
+              "pending"
+            }`}
+          >
+            {(
+              selectedRecentOrder.orderStatus ||
+              "pending"
+            ).toUpperCase()}
+          </strong>
+        </div>
+
+        {/* DATE */}
+        <div className="admin-modal-info">
+          <span>ORDER DATE</span>
+
+          <strong>
+            {selectedRecentOrder.createdAt
+              ? new Date(
+                  selectedRecentOrder.createdAt
+                ).toLocaleDateString("en-IN", {
+                  day: "2-digit",
+                  month: "long",
+                  year: "numeric",
+                })
+              : "—"}
+          </strong>
+        </div>
+
+      </div>
+
+      {/* PRODUCTS */}
+      <div className="admin-modal-products">
+        <span>ORDERED PRODUCTS</span>
+
+        {selectedRecentOrder.items?.length ? (
+          selectedRecentOrder.items.map(
+            (item, index) => (
+              <div
+                className="admin-modal-product"
+                key={
+                  item._id ||
+                  item.productId ||
+                  index
+                }
+              >
+                <div>
+                  <strong>
+                    {item.name ||
+                      item.productName ||
+                      "Product"}
+                  </strong>
+
+                  <p>
+                    Quantity:{" "}
+                    {item.quantity || 1}
+                  </p>
                 </div>
-              ))}
-          </div>
+
+                <strong>
+                  ₹
+                  {Number(
+                    item.price ||
+                      item.productPrice ||
+                      0
+                  ).toLocaleString("en-IN")}
+                </strong>
+              </div>
+            )
+          )
+        ) : (
+          <p>No product details available.</p>
         )}
-      </section>
+      </div>
+
+      {/* DELIVERY */}
+      <div className="admin-modal-delivery">
+        <span>DELIVERY</span>
+
+        <strong>
+          {selectedRecentOrder.deliveryMethod ===
+          "courier"
+            ? "COURIER"
+            : "OWN DELIVERY"}
+        </strong>
+
+        {selectedRecentOrder.trackingId && (
+          <p>
+            Tracking ID:{" "}
+            {selectedRecentOrder.trackingId}
+          </p>
+        )}
+
+        {selectedRecentOrder.courierProvider && (
+          <p>
+            Courier:{" "}
+            {selectedRecentOrder.courierProvider}
+          </p>
+        )}
+      </div>
+
+    </div>
+  </div>
+)}
 
       <section className="admin-quick-section">
         <div className="admin-section-heading">
@@ -1628,6 +2269,20 @@ const updateReturnStatus = async (
           <div>
             <p>PRODUCT MANAGEMENT</p>
             <h2>ALL PRODUCTS</h2>
+            <div className="admin-inventory-toolbar">
+  <input
+    type="search"
+    value={inventorySearch}
+    onChange={(e) =>
+      setInventorySearch(e.target.value)
+    }
+    placeholder="Search products..."
+  />
+
+  <span>
+    {filteredInventoryProducts.length} PRODUCTS
+  </span>
+</div>
           </div>
 
           <div>
@@ -2018,7 +2673,7 @@ const updateReturnStatus = async (
           </div>
         ) : (
           <div className="admin-products-list">
-            {products.map((product) => (
+            {filteredInventoryProducts.map((product) => (
               <article
                 className="admin-product-card"
                 key={product._id}
@@ -2053,6 +2708,65 @@ const updateReturnStatus = async (
                       </span>
                     )}
                   </div>
+
+                  <div className="admin-stock-controls">
+
+  <button
+    type="button"
+    disabled={
+      stockUpdating === product._id ||
+      Number(product.stock || 0) <= 0
+    }
+    onClick={() =>
+      updateProductStock(
+        product._id,
+        Number(product.stock || 0) - 1
+      )
+    }
+  >
+    −
+  </button>
+
+  <strong>
+    {stockUpdating === product._id
+      ? "..."
+      : Number(product.stock || 0)}
+  </strong>
+
+  <button
+    type="button"
+    disabled={stockUpdating === product._id}
+    onClick={() =>
+      updateProductStock(
+        product._id,
+        Number(product.stock || 0) + 1
+      )
+    }
+  >
+    +
+  </button>
+
+  <button
+    type="button"
+    disabled={stockUpdating === product._id}
+    onClick={() => {
+      const value = window.prompt(
+        `Set stock for ${product.name}`,
+        String(product.stock || 0)
+      );
+
+      if (value === null) return;
+
+      updateProductStock(
+        product._id,
+        value
+      );
+    }}
+  >
+    SET STOCK
+  </button>
+
+</div>
 
                   <div className="admin-product-badges">
                     {product.isFeatured && (
@@ -2096,41 +2810,67 @@ const updateReturnStatus = async (
         )}
       </section>
 
-      <section className="admin-low-stock">
-        <div className="admin-section-heading">
-          <div>
-            <span>INVENTORY ALERT</span>
-            <h2>LOW STOCK PRODUCTS</h2>
-          </div>
+      <section className="admin-low-stock-section">
+  <div className="admin-section-heading">
+    <div>
+      <span>INVENTORY ALERT</span>
+      <h2>LOW STOCK PRODUCTS</h2>
+    </div>
+  </div>
+
+  {(() => {
+    const LOW_STOCK_LIMIT = 10;
+
+    const lowStockProducts = products.filter(
+      (product) =>
+        Number(product.stock ?? 0) <= LOW_STOCK_LIMIT
+    );
+
+    if (lowStockProducts.length === 0) {
+      return (
+        <div className="admin-low-stock-empty">
+          ✓ All products have healthy stock levels.
         </div>
+      );
+    }
 
-        {lowStockProducts.length === 0 ? (
-          <div className="admin-no-alert">
-            ✓ All products have healthy stock levels.
-          </div>
-        ) : (
-          <div className="admin-low-stock-list">
-            {lowStockProducts.map((product) => (
-              <div
-                className="admin-low-stock-item"
-                key={product._id}
-              >
-                <img
-                  src={product.image}
-                  alt={product.name}
-                />
+    return (
+      <div className="admin-low-stock-list">
+        {lowStockProducts.map((product) => {
+          const stock = Number(product.stock ?? 0);
 
-                <div>
-                  <strong>{product.name}</strong>
-                  <span>{product.category}</span>
-                </div>
+          return (
+            <div
+              className={`admin-low-stock-item ${
+                stock === 0 ? "out-of-stock" : ""
+              }`}
+              key={product._id}
+            >
+              <div>
+                <strong>{product.name}</strong>
 
-                <b>ONLY {product.stock} LEFT</b>
+                <span>
+                  {product.category || "Product"}
+                </span>
               </div>
-            ))}
-          </div>
-        )}
-      </section>
+
+              <div className="admin-low-stock-value">
+                {stock === 0 ? (
+                  <strong>OUT OF STOCK</strong>
+                ) : (
+                  <>
+                    <strong>{stock}</strong>
+                    <span>units left</span>
+                  </>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  })()}
+</section>
 
       {/* COUPONS */}
       <section className="admin-section coupon-management admin-coupons-section">

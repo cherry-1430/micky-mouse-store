@@ -12,6 +12,7 @@ const userRoutes = require("./routes/userRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const couponRoutes = require("./routes/couponRoutes");
 const adminPushRoutes = require("./routes/adminPushRoutes");
+const messageRoutes = require("./routes/messageRoutes");
 
 const app = express();
 
@@ -55,6 +56,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/coupons", couponRoutes);
 app.use("/api/admin/push", adminPushRoutes);
+app.use("/api/messages", messageRoutes);
 
 // --------------------------------------------------
 // TEST ROUTE

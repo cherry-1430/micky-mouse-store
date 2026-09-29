@@ -24,6 +24,7 @@ import MyOrders from "./pages/MyOrders";
 import AdminDashboard from "./pages/AdminDashboard";
 
 import ProtectedRoute from "./components/ProtectedRoute";
+import CustomerSupport from "./components/CustomerSupport";
 
 
 function App() {
@@ -174,6 +175,8 @@ function App() {
               />
 
             </Routes>
+
+            <CustomerSupport />
 
             <Footer />
 
