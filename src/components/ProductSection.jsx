@@ -5,7 +5,7 @@ import { getProducts } from "../api/productApi";
 import { useWishlist } from "../context/useWishlist";
 import { useCart } from "../context/useCart";
 
-import "./ProductSection.css";
+import "./productSection.css";
 
 function ProductSection() {
   const { toggleWishlist, isInWishlist } = useWishlist();
