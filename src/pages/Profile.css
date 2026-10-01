@@ -1,512 +1,1287 @@
-/* =====================================================
-   SAVED ADDRESSES
-===================================================== */
+/* =========================================================
+   SPACE WEAR - PROFILE PAGE
+   Colorful + Premium + Responsive
+========================================================= */
 
-.profile-address-section {
-  margin-top: 32px;
-  padding: 32px;
-  background: #ffffff;
-  border: 1px solid #e7e7e7;
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.06);
+.profile-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 10% 10%, rgba(59, 130, 246, 0.10), transparent 28%),
+    radial-gradient(circle at 90% 20%, rgba(168, 85, 247, 0.10), transparent 30%),
+    #f6f8fc;
+  color: #172033;
+  padding-bottom: 70px;
 }
 
+/* =========================================================
+   LOADING / ERROR
+========================================================= */
 
-/* =====================================================
-   SECTION HEADING
-===================================================== */
+.profile-loading,
+.profile-error {
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.profile-loading span,
+.profile-error span {
+  color: #6366f1;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  margin-bottom: 15px;
+}
+
+.profile-loading h1,
+.profile-error h1 {
+  margin: 0;
+  font-size: clamp(32px, 5vw, 58px);
+  font-weight: 900;
+  color: #172033;
+}
+
+.profile-error p {
+  color: #64748b;
+  margin: 15px 0 25px;
+}
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.profile-header {
+  position: relative;
+  overflow: hidden;
+
+  min-height: 330px;
+  padding: 70px 7%;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  background:
+    linear-gradient(
+      120deg,
+      #111827 0%,
+      #172554 45%,
+      #312e81 100%
+    );
+
+  color: white;
+}
+
+/* Decorative circles */
+
+.profile-header::before {
+  content: "";
+  position: absolute;
+  width: 380px;
+  height: 380px;
+  border-radius: 50%;
+  right: -100px;
+  top: -170px;
+  background: rgba(59, 130, 246, 0.25);
+}
+
+.profile-header::after {
+  content: "";
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  left: 35%;
+  bottom: -210px;
+  background: rgba(168, 85, 247, 0.22);
+}
+
+.profile-header-content {
+  position: relative;
+  z-index: 2;
+  max-width: 700px;
+}
+
+.profile-header-content > p {
+  margin: 0 0 18px;
+  color: #67e8f9;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 3px;
+}
+
+.profile-header-content h1 {
+  margin: 0;
+
+  font-size: clamp(48px, 7vw, 90px);
+  line-height: 0.85;
+  font-weight: 950;
+  letter-spacing: -4px;
+
+  background: linear-gradient(
+    90deg,
+    #ffffff,
+    #93c5fd,
+    #c4b5fd
+  );
+
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.profile-header-content > span {
+  display: block;
+  margin-top: 25px;
+  max-width: 600px;
+
+  color: #cbd5e1;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+/* Header logo/mark */
+
+.profile-header-mark {
+  position: relative;
+  z-index: 3;
+
+  width: 155px;
+  height: 155px;
+
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background:
+    linear-gradient(
+      145deg,
+      #2563eb,
+      #7c3aed
+    );
+
+  box-shadow:
+    0 0 0 8px rgba(255, 255, 255, 0.08),
+    0 20px 50px rgba(37, 99, 235, 0.35);
+
+  transform: rotate(5deg);
+}
+
+.profile-header-mark::before {
+  content: "";
+  position: absolute;
+  inset: 8px;
+
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+}
+
+.profile-header-mark span {
+  position: relative;
+
+  color: #ffffff;
+  font-size: 38px;
+  font-weight: 950;
+  letter-spacing: -2px;
+
+  transform: rotate(-5deg);
+}
+
+/* =========================================================
+   MAIN CONTENT
+========================================================= */
+
+.profile-content {
+  width: min(1180px, 92%);
+  margin: -35px auto 0;
+
+  position: relative;
+  z-index: 5;
+}
+
+/* =========================================================
+   COMMON CARD
+========================================================= */
+
+.profile-card,
+.profile-address-section,
+.profile-actions-section,
+.profile-admin-card {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #e2e8f0;
+  border-radius: 24px;
+
+  box-shadow:
+    0 15px 45px rgba(15, 23, 42, 0.08);
+
+  margin-bottom: 25px;
+}
+
+/* =========================================================
+   CARD HEADING
+========================================================= */
 
 .profile-card-heading {
+  padding: 28px 30px;
+
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
-  padding-bottom: 22px;
-  margin-bottom: 28px;
-  border-bottom: 1px solid #e5e5e5;
+  align-items: flex-start;
+
+  border-bottom: 1px solid #e8edf5;
 }
 
-.profile-card-heading span:first-child {
+.profile-card-heading div span {
   display: block;
-  margin-bottom: 7px;
+
+  color: #6366f1;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 900;
   letter-spacing: 2px;
-  color: #777;
+  margin-bottom: 7px;
 }
 
 .profile-card-heading h2 {
   margin: 0;
-  font-size: 28px;
-  font-weight: 800;
-  letter-spacing: -0.5px;
-  color: #111;
+
+  font-size: 25px;
+  font-weight: 900;
+  color: #172033;
 }
 
-.profile-card-heading > span:last-child {
-  font-size: 12px;
+.profile-card-heading > span {
+  width: 42px;
+  height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 12px;
+
+  background: linear-gradient(
+    135deg,
+    #dbeafe,
+    #ede9fe
+  );
+
+  color: #4f46e5;
+  font-weight: 900;
+}
+
+/* =========================================================
+   PROFILE DETAILS
+========================================================= */
+
+.profile-details {
+  padding: 30px;
+
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 22px;
+}
+
+.profile-detail {
+  padding: 20px;
+
+  border-radius: 16px;
+
+  background: linear-gradient(
+    135deg,
+    #f8fafc,
+    #f1f5ff
+  );
+
+  border: 1px solid #e2e8f0;
+}
+
+.profile-detail > span {
+  display: block;
+
+  margin-bottom: 9px;
+
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1.8px;
+}
+
+.profile-detail strong {
+  display: block;
+
+  color: #172033;
+  font-size: 16px;
   font-weight: 800;
+}
+
+.profile-detail small {
+  display: block;
+  margin-top: 8px;
+  color: #94a3b8;
+}
+
+/* Active */
+
+.profile-active {
+  color: #059669 !important;
+}
+
+/* =========================================================
+   INPUTS
+========================================================= */
+
+.profile-edit-input,
+.profile-address-form input,
+.profile-address-form textarea {
+  width: 100%;
+
+  border: 1px solid #dbe3ef;
+  border-radius: 12px;
+
+  padding: 13px 15px;
+
+  background: #ffffff;
+  color: #172033;
+
+  font-size: 14px;
+  outline: none;
+
+  transition: 0.25s ease;
+}
+
+.profile-edit-input:focus,
+.profile-address-form input:focus,
+.profile-address-form textarea:focus {
+  border-color: #6366f1;
+
+  box-shadow:
+    0 0 0 4px rgba(99, 102, 241, 0.10);
+}
+
+.profile-address-form textarea {
+  resize: vertical;
+  min-height: 90px;
+}
+
+/* =========================================================
+   PROFILE ACTION BUTTONS
+========================================================= */
+
+.profile-edit-actions {
+  padding: 0 30px 25px;
+
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.profile-edit-button,
+.profile-save-button,
+.profile-cancel-button {
+  border: none;
+  border-radius: 12px;
+
+  padding: 13px 22px;
+
+  font-size: 11px;
+  font-weight: 900;
   letter-spacing: 1px;
-  color: #aaa;
+
+  cursor: pointer;
+  transition: 0.25s ease;
 }
 
+.profile-edit-button,
+.profile-save-button {
+  background: linear-gradient(
+    135deg,
+    #2563eb,
+    #7c3aed
+  );
 
-/* =====================================================
-   LOADING
-===================================================== */
+  color: white;
 
-.profile-address-loading {
-  padding: 45px 20px;
-  text-align: center;
+  box-shadow:
+    0 8px 20px rgba(79, 70, 229, 0.22);
+}
+
+.profile-edit-button:hover,
+.profile-save-button:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 12px 25px rgba(79, 70, 229, 0.30);
+}
+
+.profile-cancel-button {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.profile-cancel-button:hover {
+  background: #e2e8f0;
+}
+
+/* =========================================================
+   MESSAGES
+========================================================= */
+
+.profile-success-message,
+.profile-error-message {
+  margin: 0 30px 25px;
+  padding: 13px 16px;
+
+  border-radius: 12px;
+
   font-size: 13px;
-  color: #777;
-  letter-spacing: 1px;
+  font-weight: 700;
 }
 
+.profile-success-message {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
 
-/* =====================================================
-   ADDRESS GRID
-===================================================== */
+.profile-error-message {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+/* =========================================================
+   SAVED ADDRESSES
+========================================================= */
+
+.profile-address-section {
+  padding-bottom: 30px;
+}
 
 .profile-address-grid {
+  padding: 30px;
+
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 20px;
 }
 
-
-/* =====================================================
-   ADDRESS CARD
-===================================================== */
-
 .profile-address-card {
   position: relative;
-  padding: 24px;
-  background: #fafafa;
-  border: 1px solid #e5e5e5;
-  transition:
-    transform 0.25s ease,
-    box-shadow 0.25s ease,
-    border-color 0.25s ease;
+
+  padding: 23px;
+
+  border-radius: 18px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #ffffff,
+      #f8faff
+    );
+
+  border: 1px solid #dbe3ef;
+
+  transition: 0.3s ease;
 }
 
 .profile-address-card:hover {
   transform: translateY(-4px);
-  border-color: #111;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.09);
+
+  box-shadow:
+    0 15px 35px rgba(37, 99, 235, 0.12);
 }
-
-
-/* =====================================================
-   DEFAULT ADDRESS
-===================================================== */
 
 .profile-address-default {
-  border: 1.5px solid #111;
-  background: #fff;
+  border: 2px solid #6366f1;
+
+  background:
+    linear-gradient(
+      145deg,
+      #eef2ff,
+      #faf5ff
+    );
 }
-
-.profile-address-default::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 5px;
-  height: 100%;
-  background: #111;
-}
-
-
-/* =====================================================
-   ADDRESS TOP
-===================================================== */
 
 .profile-address-top {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+
   margin-bottom: 22px;
 }
 
 .profile-address-label {
   display: inline-block;
+
   padding: 6px 11px;
-  background: #111;
-  color: #fff;
+
+  border-radius: 8px;
+
+  background: #e0e7ff;
+  color: #4338ca;
+
   font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 1.5px;
+  font-weight: 900;
+  letter-spacing: 1px;
   text-transform: uppercase;
 }
 
 .profile-default-badge {
-  display: inline-block;
-  margin-left: 8px;
-  padding: 6px 9px;
-  background: #eeeeee;
-  color: #111;
+  margin-left: 7px;
+
+  padding: 5px 9px;
+
+  border-radius: 7px;
+
+  background: #dcfce7;
+  color: #15803d;
+
   font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 1px;
+  font-weight: 900;
 }
 
 .profile-address-icon {
-  font-size: 22px;
-  line-height: 1;
-  color: #111;
-}
-
-
-/* =====================================================
-   ADDRESS INFORMATION
-===================================================== */
-
-.profile-address-info {
-  min-height: 155px;
+  font-size: 24px;
+  color: #6366f1;
 }
 
 .profile-address-info strong {
   display: block;
+
   margin-bottom: 10px;
+
+  color: #172033;
   font-size: 17px;
-  font-weight: 800;
-  color: #111;
 }
 
 .profile-address-info p {
-  margin: 7px 0;
+  margin: 5px 0;
+
+  color: #64748b;
   font-size: 13px;
-  line-height: 1.6;
-  color: #666;
+  line-height: 1.5;
 }
 
-.profile-address-info p:last-child {
-  margin-top: 12px;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 1px;
-  color: #999;
-}
-
-
-/* =====================================================
-   ADDRESS ACTIONS
-===================================================== */
+/* Address actions */
 
 .profile-address-actions {
   display: flex;
-  flex-wrap: wrap;
   gap: 8px;
-  padding-top: 18px;
-  border-top: 1px solid #e5e5e5;
+  flex-wrap: wrap;
+
+  margin-top: 20px;
+  padding-top: 17px;
+
+  border-top: 1px solid #e5eaf2;
 }
 
 .profile-address-actions button {
-  padding: 10px 13px;
-  border: 1px solid #d8d8d8;
-  background: #fff;
-  color: #111;
-  cursor: pointer;
+  border: none;
+
+  padding: 9px 12px;
+
+  border-radius: 9px;
+
+  background: #f1f5f9;
+  color: #475569;
+
   font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 1px;
-  transition:
-    background 0.2s ease,
-    color 0.2s ease,
-    border-color 0.2s ease;
+  font-weight: 900;
+  letter-spacing: 0.7px;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
 }
 
 .profile-address-actions button:hover {
-  background: #111;
-  border-color: #111;
-  color: #fff;
+  background: #6366f1;
+  color: white;
 }
 
-.profile-address-actions button:last-child {
-  margin-left: auto;
-}
-
-
-/* =====================================================
+/* =========================================================
    NO ADDRESS
-===================================================== */
+========================================================= */
 
 .profile-no-address {
-  padding: 55px 25px;
+  margin: 30px;
+
+  padding: 35px 20px;
+
   text-align: center;
-  border: 1px dashed #d8d8d8;
-  background: #fafafa;
+
+  border-radius: 16px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #eff6ff,
+      #faf5ff
+    );
+
+  border: 1px dashed #c7d2fe;
 }
 
 .profile-no-address span {
-  display: block;
-  margin-bottom: 10px;
+  color: #6366f1;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 900;
   letter-spacing: 2px;
-  color: #333;
 }
 
 .profile-no-address p {
-  max-width: 420px;
-  margin: 0 auto;
-  font-size: 13px;
-  line-height: 1.6;
-  color: #888;
+  margin: 10px 0 0;
+  color: #64748b;
+  font-size: 14px;
 }
 
-
-/* =====================================================
-   ADD NEW ADDRESS BUTTON
-===================================================== */
+/* =========================================================
+   ADD ADDRESS BUTTON
+========================================================= */
 
 .profile-add-address-button {
-  width: 100%;
-  margin-top: 22px;
-  padding: 17px 20px;
-  border: 1px solid #111;
-  background: #111;
-  color: #fff;
-  cursor: pointer;
+  margin-left: 30px;
+
+  border: none;
+
+  padding: 14px 22px;
+
+  border-radius: 12px;
+
+  background: linear-gradient(
+    135deg,
+    #06b6d4,
+    #2563eb
+  );
+
+  color: white;
+
   font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 1.5px;
-  transition:
-    background 0.25s ease,
-    color 0.25s ease,
-    transform 0.25s ease;
+  font-weight: 900;
+  letter-spacing: 1px;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 8px 20px rgba(37, 99, 235, 0.20);
+
+  transition: 0.25s ease;
 }
 
 .profile-add-address-button:hover {
-  background: #fff;
-  color: #111;
   transform: translateY(-2px);
 }
 
-
-/* =====================================================
+/* =========================================================
    ADDRESS FORM
-===================================================== */
+========================================================= */
 
 .profile-address-form {
-  margin-top: 30px;
-  padding: 30px;
-  background: #f8f8f8;
-  border: 1px solid #e2e2e2;
+  margin: 30px;
+
+  padding: 28px;
+
+  border-radius: 20px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #f8faff,
+      #eef2ff
+    );
+
+  border: 1px solid #c7d2fe;
 }
 
-
-/* =====================================================
-   FORM HEADING
-===================================================== */
-
 .profile-address-form-heading {
-  margin-bottom: 28px;
-  padding-bottom: 18px;
-  border-bottom: 1px solid #ddd;
+  margin-bottom: 25px;
 }
 
 .profile-address-form-heading span {
-  display: block;
-  margin-bottom: 6px;
+  color: #6366f1;
+
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 900;
   letter-spacing: 2px;
-  color: #777;
 }
 
 .profile-address-form-heading h3 {
-  margin: 0;
-  font-size: 24px;
-  font-weight: 800;
-  color: #111;
+  margin: 6px 0 0;
+
+  color: #172033;
+  font-size: 22px;
 }
-
-
-/* =====================================================
-   FORM GRID
-===================================================== */
 
 .profile-address-form-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
+
+  grid-template-columns: repeat(2, 1fr);
+
+  gap: 18px;
 }
 
 .profile-form-field {
   display: flex;
   flex-direction: column;
+  gap: 7px;
+}
+
+.profile-form-field label {
+  color: #475569;
+
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1px;
 }
 
 .profile-form-full {
   grid-column: 1 / -1;
 }
 
-
-/* =====================================================
-   FORM LABEL
-===================================================== */
-
-.profile-form-field label {
-  margin-bottom: 8px;
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 1.5px;
-  color: #555;
-}
-
-
-/* =====================================================
-   INPUTS
-===================================================== */
-
-.profile-form-field input,
-.profile-form-field textarea {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 14px 15px;
-  border: 1px solid #d7d7d7;
-  outline: none;
-  background: #fff;
-  color: #111;
-  font-family: inherit;
-  font-size: 13px;
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.profile-form-field input {
-  height: 48px;
-}
-
-.profile-form-field textarea {
-  resize: vertical;
-  min-height: 90px;
-}
-
-.profile-form-field input:focus,
-.profile-form-field textarea:focus {
-  border-color: #111;
-  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.06);
-}
-
-.profile-form-field input::placeholder,
-.profile-form-field textarea::placeholder {
-  color: #aaa;
-}
-
-
-/* =====================================================
-   DEFAULT CHECKBOX
-===================================================== */
-
 .profile-default-checkbox {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-top: 22px;
-  cursor: pointer;
-  font-size: 12px;
-  color: #555;
+
+  margin-top: 20px;
+
+  color: #475569;
+
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .profile-default-checkbox input {
   width: 17px;
   height: 17px;
-  accent-color: #111;
-  cursor: pointer;
+  accent-color: #6366f1;
 }
-
-
-/* =====================================================
-   FORM ACTIONS
-===================================================== */
 
 .profile-address-form-actions {
   display: flex;
   gap: 10px;
-  margin-top: 28px;
-  padding-top: 22px;
-  border-top: 1px solid #ddd;
+
+  margin-top: 25px;
+}
+
+.profile-save-address-button,
+.profile-cancel-address-button {
+  border: none;
+
+  padding: 13px 20px;
+
+  border-radius: 11px;
+
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1px;
+
+  cursor: pointer;
 }
 
 .profile-save-address-button {
-  padding: 14px 22px;
-  border: 1px solid #111;
-  background: #111;
-  color: #fff;
+  color: white;
+
+  background: linear-gradient(
+    135deg,
+    #2563eb,
+    #7c3aed
+  );
+}
+
+.profile-cancel-address-button {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+/* =========================================================
+   QUICK ACTIONS
+========================================================= */
+
+.profile-actions-section {
+  padding-bottom: 30px;
+}
+
+.profile-action-grid {
+  padding: 30px;
+
+  display: grid;
+
+  grid-template-columns: repeat(2, 1fr);
+
+  gap: 18px;
+}
+
+.profile-action-card {
+  position: relative;
+
+  min-height: 180px;
+
+  padding: 25px;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+
+  background: white;
+
+  text-decoration: none;
+  color: inherit;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  overflow: hidden;
+
   cursor: pointer;
+
+  transition: 0.3s ease;
+}
+
+.profile-action-card::before {
+  content: "";
+
+  position: absolute;
+
+  width: 130px;
+  height: 130px;
+
+  border-radius: 50%;
+
+  right: -55px;
+  top: -55px;
+
+  background: rgba(99, 102, 241, 0.08);
+}
+
+.profile-action-card:hover {
+  transform: translateY(-5px);
+
+  border-color: #a5b4fc;
+
+  box-shadow:
+    0 18px 35px rgba(79, 70, 229, 0.12);
+}
+
+.profile-action-number {
+  color: #818cf8;
+
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.profile-action-card div span {
+  color: #64748b;
+
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+}
+
+.profile-action-card h3 {
+  margin: 7px 0;
+
+  color: #172033;
+
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.profile-action-card p {
+  margin: 0;
+
+  max-width: 300px;
+
+  color: #64748b;
+
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.profile-action-card > strong {
+  position: absolute;
+
+  right: 25px;
+  bottom: 22px;
+
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #eef2ff;
+  color: #4f46e5;
+
+  font-size: 18px;
+
+  transition: 0.25s ease;
+}
+
+.profile-action-card:hover > strong {
+  background: #4f46e5;
+  color: white;
+  transform: translateX(4px);
+}
+
+/* Logout */
+
+.profile-logout-card {
+  font-family: inherit;
+  text-align: left;
+}
+
+.profile-logout-card:hover {
+  border-color: #fda4af;
+}
+
+.profile-logout-card:hover > strong {
+  background: #ef4444;
+}
+
+/* =========================================================
+   ADMIN CARD
+========================================================= */
+
+.profile-admin-card {
+  padding: 30px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 25px;
+
+  background:
+    linear-gradient(
+      120deg,
+      #172554,
+      #4c1d95,
+      #7c3aed
+    );
+
+  color: white;
+
+  border: none;
+  overflow: hidden;
+  position: relative;
+}
+
+.profile-admin-card::after {
+  content: "";
+
+  position: absolute;
+
+  width: 220px;
+  height: 220px;
+
+  border-radius: 50%;
+
+  right: -80px;
+  top: -100px;
+
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.profile-admin-card div {
+  position: relative;
+  z-index: 2;
+}
+
+.profile-admin-card span {
+  color: #c4b5fd;
+
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 2px;
+}
+
+.profile-admin-card h2 {
+  margin: 7px 0;
+
+  font-size: 28px;
+  font-weight: 900;
+}
+
+.profile-admin-card p {
+  margin: 0;
+
+  color: #ddd6fe;
+
+  font-size: 13px;
+}
+
+.profile-admin-card a {
+  position: relative;
+  z-index: 2;
+
+  flex-shrink: 0;
+
+  padding: 14px 20px;
+
+  border-radius: 11px;
+
+  background: white;
+  color: #4c1d95;
+
+  text-decoration: none;
+
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1px;
+
+  transition: 0.25s ease;
+}
+
+.profile-admin-card a:hover {
+  transform: translateY(-2px);
+  background: #f5f3ff;
+}
+
+/* =========================================================
+   BOTTOM
+========================================================= */
+
+.profile-bottom {
+  padding: 25px 5px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.profile-bottom span {
+  color: #94a3b8;
+
   font-size: 10px;
   font-weight: 800;
-  letter-spacing: 1.2px;
-  transition: all 0.25s ease;
+  letter-spacing: 1.5px;
 }
 
-.profile-save-address-button:hover {
-  background: #fff;
-  color: #111;
+.profile-bottom a {
+  color: #4f46e5;
+
+  font-size: 11px;
+  font-weight: 900;
+
+  text-decoration: none;
 }
 
-.profile-save-address-button:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
+.profile-bottom a:hover {
+  color: #7c3aed;
 }
 
+/* =========================================================
+   BACK BUTTON
+========================================================= */
 
-.profile-address-form-actions button[type="button"] {
-  padding: 14px 22px;
-  border: 1px solid #ccc;
-  background: #fff;
-  color: #333;
-  cursor: pointer;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 1.2px;
-  transition: all 0.2s ease;
+.profile-back-button {
+  margin-top: 10px;
+
+  padding: 13px 20px;
+
+  border-radius: 11px;
+
+  background: linear-gradient(
+    135deg,
+    #2563eb,
+    #7c3aed
+  );
+
+  color: white;
+
+  text-decoration: none;
+
+  font-size: 11px;
+  font-weight: 900;
 }
 
-.profile-address-form-actions button[type="button"]:hover {
-  border-color: #111;
-  color: #111;
+/* =========================================================
+   ADDRESS LOADING
+========================================================= */
+
+.profile-address-loading {
+  margin: 30px;
+  padding: 30px;
+
+  text-align: center;
+
+  border-radius: 15px;
+
+  background: #f8fafc;
+
+  color: #64748b;
+
+  font-size: 13px;
 }
 
+/* =========================================================
+   RESPONSIVE - TABLET
+========================================================= */
 
-/* =====================================================
-   SUCCESS / ERROR
-===================================================== */
+@media (max-width: 900px) {
 
-.profile-success-message {
-  margin: 18px 0 0;
-  padding: 13px 15px;
-  border-left: 3px solid #111;
-  background: #f5f5f5;
-  color: #333;
-  font-size: 12px;
-  font-weight: 600;
+  .profile-header {
+    min-height: 300px;
+    padding: 60px 5%;
+  }
+
+  .profile-header-mark {
+    width: 120px;
+    height: 120px;
+  }
+
+  .profile-header-mark span {
+    font-size: 30px;
+  }
+
+  .profile-details,
+  .profile-address-grid,
+  .profile-action-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-admin-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .profile-admin-card a {
+    width: 100%;
+    text-align: center;
+  }
 }
 
-.profile-error-message {
-  margin: 18px 0 0;
-  padding: 13px 15px;
-  border-left: 3px solid #111;
-  background: #f5f5f5;
-  color: #333;
-  font-size: 12px;
-  font-weight: 600;
-}
+/* =========================================================
+   RESPONSIVE - MOBILE
+========================================================= */
 
+@media (max-width: 600px) {
 
-/* =====================================================
-   RESPONSIVE — TABLET
-===================================================== */
+  .profile-page {
+    padding-bottom: 35px;
+  }
 
-@media (max-width: 800px) {
+  .profile-header {
+    min-height: 360px;
 
-  .profile-address-section {
-    padding: 24px;
+    padding: 45px 22px;
+
+    align-items: flex-start;
+  }
+
+  .profile-header-content h1 {
+    font-size: 54px;
+    letter-spacing: -2px;
+  }
+
+  .profile-header-content > p {
+    font-size: 10px;
+    letter-spacing: 2px;
+  }
+
+  .profile-header-content > span {
+    font-size: 13px;
+  }
+
+  .profile-header-mark {
+    position: absolute;
+
+    width: 95px;
+    height: 95px;
+
+    right: 22px;
+    bottom: 25px;
+  }
+
+  .profile-header-mark span {
+    font-size: 24px;
+  }
+
+  .profile-content {
+    width: 94%;
+    margin-top: -20px;
+  }
+
+  .profile-card,
+  .profile-address-section,
+  .profile-actions-section,
+  .profile-admin-card {
+    border-radius: 18px;
+  }
+
+  .profile-card-heading {
+    padding: 22px 18px;
+  }
+
+  .profile-card-heading h2 {
+    font-size: 20px;
+  }
+
+  .profile-details {
+    padding: 18px;
+
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .profile-detail {
+    padding: 17px;
+  }
+
+  .profile-edit-actions {
+    padding: 0 18px 20px;
+  }
+
+  .profile-edit-button,
+  .profile-save-button,
+  .profile-cancel-button {
+    width: 100%;
+  }
+
+  .profile-success-message,
+  .profile-error-message {
+    margin-left: 18px;
+    margin-right: 18px;
   }
 
   .profile-address-grid {
-    grid-template-columns: 1fr;
+    padding: 18px;
+  }
+
+  .profile-address-card {
+    padding: 18px;
+  }
+
+  .profile-address-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .profile-address-actions button:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .profile-add-address-button {
+    margin-left: 18px;
+    margin-right: 18px;
+
+    width: calc(100% - 36px);
+  }
+
+  .profile-address-form {
+    margin: 18px;
+    padding: 20px;
   }
 
   .profile-address-form-grid {
@@ -516,63 +1291,72 @@
   .profile-form-full {
     grid-column: auto;
   }
-}
-
-
-/* =====================================================
-   RESPONSIVE — MOBILE
-===================================================== */
-
-@media (max-width: 520px) {
-
-  .profile-address-section {
-    margin-top: 20px;
-    padding: 18px;
-  }
-
-  .profile-card-heading h2 {
-    font-size: 21px;
-  }
-
-  .profile-card-heading {
-    align-items: center;
-  }
-
-  .profile-address-card {
-    padding: 19px;
-  }
-
-  .profile-address-info {
-    min-height: auto;
-  }
-
-  .profile-address-actions {
-    flex-direction: column;
-  }
-
-  .profile-address-actions button {
-    width: 100%;
-    margin-left: 0 !important;
-  }
-
-  .profile-address-form {
-    padding: 20px;
-  }
-
-  .profile-address-form-heading h3 {
-    font-size: 20px;
-  }
 
   .profile-address-form-actions {
     flex-direction: column;
   }
 
-  .profile-address-form-actions button {
+  .profile-save-address-button,
+  .profile-cancel-address-button {
     width: 100%;
   }
 
-  .profile-default-checkbox {
-    align-items: flex-start;
-    line-height: 1.5;
+  .profile-action-grid {
+    padding: 18px;
+  }
+
+  .profile-action-card {
+    min-height: 165px;
+    padding: 20px;
+  }
+
+  .profile-action-card h3 {
+    font-size: 19px;
+  }
+
+  .profile-admin-card {
+    padding: 25px 20px;
+  }
+
+  .profile-admin-card h2 {
+    font-size: 23px;
+  }
+
+  .profile-bottom {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+/* =========================================================
+   VERY SMALL DEVICES
+========================================================= */
+
+@media (max-width: 380px) {
+
+  .profile-header-content h1 {
+    font-size: 46px;
+  }
+
+  .profile-header-mark {
+    width: 80px;
+    height: 80px;
+  }
+
+  .profile-header-mark span {
+    font-size: 20px;
+  }
+
+  .profile-card-heading > span {
+    width: 35px;
+    height: 35px;
+  }
+
+  .profile-address-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-address-actions button:last-child {
+    grid-column: auto;
   }
 }

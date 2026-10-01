@@ -1,0 +1,96 @@
+/* =========================================
+   HERO PERFORMANCE
+========================================= */
+
+.hero {
+  width: 100%;
+  min-height: 680px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  overflow: hidden;
+}
+
+
+/* IMAGE */
+
+.hero-image {
+  position: relative;
+  overflow: hidden;
+  min-height: 680px;
+}
+
+.hero-image img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+
+  /*
+    Avoid heavy animations on the main hero image.
+  */
+  transform: none;
+}
+
+
+/* IMAGE LABEL */
+
+.hero-image-label {
+  position: absolute;
+  right: 28px;
+  bottom: 28px;
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 768px) {
+
+  .hero {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .hero-content {
+    min-height: auto;
+  }
+
+  .hero-image {
+    min-height: 460px;
+  }
+
+  .hero-image img {
+    height: 460px;
+  }
+
+}
+
+
+/* SMALL MOBILE */
+
+@media (max-width: 480px) {
+
+  .hero-image {
+    min-height: 360px;
+  }
+
+  .hero-image img {
+    height: 360px;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+  }
+
+  .hero-button,
+  .hero-secondary-button {
+    width: 100%;
+    text-align: center;
+  }
+
+  .hero-features {
+    grid-template-columns: 1fr;
+  }
+
+}

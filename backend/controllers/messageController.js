@@ -180,3 +180,43 @@ exports.markConversationRead = async (req, res) => {
     });
   }
 };
+
+exports.updateConversationStatus = async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+    const { status } = req.body;
+
+    if (!["open", "pending", "closed"].includes(status)) {
+      return res.status(400).json({
+        message: "Invalid conversation status",
+      });
+    }
+
+    const conversation =
+      await Conversation.findByIdAndUpdate(
+        conversationId,
+        { status },
+        { new: true }
+      );
+
+    if (!conversation) {
+      return res.status(404).json({
+        message: "Conversation not found",
+      });
+    }
+
+    res.json({
+      message: "Conversation status updated successfully",
+      conversation,
+    });
+  } catch (error) {
+    console.error(
+      "Update conversation status error:",
+      error
+    );
+
+    res.status(500).json({
+      message: "Failed to update conversation status",
+    });
+  }
+};

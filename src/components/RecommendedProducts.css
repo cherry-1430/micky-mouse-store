@@ -196,3 +196,182 @@
     font-size: 13px;
   }
 }
+
+/* =========================================
+   RECOMMENDED PRODUCTS - RESPONSIVE
+   ========================================= */
+
+@media (max-width: 768px) {
+
+  .recommended-products {
+    width: 100%;
+    padding: 50px 20px;
+  }
+
+  /* Heading */
+
+  .recommended-heading {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .recommended-heading h2 {
+    font-size: 28px;
+    line-height: 1.1;
+  }
+
+  .recommended-heading span {
+    font-size: 11px;
+  }
+
+  .recommended-heading p {
+    font-size: 11px;
+    margin: 0;
+  }
+
+  /* Product grid */
+
+  .recommendation-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 15px;
+  }
+
+  /* Product image */
+
+  .recommendation-image {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+  }
+
+  .recommendation-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .recommendation-discount {
+    font-size: 10px;
+    padding: 6px 8px;
+  }
+
+  /* Product information */
+
+  .recommendation-info {
+    padding: 12px 4px;
+  }
+
+  .recommendation-category {
+    font-size: 10px;
+  }
+
+  .recommendation-info h3 {
+    font-size: 14px;
+    line-height: 1.3;
+    margin: 6px 0;
+  }
+
+  .recommendation-rating {
+    font-size: 11px;
+  }
+
+  .recommendation-rating small {
+    font-size: 10px;
+  }
+
+  .recommendation-price {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .recommendation-price strong {
+    font-size: 15px;
+  }
+
+  .recommendation-price del {
+    font-size: 11px;
+  }
+
+  /* Loading */
+
+  .recommendation-loading {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 15px;
+  }
+
+}
+
+
+/* =========================================
+   SMALL PHONES
+   ========================================= */
+
+@media (max-width: 480px) {
+
+  .recommended-products {
+    padding: 40px 15px;
+  }
+
+  .recommended-heading h2 {
+    font-size: 23px;
+  }
+
+  .recommendation-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .recommendation-info h3 {
+    font-size: 13px;
+  }
+
+  .recommendation-price strong {
+    font-size: 14px;
+  }
+
+  .recommendation-price del {
+    font-size: 10px;
+  }
+
+  .recommendation-rating {
+    font-size: 10px;
+  }
+
+  .recommendation-discount {
+    font-size: 9px;
+    padding: 5px 6px;
+  }
+
+}
+
+
+/* =========================================
+   VERY SMALL PHONES
+   ========================================= */
+
+@media (max-width: 360px) {
+
+  .recommended-products {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .recommendation-grid {
+    gap: 10px;
+  }
+
+  .recommendation-info h3 {
+    font-size: 12px;
+  }
+
+  .recommendation-price {
+    gap: 4px;
+  }
+
+}

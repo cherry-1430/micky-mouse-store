@@ -1,30 +1,33 @@
 import { Link } from "react-router-dom";
 
+import "./categorySection.css"
+
 function CategorySection() {
   const categories = [
     {
       name: "Hoodies",
       slug: "hoodies",
       image:
-        "https://images.unsplash.com/photo-1556821840-3a63f95609a7",
+        "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=900&q=80",
     },
     {
       name: "Shirts",
       slug: "shirts",
       image:
-        "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf",
+        "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=900&q=80",
     },
     {
       name: "Pants",
       slug: "pants",
       image:
-        "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80",
+        "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=900&q=80",
     },
   ];
 
   return (
     <section className="category-section">
 
+      {/* HEADING */}
       <div className="section-heading">
         <p>EXPLORE OUR COLLECTION</p>
 
@@ -35,24 +38,34 @@ function CategorySection() {
         </span>
       </div>
 
+      {/* CATEGORY GRID */}
       <div className="category-grid">
 
         {categories.map((category, index) => (
           <Link
+            key={category.slug}
             to={`/shop?category=${category.slug}`}
             className="category-card"
-            key={category.name}
           >
 
-            <img
-              src={category.image}
-              alt={category.name}
-            />
+            {/* IMAGE */}
+            <div className="category-image">
 
-            <div className="category-number">
-              0{index + 1}
+              <img
+                src={category.image}
+                alt={`${category.name} collection`}
+                loading="lazy"
+                decoding="async"
+              />
+
             </div>
 
+            {/* NUMBER */}
+            <div className="category-number">
+              {String(index + 1).padStart(2, "0")}
+            </div>
+
+            {/* OVERLAY */}
             <div className="category-overlay">
 
               <div>
@@ -77,4 +90,3 @@ function CategorySection() {
 }
 
 export default CategorySection;
-

@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import API_URL from "../api/apiConfig";
 import { registerAdminPushNotifications } from "../utils/adminPush";
 
+import "./AdminDashboard.css";
+
 function AdminDashboard() {
 
   useEffect(() => {
@@ -37,6 +39,8 @@ const [selectedConversation, setSelectedConversation] = useState(null);
 const [supportMessages, setSupportMessages] = useState([]);
 const [supportMessage, setSupportMessage] = useState("");
 const [supportLoading, setSupportLoading] = useState(false);
+
+
 
   const [productForm, setProductForm] = useState({
     name: "",
@@ -1240,6 +1244,83 @@ const selectSupportConversation = async (
   await fetchSupportMessages(
     conversation._id
   );
+
+  try {
+    await fetch(
+      `${API_URL}/api/messages/conversations/${conversation._id}/read`,
+      {
+        method: "PATCH",
+      }
+    );
+
+    setSupportConversations((current) =>
+      current.map((item) =>
+        item._id === conversation._id
+          ? {
+              ...item,
+              unreadByAdmin: false,
+            }
+          : item
+      )
+    );
+  } catch (error) {
+    console.error(
+      "Mark conversation read error:",
+      error
+    );
+  }
+};
+
+const updateConversationStatus = async (status) => {
+  if (!selectedConversation) return;
+
+  try {
+    const response = await fetch(
+      `${API_URL}/api/messages/conversations/${selectedConversation._id}/status`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          status,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        "Failed to update conversation status"
+      );
+    }
+
+    const data = await response.json();
+
+    const updatedConversation =
+      data.conversation || {
+        ...selectedConversation,
+        status,
+      };
+
+    setSelectedConversation(
+      updatedConversation
+    );
+
+    setSupportConversations((current) =>
+      current.map((item) =>
+        item._id === selectedConversation._id
+          ? updatedConversation
+          : item
+      )
+    );
+  } catch (error) {
+    console.error(
+      "Update conversation status error:",
+      error
+    );
+
+    alert("Failed to update conversation status.");
+  }
 };
 
 const sendSupportMessage = async () => {
@@ -1304,9 +1385,9 @@ const sendSupportMessage = async () => {
           </span>
         </div>
 
-        <div className="admin-header-mark">
-          <span>SW</span>
-        </div>
+       <div className="admin-header-mark">
+  <span>SW</span>
+</div>
       </section>
 
       <section className="admin-stats-grid">
@@ -1545,6 +1626,11 @@ const sendSupportMessage = async () => {
                   {conversation.customerEmail ||
                     "No email"}
                 </span>
+                {conversation.unreadByAdmin && (
+  <span className="admin-support-unread">
+    NEW
+  </span>
+)}
               </div>
 
               <small>
@@ -1585,13 +1671,19 @@ const sendSupportMessage = async () => {
               </span>
             </div>
 
-            <span
-              className={`admin-status-badge ${
-                selectedConversation.status
-              }`}
-            >
-              {selectedConversation.status?.toUpperCase()}
-            </span>
+           <select
+  value={
+    selectedConversation.status || "open"
+  }
+  onChange={(e) =>
+    updateConversationStatus(e.target.value)
+  }
+  className="admin-support-status-select"
+>
+  <option value="open">OPEN</option>
+  <option value="pending">PENDING</option>
+  <option value="closed">CLOSED</option>
+</select>
           </div>
 
           <div className="admin-support-messages">

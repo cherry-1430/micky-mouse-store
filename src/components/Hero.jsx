@@ -1,10 +1,12 @@
 import { Link } from "react-router-dom";
 
+import "./Hero.css"
+
 function Hero() {
   return (
     <section className="hero">
 
-      {/* Left Content */}
+      {/* LEFT CONTENT */}
       <div className="hero-content">
 
         <p className="hero-small-text">
@@ -26,16 +28,23 @@ function Hero() {
         </p>
 
         <div className="hero-actions">
-          <Link to="/shop" className="hero-button">
+          <Link
+            to="/shop"
+            className="hero-button"
+          >
             SHOP COLLECTION
           </Link>
 
-          <Link to="/shop?category=new" className="hero-secondary-button">
+          <Link
+            to="/shop?category=new"
+            className="hero-secondary-button"
+          >
             NEW ARRIVALS →
           </Link>
         </div>
 
         <div className="hero-features">
+
           <div>
             <strong>PREMIUM</strong>
             <span>Quality materials</span>
@@ -50,21 +59,29 @@ function Hero() {
             <strong>COMFORT</strong>
             <span>Made for everyday</span>
           </div>
+
         </div>
 
       </div>
 
-      {/* Right Image */}
+      {/* RIGHT IMAGE */}
       <div className="hero-image">
 
         <img
-          src="https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3"
-          alt="Premium men's clothing"
+          src="https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&w=1200&q=80"
+          alt="Premium Space Wear clothing collection"
+          fetchPriority="high"
+          decoding="async"
         />
 
         <div className="hero-image-label">
-          <span>MM</span>
-          <p>THE NEW<br />COLLECTION</p>
+          <span>SW</span>
+
+          <p>
+            THE NEW
+            <br />
+            COLLECTION
+          </p>
         </div>
 
       </div>
@@ -74,4 +91,3 @@ function Hero() {
 }
 
 export default Hero;
-

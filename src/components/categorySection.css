@@ -1,0 +1,176 @@
+/* =========================================
+   CATEGORY IMAGE PERFORMANCE
+========================================= */
+
+.category-card {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.category-image {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.category-image img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+
+  /*
+    Keep image animation simple.
+    Avoid huge scale values.
+  */
+  transition: transform 0.35s ease;
+}
+
+.category-card:hover .category-image img {
+  transform: scale(1.035);
+}
+
+
+/* =========================================
+   CATEGORY OVERLAY
+========================================= */
+
+.category-overlay {
+  position: absolute;
+  inset: auto 0 0 0;
+  z-index: 2;
+
+  padding: 28px;
+
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+
+  /*
+    Gradient is cheaper than multiple
+    animated filters/shadows.
+  */
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.72),
+    rgba(0, 0, 0, 0.12),
+    transparent
+  );
+}
+
+
+/* =========================================
+   CATEGORY NUMBER
+========================================= */
+
+.category-number {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  z-index: 3;
+
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+
+  padding: 7px 10px;
+
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, 0.9);
+  color: #111827;
+}
+
+
+/* =========================================
+   ARROW
+========================================= */
+
+.category-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 42px;
+  height: 42px;
+
+  border-radius: 50%;
+
+  background: rgba(255, 255, 255, 0.95);
+  color: #111827;
+
+  transition:
+    transform 0.25s ease,
+    background 0.25s ease;
+}
+
+.category-card:hover .category-arrow {
+  transform: translateX(4px);
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 768px) {
+
+  .category-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .category-card {
+    min-height: 420px;
+  }
+
+  .category-overlay {
+    padding: 22px;
+  }
+
+}
+
+
+/* =========================================
+   SMALL MOBILE
+========================================= */
+
+@media (max-width: 480px) {
+
+  .category-card {
+    min-height: 340px;
+  }
+
+  .category-overlay {
+    padding: 18px;
+  }
+
+  .category-arrow {
+    width: 36px;
+    height: 36px;
+  }
+
+}
+
+
+/* =========================================
+   REDUCED MOTION
+========================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .category-image img,
+  .category-arrow {
+    transition: none;
+  }
+
+  .category-card:hover .category-image img {
+    transform: none;
+  }
+
+  .category-card:hover .category-arrow {
+    transform: none;
+  }
+
+}

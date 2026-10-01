@@ -8,6 +8,8 @@ import { useCart } from "../context/useCart";
 import FlashSale from "../components/FlashSale";
 import { animateToCart } from "../utils/cartAnimation";
 
+import "./shop.css"
+
 function Shop() {
   const { toggleWishlist, isInWishlist } = useWishlist();
   const { addToCart } = useCart();

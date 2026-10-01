@@ -2,11 +2,30 @@ import { Link } from "react-router-dom";
 import { useWishlist } from "../context/useWishlist";
 import { useCart } from "../context/useCart";
 
+import "./Wishlist.css";
+
 function Wishlist() {
   const { wishlist, toggleWishlist } = useWishlist();
   const { addToCart } = useCart();
 
+  const getProductId = (product) =>
+    product?._id || product?.id;
+
   const moveToCart = (product) => {
+    const productId = getProductId(product);
+
+    if (!productId) {
+      alert("Product information is missing.");
+      return;
+    }
+
+    const stock = Number(product.stock) || 0;
+
+    if (stock <= 0) {
+      alert("This product is currently out of stock.");
+      return;
+    }
+
     if (!product.sizes || product.sizes.length === 0) {
       alert("Size information is not available.");
       return;
@@ -15,10 +34,15 @@ function Wishlist() {
     const defaultSize = product.sizes[0];
 
     addToCart(product, defaultSize, 1);
+
     toggleWishlist(product);
 
     alert(`${product.name} moved to cart`);
   };
+
+  /* =================================
+     EMPTY WISHLIST
+  ================================= */
 
   if (wishlist.length === 0) {
     return (
@@ -31,7 +55,7 @@ function Wishlist() {
           </div>
 
           <p className="empty-wishlist-label">
-            MICKEY MOUSE • SAVED ITEMS
+            SPACE WEAR • SAVED ITEMS
           </p>
 
           <h1>
@@ -58,17 +82,23 @@ function Wishlist() {
     );
   }
 
+  /* =================================
+     WISHLIST PAGE
+  ================================= */
+
   return (
     <main className="wishlist-page">
 
-      {/* HEADER */}
+      {/* =================================
+          HEADER
+      ================================= */}
 
       <section className="wishlist-header">
 
         <div className="wishlist-header-content">
 
           <p>
-            MICKEY MOUSE • SAVED COLLECTION
+            SPACE WEAR • SAVED COLLECTION
           </p>
 
           <h1>
@@ -91,13 +121,18 @@ function Wishlist() {
       </section>
 
 
-      {/* WISHLIST CONTENT */}
+      {/* =================================
+          CONTENT
+      ================================= */}
 
       <section className="wishlist-content">
+
+        {/* TOP BAR */}
 
         <div className="wishlist-topbar">
 
           <div>
+
             <span>SAVED ITEMS</span>
 
             <h2>
@@ -106,6 +141,7 @@ function Wishlist() {
                 ? "PRODUCT"
                 : "PRODUCTS"}
             </h2>
+
           </div>
 
           <Link
@@ -118,112 +154,214 @@ function Wishlist() {
         </div>
 
 
-        {/* PRODUCTS */}
+        {/* =================================
+            PRODUCTS
+        ================================= */}
 
         <div className="wishlist-grid">
 
-          {wishlist.map((product, index) => (
+          {wishlist.map((product, index) => {
 
-            <article
-              className="wishlist-card"
-              key={product._id || product.id}
-            >
+            const productId =
+              getProductId(product);
 
-              <div className="wishlist-image">
+            const price =
+              Number(product.price) || 0;
 
-                <Link to={`/product/${product._id || product.id}`}>
+            const originalPrice =
+              Number(product.originalPrice) || 0;
 
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                  />
+            const stock =
+              Number(product.stock) || 0;
 
-                </Link>
+            const isOutOfStock =
+              stock <= 0;
 
-                <span className="wishlist-index">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
+            const discount =
+              originalPrice > price
+                ? Math.round(
+                    ((originalPrice - price) /
+                      originalPrice) *
+                      100
+                  )
+                : 0;
 
-                <button
-                  className="wishlist-heart"
-                  onClick={() => toggleWishlist(product)}
-                  aria-label={`Remove ${product.name} from wishlist`}
-                >
-                  ♥
-                </button>
+            return (
+              <article
+                className="wishlist-card"
+                key={productId}
+              >
 
-              </div>
+                {/* =================================
+                    IMAGE
+                ================================= */}
+
+                <div className="wishlist-image">
+
+                  <Link
+                    to={`/product/${productId}`}
+                  >
+
+                    <img
+                      src={
+                        product.image ||
+                        "/images/product-placeholder.jpg"
+                      }
+                      alt={
+                        product.name ||
+                        "Product"
+                      }
+                      loading="lazy"
+                    />
+
+                  </Link>
 
 
-              {/* INFO */}
+                  {/* DISCOUNT */}
 
-              <div className="wishlist-card-info">
-
-                <p className="wishlist-category">
-                  {product.category}
-                </p>
-
-                <Link
-                  to={`/product/${product.id}`}
-                  className="wishlist-product-link"
-                >
-                  <h2>
-                    {product.name}
-                  </h2>
-                </Link>
-
-                <div className="wishlist-price-row">
-
-                  <strong>
-                    ₹
-                    {product.price?.toLocaleString(
-                      "en-IN"
+                  {discount > 0 &&
+                    !isOutOfStock && (
+                      <span className="wishlist-discount">
+                        -{discount}%
+                      </span>
                     )}
-                  </strong>
 
-                  {product.originalPrice &&
-                    product.originalPrice >
-                      product.price && (
+
+                  {/* OUT OF STOCK */}
+
+                  {isOutOfStock && (
+                    <span className="wishlist-stock-badge">
+                      OUT OF STOCK
+                    </span>
+                  )}
+
+
+                  {/* INDEX */}
+
+                  <span className="wishlist-index">
+                    {String(index + 1).padStart(
+                      2,
+                      "0"
+                    )}
+                  </span>
+
+
+                  {/* HEART */}
+
+                  <button
+                    type="button"
+                    className="wishlist-heart"
+                    onClick={() =>
+                      toggleWishlist(product)
+                    }
+                    aria-label={`Remove ${product.name} from wishlist`}
+                  >
+                    ♥
+                  </button>
+
+                </div>
+
+
+                {/* =================================
+                    PRODUCT INFORMATION
+                ================================= */}
+
+                <div className="wishlist-card-info">
+
+                  <p className="wishlist-category">
+                    {product.category ||
+                      "COLLECTION"}
+                  </p>
+
+
+                  <Link
+                    to={`/product/${productId}`}
+                    className="wishlist-product-link"
+                  >
+
+                    <h2>
+                      {product.name ||
+                        "Product"}
+                    </h2>
+
+                  </Link>
+
+
+                  {/* PRICE */}
+
+                  <div className="wishlist-price-row">
+
+                    <strong>
+                      ₹
+                      {price.toLocaleString(
+                        "en-IN"
+                      )}
+                    </strong>
+
+                    {originalPrice > price && (
                       <span>
                         ₹
-                        {product.originalPrice.toLocaleString(
+                        {originalPrice.toLocaleString(
                           "en-IN"
                         )}
                       </span>
                     )}
 
+                  </div>
+
+
+                  {/* STOCK */}
+
+                  {isOutOfStock ? (
+                    <p className="wishlist-stock-warning">
+                      This product is currently
+                      unavailable.
+                    </p>
+                  ) : (
+                    <p className="wishlist-stock-available">
+                      ✓ AVAILABLE
+                    </p>
+                  )}
+
+
+                  {/* ACTIONS */}
+
+                  <div className="wishlist-actions">
+
+                    <button
+                      type="button"
+                      className={`wishlist-cart-button ${
+                        isOutOfStock
+                          ? "wishlist-cart-disabled"
+                          : ""
+                      }`}
+                      onClick={() =>
+                        moveToCart(product)
+                      }
+                      disabled={isOutOfStock}
+                    >
+                      {isOutOfStock
+                        ? "OUT OF STOCK"
+                        : "MOVE TO CART →"}
+                    </button>
+
+                    <button
+                      type="button"
+                      className="wishlist-remove-button"
+                      onClick={() =>
+                        toggleWishlist(product)
+                      }
+                    >
+                      REMOVE
+                    </button>
+
+                  </div>
+
                 </div>
 
-
-                {/* ACTIONS */}
-
-                <div className="wishlist-actions">
-
-                  <button
-                    className="wishlist-cart-button"
-                    onClick={() =>
-                      moveToCart(product)
-                    }
-                  >
-                    MOVE TO CART →
-                  </button>
-
-                  <button
-                    className="wishlist-remove-button"
-                    onClick={() =>
-                      toggleWishlist(product)
-                    }
-                  >
-                    REMOVE
-                  </button>
-
-                </div>
-
-              </div>
-
-            </article>
-
-          ))}
+              </article>
+            );
+          })}
 
         </div>
 

@@ -2,6 +2,9 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/useCart";
 import { useAuth } from "../context/AuthContext";
+import spacewearLogo from "../assets/spacewear-logo.png";
+
+import "./Navbar.css"
 
 function Navbar() {
   const navigate = useNavigate();
@@ -11,6 +14,7 @@ function Navbar() {
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartAnimation, setCartAnimation] = useState(null);
 
   const handleSearch = (event) => {
@@ -24,52 +28,53 @@ function Navbar() {
       return;
     }
 
-    navigate(
-      `/shop?search=${encodeURIComponent(searchValue)}`
-    );
+    navigate(`/shop?search=${encodeURIComponent(searchValue)}`);
 
     setSearch("");
     setSearchOpen(false);
   };
 
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
+  };
+
+  const handleLogout = () => {
+    logout();
+    setMobileMenuOpen(false);
+    navigate("/");
+  };
 
   const animateToCart = (product) => {
-  const cartElement = document.getElementById("navbar-cart");
+    const cartElement = document.getElementById("navbar-cart");
 
-  if (!cartElement) return;
+    if (!cartElement) return;
 
-  const cartRect = cartElement.getBoundingClientRect();
+    const cartRect = cartElement.getBoundingClientRect();
 
-  setCartAnimation({
-    image: product.image,
-    startX: window.innerWidth / 2 - 40,
-    startY: window.innerHeight / 2 - 40,
-    endX: cartRect.left + cartRect.width / 2 - 40,
-    endY: cartRect.top + cartRect.height / 2 - 40,
-  });
+    setCartAnimation({
+      image: product.image,
+      startX: window.innerWidth / 2 - 40,
+      startY: window.innerHeight / 2 - 40,
+      endX: cartRect.left + cartRect.width / 2 - 40,
+      endY: cartRect.top + cartRect.height / 2 - 40,
+    });
 
-  setTimeout(() => {
-    setCartAnimation(null);
-  }, 800);
-};
+    setTimeout(() => {
+      setCartAnimation(null);
+    }, 800);
+  };
 
   return (
     <nav className="navbar">
 
       {/* LOGO */}
 
-      <Link to="/" className="logo">
-        <span className="logo-main">
-          Space
-        </span>
-
-        <span className="logo-sub">
-          Wear
-        </span>
-      </Link>
+    <Link to="/" className="navbar-logo">
+  <img src={spacewearLogo} alt="SPACE WEAR" />
+</Link>
 
 
-      {/* NAVIGATION */}
+      {/* DESKTOP NAVIGATION */}
 
       <div className="nav-links">
 
@@ -126,15 +131,12 @@ function Navbar() {
               className="navbar-search-form"
               onSubmit={handleSearch}
             >
-
               <input
                 type="text"
                 placeholder="Search products..."
                 value={search}
                 onChange={(event) =>
-                  setSearch(
-                    event.target.value
-                  )
+                  setSearch(event.target.value)
                 }
                 autoFocus
               />
@@ -142,24 +144,20 @@ function Navbar() {
               <button type="submit">
                 →
               </button>
-
             </form>
           )}
 
         </div>
 
 
-        {/* USER */}
+        {/* DESKTOP USER */}
 
-        {isLoggedIn && user ? (
+        {isLoggedIn && user && (
           <>
 
             <span className="nav-user">
               Hi, {user.name}
             </span>
-
-
-            {/* PROFILE */}
 
             <Link
               to="/profile"
@@ -168,9 +166,6 @@ function Navbar() {
             >
               👤
             </Link>
-
-
-            {/* MY ORDERS */}
 
             <Link
               to="/my-orders"
@@ -181,9 +176,6 @@ function Navbar() {
               📦
             </Link>
 
-
-            {/* ADMIN */}
-
             {user.role === "admin" && (
               <Link
                 to="/admin"
@@ -193,21 +185,15 @@ function Navbar() {
               </Link>
             )}
 
-
-            {/* LOGOUT */}
-
             <button
               className="logout-button"
-              onClick={() => {
-                logout();
-                navigate("/");
-              }}
+              onClick={handleLogout}
             >
               Logout
             </button>
 
           </>
-        ) : null}
+        )}
 
 
         {/* WISHLIST */}
@@ -224,21 +210,130 @@ function Navbar() {
 
         {/* CART */}
 
-      <Link
-  to="/cart"
-  className="navbar-cart"
-  id="navbar-cart"
-  aria-label="Shopping Cart"
-  title="Shopping Cart"
->
-  🛒
+        <Link
+          to="/cart"
+          className="navbar-cart"
+          id="navbar-cart"
+          aria-label="Shopping Cart"
+          title="Shopping Cart"
+        >
+          🛒
 
-  {cartCount > 0 && (
-    <span className="cart-count">
-      {cartCount}
-    </span>
-  )}
-</Link>
+          {cartCount > 0 && (
+            <span className="cart-count">
+              {cartCount}
+            </span>
+          )}
+        </Link>
+
+
+        {/* MOBILE MENU BUTTON */}
+
+        <button
+          className="mobile-menu-button"
+          aria-label="Open menu"
+          onClick={() =>
+            setMobileMenuOpen(
+              (previous) => !previous
+            )
+          }
+        >
+          {mobileMenuOpen ? "✕" : "☰"}
+        </button>
+
+      </div>
+
+
+      {/* MOBILE MENU */}
+
+      <div
+        className={`mobile-menu ${
+          mobileMenuOpen ? "mobile-menu-open" : ""
+        }`}
+      >
+
+        <Link
+          to="/"
+          onClick={closeMobileMenu}
+        >
+          Home
+        </Link>
+
+        <Link
+          to="/shop"
+          onClick={closeMobileMenu}
+        >
+          Shop
+        </Link>
+
+        <Link
+          to="/shop?category=hoodies"
+          onClick={closeMobileMenu}
+        >
+          Hoodies
+        </Link>
+
+        <Link
+          to="/shop?category=shirts"
+          onClick={closeMobileMenu}
+        >
+          Shirts
+        </Link>
+
+        <Link
+          to="/shop?category=pants"
+          onClick={closeMobileMenu}
+        >
+          Pants
+        </Link>
+
+        <Link
+          to="/shop?category=new"
+          onClick={closeMobileMenu}
+        >
+          New Arrivals
+        </Link>
+
+
+        {isLoggedIn && user && (
+          <>
+
+            <div className="mobile-user">
+              Hi, {user.name}
+            </div>
+
+            <Link
+              to="/profile"
+              onClick={closeMobileMenu}
+            >
+              👤 My Profile
+            </Link>
+
+            <Link
+              to="/my-orders"
+              onClick={closeMobileMenu}
+            >
+              📦 My Orders
+            </Link>
+
+            {user.role === "admin" && (
+              <Link
+                to="/admin"
+                onClick={closeMobileMenu}
+              >
+                Admin Dashboard
+              </Link>
+            )}
+
+            <button
+              className="mobile-logout"
+              onClick={handleLogout}
+            >
+              Logout
+            </button>
+
+          </>
+        )}
 
       </div>
 

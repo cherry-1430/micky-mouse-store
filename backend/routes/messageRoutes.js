@@ -8,6 +8,7 @@ const {
   getMessages,
   sendMessage,
   markConversationRead,
+  updateConversationStatus,
 } = require("../controllers/messageController");
 
 // Customer creates conversation
@@ -38,6 +39,11 @@ router.post(
 router.patch(
   "/conversations/:conversationId/read",
   markConversationRead
+);
+
+router.patch(
+  "/conversations/:conversationId/status",
+  updateConversationStatus
 );
 
 module.exports = router;

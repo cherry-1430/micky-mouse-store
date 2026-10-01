@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import { WishlistProvider } from "./context/WishlistContext";
@@ -25,6 +26,89 @@ import AdminDashboard from "./pages/AdminDashboard";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import CustomerSupport from "./components/CustomerSupport";
+import ScrollToTop from "./components/ScrollToTop";
+
+function InstallPWA() {
+  const [installPrompt, setInstallPrompt] = useState(null);
+  const [installed, setInstalled] = useState(false);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (event) => {
+      event.preventDefault();
+
+      console.log("PWA install prompt available");
+
+      setInstallPrompt(event);
+    };
+
+    const handleAppInstalled = () => {
+      console.log("SPACE WEAR installed");
+
+      setInstalled(true);
+      setInstallPrompt(null);
+    };
+
+    window.addEventListener(
+      "beforeinstallprompt",
+      handleBeforeInstallPrompt
+    );
+
+    window.addEventListener(
+      "appinstalled",
+      handleAppInstalled
+    );
+
+    return () => {
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstallPrompt
+      );
+
+      window.removeEventListener(
+        "appinstalled",
+        handleAppInstalled
+      );
+    };
+  }, []);
+
+  if (installed) {
+    return null;
+  }
+
+  if (!installPrompt) {
+    return null;
+  }
+
+  const installApp = async () => {
+    try {
+      await installPrompt.prompt();
+
+      const result =
+        await installPrompt.userChoice;
+
+      console.log(
+        "Install result:",
+        result.outcome
+      );
+
+      setInstallPrompt(null);
+    } catch (error) {
+      console.error(
+        "PWA installation error:",
+        error
+      );
+    }
+  };
+
+  return (
+    <button
+      onClick={installApp}
+      className="space-wear-install-button"
+    >
+      📱 INSTALL SPACE WEAR
+    </button>
+  );
+}
 
 
 function App() {
@@ -34,8 +118,10 @@ function App() {
         <WishlistProvider>
 
           <BrowserRouter>
+          <ScrollToTop />
 
             <Navbar />
+            <InstallPWA />
 
             <Routes>
 

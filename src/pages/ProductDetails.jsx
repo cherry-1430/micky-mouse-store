@@ -5,6 +5,7 @@ import { useCart } from "../context/useCart";
 import { getProduct } from "../api/productApi";
 import ProductReviews from "../components/ProductReviews";
 import RecommendedProducts from "../components/RecommendedProducts";
+import "./ProductDetails.css";
 
 function ProductDetails() {
   const { toggleWishlist, isInWishlist } = useWishlist();
