@@ -2,8 +2,11 @@ import { useState } from "react";
 import {
   useLocation,
   useNavigate,
+  Link,
 } from "react-router-dom";
+
 import API_URL from "../api/apiConfig";
+import "./Auth.css";
 
 function Register() {
   const navigate = useNavigate();
@@ -17,8 +20,8 @@ function Register() {
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-  // Remember where the customer originally wanted to go
   const redirectPath =
     location.state?.from || "/";
 
@@ -59,12 +62,6 @@ function Register() {
 
       alert("Account created successfully!");
 
-      /*
-       * After registration, go to Login.
-       * Pass the original destination so that
-       * Login can send the customer there
-       * after successful login.
-       */
       navigate("/login", {
         state: {
           from: redirectPath,
@@ -83,69 +80,218 @@ function Register() {
   };
 
   return (
-    <div className="page-container">
-      <h1>Create Account</h1>
+    <main className="auth-page">
 
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          name="name"
-          placeholder="Full Name"
-          value={formData.name}
-          onChange={handleChange}
-          required
-        />
+      <div className="auth-container">
 
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={formData.email}
-          onChange={handleChange}
-          required
-        />
+        {/* LEFT SIDE */}
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={formData.password}
-          onChange={handleChange}
-          required
-        />
+        <section className="auth-brand-panel register-brand">
 
-        {error && (
-          <p className="form-error">
-            {error}
-          </p>
-        )}
+          <Link to="/" className="auth-logo">
+            SPACE<span>WEAR</span>
+          </Link>
 
-        <button
-          type="submit"
-          disabled={loading}
-        >
-          {loading
-            ? "CREATING ACCOUNT..."
-            : "CREATE ACCOUNT"}
-        </button>
-      </form>
+          <div className="auth-brand-content">
 
-      <p>
-        Already have an account?{" "}
-        <button
-          type="button"
-          onClick={() =>
-            navigate("/login", {
-              state: {
-                from: redirectPath,
-              },
-            })
-          }
-        >
-          LOGIN
-        </button>
-      </p>
-    </div>
+            <span>SPACE WEAR • NEW MEMBERS</span>
+
+            <h1>
+              JOIN THE
+              <br />
+              <strong>COLLECTION.</strong>
+            </h1>
+
+            <p>
+              Create your Space Wear account and
+              discover premium clothing designed
+              for comfort and confidence.
+            </p>
+
+          </div>
+
+          <div className="auth-brand-footer">
+            <span>PREMIUM</span>
+            <span>ORIGINAL</span>
+            <span>COMFORT</span>
+          </div>
+
+        </section>
+
+
+        {/* RIGHT SIDE */}
+
+        <section className="auth-form-panel">
+
+          <div className="auth-form-wrapper">
+
+            <div className="auth-heading">
+
+              <span>CREATE YOUR ACCOUNT</span>
+
+              <h2>REGISTER</h2>
+
+              <p>
+                Join Space Wear and start your journey.
+              </p>
+
+            </div>
+
+
+            {error && (
+              <div className="auth-error">
+                <span>!</span>
+                <p>{error}</p>
+              </div>
+            )}
+
+
+            <form
+              className="auth-form"
+              onSubmit={handleSubmit}
+            >
+
+              <div className="auth-field">
+
+                <label htmlFor="register-name">
+                  FULL NAME
+                </label>
+
+                <input
+                  id="register-name"
+                  type="text"
+                  name="name"
+                  placeholder="Enter your full name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  autoComplete="name"
+                  required
+                />
+
+              </div>
+
+
+              <div className="auth-field">
+
+                <label htmlFor="register-email">
+                  EMAIL ADDRESS
+                </label>
+
+                <input
+                  id="register-email"
+                  type="email"
+                  name="email"
+                  placeholder="you@example.com"
+                  value={formData.email}
+                  onChange={handleChange}
+                  autoComplete="email"
+                  required
+                />
+
+              </div>
+
+
+              <div className="auth-field">
+
+                <label htmlFor="register-password">
+                  PASSWORD
+                </label>
+
+                <div className="password-wrapper">
+
+                  <input
+                    id="register-password"
+                    type={
+                      showPassword
+                        ? "text"
+                        : "password"
+                    }
+                    name="password"
+                    placeholder="Create a password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    autoComplete="new-password"
+                    required
+                  />
+
+                  <button
+                    type="button"
+                    className="password-toggle"
+                    onClick={() =>
+                      setShowPassword(
+                        (previous) => !previous
+                      )
+                    }
+                  >
+                    {showPassword
+                      ? "HIDE"
+                      : "SHOW"}
+                  </button>
+
+                </div>
+
+              </div>
+
+
+              <button
+                type="submit"
+                className="auth-submit-button"
+                disabled={loading}
+              >
+
+                {loading ? (
+                  <>
+                    <span className="auth-spinner"></span>
+                    CREATING ACCOUNT...
+                  </>
+                ) : (
+                  <>
+                    CREATE ACCOUNT
+                    <span>→</span>
+                  </>
+                )}
+
+              </button>
+
+            </form>
+
+
+            <div className="auth-switch">
+
+              <span>
+                ALREADY HAVE AN ACCOUNT?
+              </span>
+
+              <button
+                type="button"
+                onClick={() =>
+                  navigate("/login", {
+                    state: {
+                      from: redirectPath,
+                    },
+                  })
+                }
+              >
+                LOGIN →
+              </button>
+
+            </div>
+
+
+            <Link
+              to="/"
+              className="auth-back-home"
+            >
+              ← BACK TO SPACE WEAR
+            </Link>
+
+          </div>
+
+        </section>
+
+      </div>
+
+    </main>
   );
 }
 

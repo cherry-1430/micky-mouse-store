@@ -694,3 +694,99 @@
   outline: 3px solid rgba(99, 102, 241, 0.25);
   outline-offset: 2px;
 }
+
+/* =========================================================
+   SPACE WEAR — FIXED / STICKY NAVBAR ON ALL DEVICES
+   Add this at the VERY END of app.css
+   ========================================================= */
+
+/* Main navbar */
+.navbar {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  right: 0;
+
+  width: 100%;
+  z-index: 99999;
+
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+
+  isolation: isolate;
+}
+
+/* Prevent page content from going underneath navbar */
+body {
+  padding-top: 76px;
+}
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 1150px) {
+
+  .navbar {
+    min-height: 76px;
+  }
+
+  body {
+    padding-top: 76px;
+  }
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 800px) {
+
+  .navbar {
+    min-height: 68px;
+
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    right: 0;
+
+    width: 100%;
+  }
+
+  body {
+    padding-top: 68px;
+  }
+
+  /*
+    Mobile dropdown should appear
+    directly below fixed navbar
+  */
+
+  .mobile-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+
+    z-index: 99998;
+  }
+}
+
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 480px) {
+
+  .navbar {
+    min-height: 62px;
+  }
+
+  body {
+    padding-top: 62px;
+  }
+
+  .mobile-menu {
+    top: 100%;
+  }
+}

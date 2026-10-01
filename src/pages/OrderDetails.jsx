@@ -242,7 +242,7 @@ function OrderDetails() {
       <main className="order-details-page">
         <div className="order-details-loading">
           <span>
-            MICKEY MOUSE • ORDER
+            SPACE WEAR • ORDER
           </span>
 
           <h1>
@@ -331,7 +331,7 @@ function OrderDetails() {
           </Link>
 
           <p>
-            MICKEY MOUSE • ORDER CONFIRMATION
+            SPACE WEAR • ORDER CONFIRMATION
           </p>
 
           <h1>
@@ -349,7 +349,7 @@ function OrderDetails() {
         </div>
 
         <div className="order-details-header-mark">
-          <span>MM</span>
+          <span>SW</span>
         </div>
 
       </section>

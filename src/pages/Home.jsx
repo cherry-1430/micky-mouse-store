@@ -12,6 +12,7 @@ import RecentlyViewed from "../components/RecentlyViewed";
 import "./Home.css"
 
 function Home() {
+  
   useEffect(() => {
     const sections = document.querySelectorAll(".sw-reveal");
 

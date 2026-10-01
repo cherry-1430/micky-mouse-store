@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import API_URL from "../api/apiConfig";
+import "./MyOrders.css";
 
 function MyOrders() {
   const [orders, setOrders] = useState([]);
@@ -41,46 +42,52 @@ function MyOrders() {
     fetchMyOrders();
   }, []);
 
-  /* ================================
+  /* =========================
      LOADING
-  ================================= */
+  ========================= */
 
   if (loading) {
     return (
       <main className="my-orders-page">
-        <div className="orders-loading">
-          <span>MICKEY MOUSE • ORDERS</span>
+        <section className="orders-loading">
+          <div className="orders-loading-mark">SW</div>
+
+          <span>SPACE WEAR • ORDER HISTORY</span>
+
           <h1>Loading Orders...</h1>
-        </div>
+
+          <div className="orders-loader" />
+        </section>
       </main>
     );
   }
 
-  /* ================================
+  /* =========================
      ERROR
-  ================================= */
+  ========================= */
 
   if (error) {
     return (
       <main className="my-orders-page">
-        <div className="orders-error">
-          <span>ORDER HISTORY • ERROR</span>
+        <section className="orders-error">
+          <div className="orders-error-icon">!</div>
+
+          <span>SPACE WEAR • ORDER HISTORY</span>
 
           <h1>Unable to Load Orders</h1>
 
           <p>{error}</p>
 
-          <Link
-            to="/"
-            className="orders-back-button"
-          >
-            ← BACK TO HOME
-          </Link>
+          <div className="orders-error-actions">
+            <Link to="/" className="orders-primary-button">
+              ← BACK TO HOME
+            </Link>
 
-          <Link to="/login">
-            Return to login
-          </Link>
-        </div>
+            <Link to="/login" className="orders-secondary-button">
+              LOGIN AGAIN
+            </Link>
+          </div>
+        </section>
       </main>
     );
   }
@@ -88,42 +95,56 @@ function MyOrders() {
   return (
     <main className="my-orders-page">
 
-      {/* PAGE HEADER */}
+      {/* =========================
+          HERO HEADER
+      ========================= */}
 
-      <section className="orders-header">
+      <section className="orders-hero">
 
-        <div className="orders-header-content">
+        <div className="orders-hero-content">
 
-          <p>MICKEY MOUSE • ORDER HISTORY</p>
+          <Link
+            to="/"
+            className="orders-home-link"
+          >
+            ← BACK TO HOME
+          </Link>
+
+          <p className="orders-eyebrow">
+            SPACE WEAR • ORDER HISTORY
+          </p>
 
           <h1>
             MY
             <br />
-            ORDERS.
+            <span>ORDERS.</span>
           </h1>
 
-          <span>
-            Track your purchases and view the details of
-            everything you've ordered.
-          </span>
+          <p className="orders-hero-description">
+            Track your purchases, check delivery
+            status and view your complete order history.
+          </p>
 
         </div>
 
-        <div className="orders-header-mark">
-          <span>MM</span>
+        <div className="orders-hero-mark">
+          <span>SW</span>
+          <small>SPACE<br />WEAR</small>
         </div>
 
       </section>
 
 
-      {/* EMPTY STATE */}
+      {/* =========================
+          EMPTY STATE
+      ========================= */}
 
       {orders.length === 0 ? (
 
         <section className="orders-empty">
 
           <div className="orders-empty-icon">
-            📦
+            <span>🛍️</span>
           </div>
 
           <p>YOUR ORDER HISTORY</p>
@@ -132,28 +153,31 @@ function MyOrders() {
 
           <span>
             You haven't placed any orders yet.
-            Start exploring our collection and find
-            something you love.
+            Explore our latest collection and
+            find something made for you.
           </span>
 
           <Link
             to="/shop"
             className="orders-shop-button"
           >
-            START SHOPPING →
+            START SHOPPING
+            <span>→</span>
           </Link>
 
         </section>
 
       ) : (
 
-        /* ORDERS */
-
         <section className="orders-content">
+
+          {/* =========================
+              TOP BAR
+          ========================= */}
 
           <div className="orders-topbar">
 
-            <div>
+            <div className="orders-count">
 
               <span>YOUR PURCHASES</span>
 
@@ -168,13 +192,18 @@ function MyOrders() {
 
             <Link
               to="/shop"
-              className="orders-shop-link"
+              className="orders-continue"
             >
-              CONTINUE SHOPPING →
+              CONTINUE SHOPPING
+              <span>→</span>
             </Link>
 
           </div>
 
+
+          {/* =========================
+              ORDERS LIST
+          ========================= */}
 
           <div className="orders-list">
 
@@ -188,90 +217,114 @@ function MyOrders() {
                 year: "numeric",
               });
 
-              return (
+              const orderNumber =
+                order._id
+                  ?.slice(-8)
+                  .toUpperCase();
 
+              const totalAmount =
+                Number(order.totalAmount || 0);
+
+              return (
                 <article
                   className="my-order-card"
                   key={order._id}
                 >
 
-                  {/* ORDER HEADER */}
+                  {/* =========================
+                      ORDER TOP
+                  ========================= */}
 
-                  <div className="my-order-header">
+                  <div className="my-order-top">
 
-                    <div className="my-order-number">
-
+                    <div className="my-order-index">
                       <span>
-                        ORDER{" "}
-                        {String(index + 1).padStart(2, "0")}
+                        ORDER
                       </span>
 
-                      <h3>
-                        #
-                        {order._id
-                          .slice(-8)
-                          .toUpperCase()}
-                      </h3>
-
+                      <strong>
+                        {String(index + 1).padStart(
+                          2,
+                          "0"
+                        )}
+                      </strong>
                     </div>
 
+                    <div className="my-order-id">
+                      <span>ORDER ID</span>
+
+                      <strong>
+                        #{orderNumber}
+                      </strong>
+                    </div>
 
                     <div className="my-order-date">
-
                       <span>ORDER DATE</span>
 
                       <strong>
                         {orderDate}
                       </strong>
-
                     </div>
 
-
                     <div className="my-order-total">
-
                       <span>TOTAL</span>
 
                       <strong>
                         ₹
-                        {Number(
-                          order.totalAmount || 0
-                        ).toLocaleString("en-IN")}
+                        {totalAmount.toLocaleString(
+                          "en-IN"
+                        )}
                       </strong>
-
                     </div>
 
                   </div>
 
 
-                  {/* STATUS */}
+                  {/* =========================
+                      STATUS ROW
+                  ========================= */}
 
-                  <div className="my-order-status">
+                  <div className="my-order-status-row">
 
-                    <div className="status-item">
+                    <div className="my-order-status-group">
 
-                      <span>PAYMENT</span>
+                      <span>
+                        PAYMENT
+                      </span>
 
                       <strong
-                        className={`status-badge ${
+                        className={`order-status-badge ${
                           order.paymentStatus === "paid"
-                            ? "status-paid"
-                            : "status-pending"
+                            ? "status-success"
+                            : "status-warning"
                         }`}
                       >
-                        {order.paymentStatus}
+                        {order.paymentStatus === "paid"
+                          ? "✓ PAID"
+                          : (
+                              order.paymentStatus ||
+                              "PENDING"
+                            ).toUpperCase()}
                       </strong>
 
                     </div>
 
 
-                    <div className="status-item">
+                    <div className="my-order-status-group">
 
-                      <span>ORDER STATUS</span>
+                      <span>
+                        ORDER STATUS
+                      </span>
 
                       <strong
-                        className={`status-badge status-${order.orderStatus}`}
+                        className={`order-status-badge status-${order.orderStatus}`}
                       >
-                        {order.orderStatus}
+                        {(
+                          order.orderStatus ||
+                          "pending"
+                        )
+                          .replaceAll("_", " ")
+                          .toUpperCase()}
                       </strong>
 
                     </div>
@@ -279,112 +332,165 @@ function MyOrders() {
                   </div>
 
 
-                  {/* PRODUCTS */}
+                  {/* =========================
+                      PRODUCTS
+                  ========================= */}
 
-                  <div className="my-order-products">
+                  <div className="my-order-items">
 
-                    <div className="my-order-products-heading">
+                    <div className="my-order-items-header">
+                      <span>
+                        PRODUCTS
+                      </span>
 
-                      <span>PRODUCT</span>
-                      <span>QTY</span>
-                      <span>PRICE</span>
-
+                      <span>
+                        {order.items.length}{" "}
+                        {order.items.length === 1
+                          ? "ITEM"
+                          : "ITEMS"}
+                      </span>
                     </div>
 
 
-                    {order.items.map((item) => (
+                    <div className="my-order-products">
 
-                      <div
-                        className="my-order-product"
-                        key={item._id}
-                      >
+                      {order.items.map((item) => (
 
-                        {/* PRODUCT */}
+                        <div
+                          className="my-order-product"
+                          key={item._id}
+                        >
 
-                        <div className="my-order-product-name">
+                          {/* IMAGE */}
 
-                          {item.image && (
-                            <img
-                              src={item.image}
-                              alt={item.name || "Product"}
-                            />
-                          )}
+                          <div className="my-order-product-image">
 
-                          <div>
+                            {item.image ? (
+                              <img
+                                src={item.image}
+                                alt={
+                                  item.name ||
+                                  "Product"
+                                }
+                                loading="lazy"
+                              />
+                            ) : (
+                              <span>SW</span>
+                            )}
+
+                          </div>
+
+
+                          {/* INFO */}
+
+                          <div className="my-order-product-info">
+
+                            <span>
+                              {item.category ||
+                                "SPACE WEAR"}
+                            </span>
 
                             <strong>
-                              {item.name || "Product"}
+                              {item.name ||
+                                "Product"}
                             </strong>
 
                             {item.size && (
-                              <span>
-                                Size: {item.size}
-                              </span>
+                              <small>
+                                SIZE: {item.size}
+                              </small>
                             )}
+
+                          </div>
+
+
+                          {/* QUANTITY */}
+
+                          <div className="my-order-product-quantity">
+
+                            <span>
+                              QTY
+                            </span>
+
+                            <strong>
+                              ×{item.quantity}
+                            </strong>
+
+                          </div>
+
+
+                          {/* PRICE */}
+
+                          <div className="my-order-product-price">
+
+                            <span>
+                              PRICE
+                            </span>
+
+                            <strong>
+                              ₹
+                              {(
+                                Number(
+                                  item.price || 0
+                                ) *
+                                Number(
+                                  item.quantity || 0
+                                )
+                              ).toLocaleString(
+                                "en-IN"
+                              )}
+                            </strong>
 
                           </div>
 
                         </div>
 
-
-                        {/* QUANTITY */}
-
-                        <span>
-                          ×{item.quantity}
-                        </span>
-
-
-                        {/* PRICE */}
-
-                        <strong>
-                          ₹
-                          {(
-                            Number(item.price || 0) *
-                            Number(item.quantity || 0)
-                          ).toLocaleString("en-IN")}
-                        </strong>
-
-                      </div>
-
-                    ))}
-
-                  </div>
-
-
-                  {/* FOOTER */}
-
-                  <div className="my-order-footer">
-
-                    <span>
-                      {order.items.length}{" "}
-                      {order.items.length === 1
-                        ? "ITEM"
-                        : "ITEMS"}
-                    </span>
-
-
-                    <div className="my-order-actions">
-
-                      <Link
-                        to={`/orders/${order._id}`}
-                        className="view-order-button"
-                      >
-                        VIEW ORDER DETAILS →
-                      </Link>
+                      ))}
 
                     </div>
 
                   </div>
 
-                </article>
 
+                  {/* =========================
+                      FOOTER
+                  ========================= */}
+
+                  <div className="my-order-footer">
+
+                    <div className="my-order-footer-info">
+
+                      <span>
+                        {order.items.length}{" "}
+                        {order.items.length === 1
+                          ? "PRODUCT"
+                          : "PRODUCTS"}
+                      </span>
+
+                      <span>
+                        SPACE WEAR
+                      </span>
+
+                    </div>
+
+
+                    <Link
+                      to={`/orders/${order._id}`}
+                      className="view-order-button"
+                    >
+                      VIEW ORDER DETAILS
+                      <span>→</span>
+                    </Link>
+
+                  </div>
+
+                </article>
               );
             })}
 
           </div>
 
         </section>
-
       )}
 
     </main>

@@ -382,7 +382,7 @@ const handleAddToCart = () => {
 
             <p>
               Experience premium comfort and modern
-              style with this Micky Mouse collection
+              style with this Space Wear collection
               piece. Designed for everyday wear with
               quality materials and a comfortable fit.
             </p>
