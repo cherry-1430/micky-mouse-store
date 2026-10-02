@@ -228,7 +228,7 @@ useEffect(() => {
         </div>
 
         <div className="shop-header-mark">
-          <span>MM</span>
+          <span>SW</span>
         </div>
 
       </section>

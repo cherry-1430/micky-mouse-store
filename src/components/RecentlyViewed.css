@@ -1,115 +1,833 @@
 /* =========================================================
    SPACE WEAR — RECENTLY VIEWED
+   Clean Responsive Product Section
 ========================================================= */
 
 .recently-viewed-section {
-  width: min(1200px, calc(100% - 40px));
+  width: min(1400px, calc(100% - 48px));
   margin: 80px auto 100px;
+  box-sizing: border-box;
 }
 
-/* HEADER */
+/* =========================================================
+   HEADER
+========================================================= */
 
 .recently-viewed-heading {
+  width: 100%;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 20px;
-  padding-bottom: 24px;
+  gap: 24px;
+
+  padding: 0 0 22px;
+
   border-bottom: 1px solid #e2e8f0;
+  box-sizing: border-box;
+}
+
+.recently-viewed-heading > div {
+  min-width: 0;
 }
 
 .recently-viewed-heading span:first-child {
   display: block;
-  margin-bottom: 8px;
+
+  margin: 0 0 8px;
+
   color: #7c3aed;
+
   font-size: 10px;
   font-weight: 900;
+
   letter-spacing: 2px;
+  line-height: 1.2;
+
+  text-transform: uppercase;
 }
 
 .recently-viewed-heading h2 {
   margin: 0;
+
   color: #111827;
-  font-size: clamp(28px, 4vw, 44px);
+
+  font-size: clamp(30px, 4vw, 46px);
+  line-height: 1;
+
   font-weight: 900;
-  letter-spacing: -1.5px;
+  letter-spacing: -2px;
 }
 
 .recently-viewed-count {
-  padding: 9px 14px;
-  border-radius: 30px;
-  background: #f3e8ff;
+  flex-shrink: 0;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 10px 16px;
+
+  border-radius: 999px;
+
+  background: linear-gradient(
+    135deg,
+    #f3e8ff,
+    #ede9fe
+  );
+
   color: #7c3aed;
-  font-size: 10px;
+
+  font-size: 11px;
   font-weight: 900;
+
   letter-spacing: 1px;
+  white-space: nowrap;
+
+  box-sizing: border-box;
 }
 
-/* GRID */
+/* =========================================================
+   PRODUCT GRID — DESKTOP
+========================================================= */
 
 .recently-viewed-grid {
+  width: 100%;
+
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+
+  gap: 18px;
+
   margin-top: 30px;
+
+  box-sizing: border-box;
 }
 
-/* CARD */
+/* =========================================================
+   PRODUCT CARD
+========================================================= */
 
 .recently-viewed-card {
+  position: relative;
+
+  width: 100%;
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
   overflow: hidden;
+
   border: 1px solid #e2e8f0;
-  border-radius: 16px;
+  border-radius: 18px;
+
   background: #ffffff;
+
   color: inherit;
   text-decoration: none;
-  box-shadow: 0 8px 25px rgba(15, 23, 42, 0.05);
-  transition: transform 0.25s ease, box-shadow 0.25s ease,
+
+  box-sizing: border-box;
+
+  box-shadow:
+    0 8px 25px rgba(15, 23, 42, 0.05);
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
     border-color 0.25s ease;
 }
 
 .recently-viewed-card:hover {
   transform: translateY(-6px);
+
   border-color: #c4b5fd;
-  box-shadow: 0 18px 40px rgba(79, 70, 229, 0.12);
+
+  box-shadow:
+    0 18px 40px rgba(79, 70, 229, 0.14);
 }
 
-/* IMAGE */
+/* =========================================================
+   IMAGE
+========================================================= */
 
 .recently-viewed-image {
   position: relative;
+
+  width: 100%;
+
   aspect-ratio: 1 / 1.12;
+
   overflow: hidden;
-  background: #f8fafc;
+
+  background: #f1f5f9;
+
+  flex-shrink: 0;
 }
 
 .recently-viewed-image img {
   width: 100%;
   height: 100%;
+
   display: block;
+
   object-fit: cover;
+
   transition: transform 0.45s ease;
 }
 
 .recently-viewed-card:hover
-  .recently-viewed-image img {
+.recently-viewed-image img {
   transform: scale(1.05);
 }
 
-/* DISCOUNT */
+/* =========================================================
+   DISCOUNT
+========================================================= */
 
 .recently-viewed-discount {
   position: absolute;
+
   top: 12px;
   left: 12px;
-  z-index: 2;
-  padding: 7px 10px;
-  border-radius: 20px;
+
+  z-index: 5;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 32px;
+
+  padding: 6px 11px;
+
+  border-radius: 999px;
+
   background: #ef4444;
   color: #ffffff;
+
   font-size: 10px;
   font-weight: 900;
+
   letter-spacing: 0.5px;
+
+  box-shadow:
+    0 6px 15px rgba(239, 68, 68, 0.22);
+
+  box-sizing: border-box;
 }
 
-/* INFO */
+/* =========================================================
+   PRODUCT INFO
+   Works whether JSX contains .product-info or direct content
+========================================================= */
+
+.recently-viewed-card .product-info {
+  width: 100%;
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  padding: 16px;
+
+  box-sizing: border-box;
+
+  text-align: left;
+}
+
+/* =========================================================
+   CATEGORY
+========================================================= */
+
+.recently-viewed-card .product-category {
+  display: block;
+
+  width: 100%;
+
+  margin: 0 0 7px;
+  padding: 0;
+
+  color: #94a3b8;
+
+  font-size: 9px;
+  font-weight: 900;
+
+  line-height: 1.2;
+
+  letter-spacing: 1.5px;
+
+  text-transform: uppercase;
+
+  text-align: left;
+
+  box-sizing: border-box;
+}
+
+/* =========================================================
+   PRODUCT TITLE
+========================================================= */
+
+.recently-viewed-card h3 {
+  width: 100%;
+
+  margin: 0 0 10px;
+  padding: 0;
+
+  color: #172033;
+
+  font-size: 16px;
+  line-height: 1.2;
+
+  font-weight: 900;
+
+  text-align: left;
+
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+
+  overflow: hidden;
+
+  min-height: 38px;
+
+  box-sizing: border-box;
+}
+
+/* =========================================================
+   RATING
+========================================================= */
+
+.recently-viewed-card .product-rating {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+
+  gap: 5px;
+
+  margin: 0 0 9px;
+  padding: 0;
+
+  color: #475569;
+
+  font-size: 11px;
+  line-height: 1.2;
+
+  text-align: left;
+
+  box-sizing: border-box;
+}
+
+.recently-viewed-card .product-rating span {
+  color: #64748b;
+}
+
+/* =========================================================
+   PRICE
+========================================================= */
+
+.recently-viewed-card .product-price {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+
+  flex-wrap: wrap;
+
+  gap: 8px;
+
+  margin: 0;
+  padding: 0;
+
+  color: #111827;
+
+  font-size: 17px;
+  font-weight: 900;
+
+  line-height: 1.2;
+
+  text-align: left;
+
+  box-sizing: border-box;
+}
+
+.recently-viewed-card .product-price del {
+  color: #94a3b8;
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* =========================================================
+   SUPPORT DIRECT CONTENT
+   If .product-info is NOT present
+========================================================= */
+
+.recently-viewed-card
+> .product-category,
+.recently-viewed-card
+> h3,
+.recently-viewed-card
+> .product-rating,
+.recently-viewed-card
+> .product-price {
+  box-sizing: border-box;
+}
+
+.recently-viewed-card
+> .product-category {
+  margin: 16px 16px 7px;
+}
+
+.recently-viewed-card
+> h3 {
+  margin: 0 16px 10px;
+}
+
+.recently-viewed-card
+> .product-rating {
+  margin: 0 16px 9px;
+}
+
+.recently-viewed-card
+> .product-price {
+  margin: 0 16px 16px;
+}
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 1200px) {
+
+  .recently-viewed-section {
+    width: min(1100px, calc(100% - 40px));
+  }
+
+  .recently-viewed-grid {
+    grid-template-columns:
+      repeat(4, minmax(0, 1fr));
+
+    gap: 16px;
+  }
+
+  .recently-viewed-card .product-info {
+    padding: 15px;
+  }
+
+  .recently-viewed-card h3 {
+    font-size: 15px;
+  }
+
+  .recently-viewed-card .product-price {
+    font-size: 16px;
+  }
+}
+
+/* =========================================================
+   TABLET / SMALL LAPTOP
+========================================================= */
+
+@media (max-width: 900px) {
+
+  .recently-viewed-section {
+    width: calc(100% - 32px);
+
+    margin-top: 65px;
+    margin-bottom: 80px;
+  }
+
+  .recently-viewed-grid {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+
+    gap: 15px;
+  }
+
+  .recently-viewed-heading h2 {
+    font-size: 36px;
+  }
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 700px) {
+
+  .recently-viewed-section {
+    width: 100%;
+
+    margin: 55px 0 70px;
+
+    overflow: hidden;
+  }
+
+  /* -------------------------
+     HEADER
+  ------------------------- */
+
+  .recently-viewed-heading {
+    align-items: center;
+
+    gap: 12px;
+
+    padding:
+      0 16px 18px;
+  }
+
+  .recently-viewed-heading span:first-child {
+    margin-bottom: 6px;
+
+    font-size: 8px;
+
+    letter-spacing: 1.5px;
+  }
+
+  .recently-viewed-heading h2 {
+    font-size: 30px;
+
+    letter-spacing: -1.3px;
+  }
+
+  .recently-viewed-count {
+    padding: 8px 11px;
+
+    font-size: 8px;
+  }
+
+  /* -------------------------
+     HORIZONTAL SCROLL
+  ------------------------- */
+
+  .recently-viewed-grid {
+    width: 100%;
+
+    display: flex !important;
+
+    flex-direction: row;
+
+    flex-wrap: nowrap !important;
+
+    align-items: stretch;
+
+    gap: 14px;
+
+    margin-top: 20px;
+
+    padding:
+      8px 16px 20px;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    scroll-snap-type: x mandatory;
+
+    -webkit-overflow-scrolling: touch;
+
+    scrollbar-width: none;
+
+    box-sizing: border-box;
+  }
+
+  .recently-viewed-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* -------------------------
+     MOBILE CARD
+  ------------------------- */
+
+  .recently-viewed-card {
+    flex: 0 0 185px !important;
+
+    width: 185px !important;
+    min-width: 185px !important;
+    max-width: 185px !important;
+
+    border-radius: 17px;
+
+    scroll-snap-align: start;
+
+    transform: none;
+  }
+
+  .recently-viewed-card:hover {
+    transform: none;
+  }
+
+  /* -------------------------
+     IMAGE
+  ------------------------- */
+
+  .recently-viewed-image {
+    width: 100%;
+
+    height: 205px;
+
+    aspect-ratio: auto;
+  }
+
+  /* -------------------------
+     PRODUCT INFO
+  ------------------------- */
+
+  .recently-viewed-card .product-info {
+    width: 100%;
+
+    padding: 14px !important;
+  }
+
+  .recently-viewed-card .product-category {
+    margin: 0 0 7px !important;
+
+    font-size: 8px;
+  }
+
+  .recently-viewed-card h3 {
+    margin: 0 0 9px !important;
+
+    font-size: 14px;
+
+    line-height: 1.25;
+
+    min-height: 35px;
+  }
+
+  .recently-viewed-card .product-rating {
+    margin: 0 0 8px !important;
+
+    font-size: 10px;
+  }
+
+  .recently-viewed-card .product-price {
+    margin: 0 !important;
+
+    font-size: 15px;
+
+    gap: 6px;
+  }
+
+  .recently-viewed-card .product-price del {
+    font-size: 10px;
+  }
+
+  /* -------------------------
+     DIRECT CONTENT FALLBACK
+  ------------------------- */
+
+  .recently-viewed-card
+  > .product-category {
+    margin: 14px 14px 7px !important;
+  }
+
+  .recently-viewed-card
+  > h3 {
+    margin: 0 14px 9px !important;
+  }
+
+  .recently-viewed-card
+  > .product-rating {
+    margin: 0 14px 8px !important;
+  }
+
+  .recently-viewed-card
+  > .product-price {
+    margin: 0 14px 14px !important;
+  }
+
+  /* -------------------------
+     DISCOUNT
+  ------------------------- */
+
+  .recently-viewed-discount {
+    top: 10px;
+    left: 10px;
+
+    min-height: 29px;
+
+    padding: 5px 9px;
+
+    font-size: 8px;
+  }
+}
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (max-width: 480px) {
+
+  .recently-viewed-section {
+    margin-top: 45px;
+    margin-bottom: 60px;
+  }
+
+  /* Header */
+
+  .recently-viewed-heading {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .recently-viewed-heading h2 {
+    font-size: 27px;
+
+    letter-spacing: -1.1px;
+  }
+
+  .recently-viewed-heading span:first-child {
+    font-size: 7px;
+
+    letter-spacing: 1.3px;
+  }
+
+  .recently-viewed-count {
+    padding: 7px 9px;
+
+    font-size: 7px;
+  }
+
+  /* Products */
+
+  .recently-viewed-grid {
+    gap: 11px;
+
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .recently-viewed-card {
+    flex: 0 0 165px !important;
+
+    width: 165px !important;
+    min-width: 165px !important;
+    max-width: 165px !important;
+
+    border-radius: 15px;
+  }
+
+  .recently-viewed-image {
+    height: 180px;
+  }
+
+  .recently-viewed-card .product-info {
+    padding: 12px !important;
+  }
+
+  .recently-viewed-card .product-category {
+    font-size: 7px;
+    margin-bottom: 6px !important;
+  }
+
+  .recently-viewed-card h3 {
+    font-size: 13px;
+
+    line-height: 1.25;
+
+    min-height: 33px;
+  }
+
+  .recently-viewed-card .product-rating {
+    font-size: 9px;
+
+    margin-bottom: 7px !important;
+  }
+
+  .recently-viewed-card .product-price {
+    font-size: 14px;
+  }
+
+  .recently-viewed-card .product-price del {
+    font-size: 9px;
+  }
+
+  .recently-viewed-discount {
+    top: 8px;
+    left: 8px;
+
+    min-height: 27px;
+
+    padding: 5px 8px;
+
+    font-size: 7px;
+  }
+
+  /* Direct-content fallback */
+
+  .recently-viewed-card
+  > .product-category {
+    margin: 12px 12px 6px !important;
+  }
+
+  .recently-viewed-card
+  > h3 {
+    margin: 0 12px 8px !important;
+
+    font-size: 13px;
+  }
+
+  .recently-viewed-card
+  > .product-rating {
+    margin: 0 12px 7px !important;
+  }
+
+  .recently-viewed-card
+  > .product-price {
+    margin: 0 12px 12px !important;
+  }
+}
+
+/* =========================================================
+   VERY SMALL DEVICES
+========================================================= */
+
+@media (max-width: 360px) {
+
+  .recently-viewed-heading {
+    padding-left: 12px;
+    padding-right: 12px;
+
+    gap: 8px;
+  }
+
+  .recently-viewed-heading h2 {
+    font-size: 24px;
+  }
+
+  .recently-viewed-count {
+    padding: 6px 8px;
+
+    font-size: 6.5px;
+  }
+
+  .recently-viewed-grid {
+    padding-left: 12px;
+    padding-right: 12px;
+
+    gap: 9px;
+  }
+
+  .recently-viewed-card {
+    flex-basis: 155px !important;
+
+    width: 155px !important;
+    min-width: 155px !important;
+    max-width: 155px !important;
+  }
+
+  .recently-viewed-image {
+    height: 170px;
+  }
+}
+
+/* =========================================================
+   ACCESSIBILITY
+========================================================= */
+
+.recently-viewed-card:focus-visible {
+  outline: 3px solid rgba(124, 58, 237, 0.35);
+  outline-offset: 3px;
+}

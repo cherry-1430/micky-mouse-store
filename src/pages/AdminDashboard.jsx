@@ -18,6 +18,51 @@ function AdminDashboard() {
   const orderSnapshotRef = useRef(null);
 
   const [products, setProducts] = useState([]);
+
+  const [productSearch, setProductSearch] = useState("");
+  const [productCategoryFilter, setProductCategoryFilter] = useState("all");
+  const [productStockFilter, setProductStockFilter] = useState("all");
+
+
+
+const filteredProducts = products.filter((product) => {
+  const searchText = productSearch.trim().toLowerCase();
+
+  // Search by product name or category
+  const matchesSearch =
+    searchText === "" ||
+    product.name?.toLowerCase().includes(searchText) ||
+    product.category?.toLowerCase().includes(searchText);
+
+  // Category filter
+  const matchesCategory =
+    productCategoryFilter === "all" ||
+    product.category?.toLowerCase() ===
+      productCategoryFilter.toLowerCase();
+
+  // Stock filter
+  const stock = Number(product.stock || 0);
+
+  let matchesStock = true;
+
+  if (productStockFilter === "available") {
+    matchesStock = stock > 5;
+  }
+
+  if (productStockFilter === "low") {
+    matchesStock = stock > 0 && stock <= 5;
+  }
+
+  if (productStockFilter === "out") {
+    matchesStock = stock === 0;
+  }
+
+  return (
+    matchesSearch &&
+    matchesCategory &&
+    matchesStock
+  );
+});
   const [inventorySearch, setInventorySearch] = useState("");
 const [stockUpdating, setStockUpdating] = useState(null);
   const [returnRequests, setReturnRequests] = useState([]);
@@ -70,6 +115,8 @@ const [supportLoading, setSupportLoading] = useState(false);
     expiryDate: "",
     isActive: true,
   });
+
+  const [analyticsDays, setAnalyticsDays] = useState(30);
 
   const handleCouponChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -963,6 +1010,40 @@ const [supportLoading, setSupportLoading] = useState(false);
     };
   }, []);
 
+  const fetchAdminProducts = async () => {
+  try {
+    const token = localStorage.getItem("token");
+
+    const response = await fetch(
+      "http://localhost:5000/api/products",
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && {
+            Authorization: `Bearer ${token}`,
+          }),
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch products");
+    }
+
+    const data = await response.json();
+
+    setProducts(
+      Array.isArray(data)
+        ? data
+        : data.products || []
+    );
+
+  } catch (error) {
+    console.error("Error fetching products:", error);
+  }
+};
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -1135,6 +1216,153 @@ const updateReturnStatus = async (
   const outOfStockProducts = products.filter(
     (product) => Number(product.stock || 0) === 0
   );
+
+  /* =========================================================
+   CUSTOMER MANAGEMENT
+========================================================= */
+
+const customerMap = {};
+
+orders.forEach((order) => {
+  const customerId =
+    order.userId?._id ||
+    order.userId ||
+    order.customer?._id ||
+    order.customer?.email;
+
+  if (!customerId) return;
+
+  const customerName =
+    order.userId?.name ||
+    `${order.customer?.firstName || ""} ${
+      order.customer?.lastName || ""
+    }`.trim() ||
+    "Customer";
+
+  const customerEmail =
+    order.userId?.email ||
+    order.customer?.email ||
+    "No email";
+
+  if (!customerMap[customerId]) {
+    customerMap[customerId] = {
+      id: customerId,
+      name: customerName,
+      email: customerEmail,
+      orders: 0,
+      totalSpent: 0,
+      lastOrder: order.createdAt,
+    };
+  }
+
+  customerMap[customerId].orders += 1;
+
+  customerMap[customerId].totalSpent += Number(
+    order.totalAmount || 0
+  );
+
+  if (
+    new Date(order.createdAt) >
+    new Date(customerMap[customerId].lastOrder)
+  ) {
+    customerMap[customerId].lastOrder = order.createdAt;
+  }
+});
+
+const customers = Object.values(customerMap);
+
+const totalCustomers = customers.length;
+
+  /* =========================================================
+   SPACE WEAR ANALYTICS DATA
+   Uses existing database orders data
+========================================================= */
+
+
+
+const analyticsOrders = orders.filter((order) => {
+  if (!order.createdAt) return false;
+
+  const orderDate = new Date(order.createdAt);
+  const today = new Date();
+
+  const startDate = new Date();
+  startDate.setDate(today.getDate() - Number(analyticsDays));
+
+  return orderDate >= startDate && orderDate <= today;
+});
+
+const analyticsSales = analyticsOrders.reduce(
+  (total, order) => total + Number(order.totalAmount || 0),
+  0
+);
+
+const analyticsOrderCount = analyticsOrders.length;
+
+/* Unique customers from orders */
+const analyticsCustomers = new Set(
+  analyticsOrders
+    .map((order) => {
+      if (order.userId?._id) return order.userId._id;
+      if (order.userId) return order.userId;
+      if (order.user?.id) return order.user.id;
+      if (order.user?.email) return order.user.email;
+      if (order.email) return order.email;
+      return null;
+    })
+    .filter(Boolean)
+).size;
+
+const analyticsAverageOrder =
+  analyticsOrderCount > 0
+    ? analyticsSales / analyticsOrderCount
+    : 0;
+
+/* Order status summary */
+const analyticsPending = analyticsOrders.filter(
+  (order) => order.orderStatus === "pending"
+).length;
+
+const analyticsProcessing = analyticsOrders.filter(
+  (order) => order.orderStatus === "processing"
+).length;
+
+const analyticsDelivered = analyticsOrders.filter(
+  (order) => order.orderStatus === "delivered"
+).length;
+
+const analyticsCancelled = analyticsOrders.filter(
+  (order) => order.orderStatus === "cancelled"
+).length;
+
+/* Sales by day */
+const salesByDay = {};
+
+analyticsOrders.forEach((order) => {
+  if (!order.createdAt) return;
+
+  const date = new Date(order.createdAt);
+
+  const key = date.toISOString().split("T")[0];
+
+  if (!salesByDay[key]) {
+    salesByDay[key] = 0;
+  }
+
+  salesByDay[key] += Number(order.totalAmount || 0);
+});
+
+const salesChartData = Object.entries(salesByDay)
+  .sort(([dateA], [dateB]) =>
+    dateA.localeCompare(dateB)
+  )
+  .slice(-14);
+
+/* Maximum value for chart */
+const maxSalesValue = Math.max(
+  ...salesChartData.map(([, value]) => value),
+  1
+);
 
   const filteredInventoryProducts = products.filter((product) =>
   `${product.name} ${product.category}`
@@ -1371,6 +1599,80 @@ const sendSupportMessage = async () => {
   }
 };
 
+/* =========================================================
+   SPACE WEAR — TOP SELLING PRODUCTS
+========================================================= */
+
+const topProductsMap = {};
+
+analyticsOrders.forEach((order) => {
+  const items =
+    order.items ||
+    order.products ||
+    order.orderItems ||
+    [];
+
+  items.forEach((item) => {
+    const product =
+      item.product ||
+      item.productId ||
+      {};
+
+    const productId =
+      product._id ||
+      item.productId ||
+      item._id;
+
+    const productName =
+      product.name ||
+      item.name ||
+      item.productName ||
+      "Unknown Product";
+
+    const quantity =
+      Number(
+        item.quantity ||
+        item.qty ||
+        1
+      );
+
+    const price =
+      Number(
+        item.price ||
+        item.productPrice ||
+        product.price ||
+        0
+      );
+
+    if (!productId) return;
+
+    if (!topProductsMap[productId]) {
+      topProductsMap[productId] = {
+        id: productId,
+        name: productName,
+        quantity: 0,
+        revenue: 0,
+      };
+    }
+
+    topProductsMap[productId].quantity += quantity;
+
+    topProductsMap[productId].revenue +=
+      quantity * price;
+  });
+});
+
+const topProducts = Object.values(
+  topProductsMap
+)
+  .sort(
+    (a, b) =>
+      b.quantity - a.quantity
+  )
+  .slice(0, 5);
+
+
+
   return (
     <main className="admin-page">
 
@@ -1418,8 +1720,425 @@ const sendSupportMessage = async () => {
         </div>
       </section>
 
+      {/* =========================================================
+    SPACE WEAR — ANALYTICS OVERVIEW
+========================================================= */}
+
+<section className="admin-analytics-section">
+
+  {/* =====================================================
+      ANALYTICS HEADER
+  ===================================================== */}
+
+  <div className="admin-analytics-header">
+
+    <div>
+      <span className="admin-section-label">
+        SPACE WEAR ANALYTICS
+      </span>
+
+      <h2>Business Overview</h2>
+
+      <p>
+        Monitor your store performance, sales and customer activity.
+      </p>
+    </div>
+
+    <select
+      className="admin-analytics-filter"
+      value={analyticsDays}
+      onChange={(e) =>
+        setAnalyticsDays(Number(e.target.value))
+      }
+    >
+      <option value="7">Last 7 Days</option>
+      <option value="30">Last 30 Days</option>
+      <option value="90">Last 90 Days</option>
+      <option value="365">This Year</option>
+    </select>
+
+  </div>
+
+
+  {/* =====================================================
+      ANALYTICS CARDS
+  ===================================================== */}
+
+  <div className="admin-analytics-cards">
+
+    <div className="admin-analytics-card">
+      <span>Total Sales</span>
+
+      <strong>
+        ₹{analyticsSales.toLocaleString("en-IN")}
+      </strong>
+
+      <small>
+        Sales revenue
+      </small>
+    </div>
+
+
+    <div className="admin-analytics-card">
+      <span>Total Orders</span>
+
+      <strong>
+        {analyticsOrderCount}
+      </strong>
+
+      <small>
+        Orders received
+      </small>
+    </div>
+
+
+    <div className="admin-analytics-card">
+      <span>Customers</span>
+
+      <strong>
+        {analyticsCustomers}
+      </strong>
+
+      <small>
+        Customers from orders
+      </small>
+    </div>
+
+
+    <div className="admin-analytics-card">
+      <span>Average Order</span>
+
+      <strong>
+        ₹{Math.round(analyticsAverageOrder).toLocaleString("en-IN")}
+      </strong>
+
+      <small>
+        Average order value
+      </small>
+    </div>
+
+  </div>
+
+
+  {/* =====================================================
+      MAIN ANALYTICS
+  ===================================================== */}
+
+  <div className="admin-analytics-main">
+
+
+    {/* =================================================
+        SALES PANEL
+    ================================================= */}
+
+    <div className="admin-sales-panel">
+
+      <div className="admin-panel-header">
+
+        <div>
+          <span>SALES PERFORMANCE</span>
+
+          <h3>
+            Sales Overview
+          </h3>
+        </div>
+
+        <span className="admin-panel-status">
+          LIVE
+        </span>
+
+      </div>
+
+
+      {/* SALES CHART */}
+
+      <div className="admin-chart-placeholder">
+
+        {salesChartData.length === 0 ? (
+
+          <div className="admin-chart-message">
+
+            <strong>
+              No Sales Data
+            </strong>
+
+            <span>
+              Sales data will appear here once orders are available.
+            </span>
+
+          </div>
+
+        ) : (
+
+          <div
+            className="admin-sales-chart"
+            style={{
+              display: "flex",
+              alignItems: "flex-end",
+              gap: "10px",
+              width: "100%",
+              height: "220px",
+              padding: "20px 10px 10px",
+            }}
+          >
+
+            {salesChartData.map(
+              ([date, value]) => {
+
+                const height =
+                  Math.max(
+                    (value / maxSalesValue) * 170,
+                    8
+                  );
+
+                return (
+
+                  <div
+                    key={date}
+                    style={{
+                      flex: 1,
+                      height: "100%",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "flex-end",
+                      alignItems: "center",
+                      gap: "7px",
+                    }}
+                  >
+
+                    <span
+                      style={{
+                        fontSize: "9px",
+                        fontWeight: 800,
+                        color: "#64748b",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      ₹
+                      {Number(value).toLocaleString(
+                        "en-IN"
+                      )}
+                    </span>
+
+                    <div
+                      title={`${date} : ₹${Number(value).toLocaleString("en-IN")}`}
+                      style={{
+                        width: "100%",
+                        maxWidth: "38px",
+                        height: `${height}px`,
+                        minHeight: "8px",
+                        borderRadius: "8px 8px 3px 3px",
+                        background:
+                          "linear-gradient(180deg, #8b5cf6, #6366f1)",
+                        transition:
+                          "height 0.3s ease",
+                      }}
+                    />
+
+                    <span
+                      style={{
+                        fontSize: "8px",
+                        color: "#94a3b8",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {new Date(date).toLocaleDateString(
+                        "en-IN",
+                        {
+                          day: "2-digit",
+                          month: "short",
+                        }
+                      )}
+                    </span>
+
+                  </div>
+
+                );
+              }
+            )}
+
+          </div>
+
+        )}
+
+      </div>
+
+    </div>
+
+
+    {/* =================================================
+        ORDER SUMMARY
+    ================================================= */}
+
+    <div className="admin-orders-panel">
+
+      <div className="admin-panel-header">
+
+        <div>
+          <span>ORDERS</span>
+
+          <h3>
+            Order Summary
+          </h3>
+        </div>
+
+      </div>
+
+
+      <div className="admin-order-stat">
+
+        <span>
+          Pending
+        </span>
+
+        <strong>
+          {analyticsPending}
+        </strong>
+
+      </div>
+
+
+      <div className="admin-order-stat">
+
+        <span>
+          Processing
+        </span>
+
+        <strong>
+          {analyticsProcessing}
+        </strong>
+
+      </div>
+
+
+      <div className="admin-order-stat">
+
+        <span>
+          Delivered
+        </span>
+
+        <strong>
+          {analyticsDelivered}
+        </strong>
+
+      </div>
+
+
+      <div className="admin-order-stat">
+
+        <span>
+          Cancelled
+        </span>
+
+        <strong>
+          {analyticsCancelled}
+        </strong>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+{/* =========================================================
+    TOP SELLING PRODUCTS
+========================================================= */}
+
+<section className="admin-top-products-section">
+
+  <div className="admin-top-products-header">
+
+    <div>
+      <span className="admin-section-label">
+        SPACE WEAR PRODUCTS
+      </span>
+
+      <h2>Top Selling Products</h2>
+
+      <p>
+        Your best performing products based on sales.
+      </p>
+    </div>
+
+    <span className="admin-panel-status">
+      LIVE
+    </span>
+
+  </div>
+
+
+  <div className="admin-top-products-list">
+
+    {topProducts.length === 0 ? (
+
+      <div className="admin-top-products-empty">
+        <strong>No product sales yet</strong>
+
+        <span>
+          Product performance will appear here
+          once orders are available.
+        </span>
+      </div>
+
+    ) : (
+
+      topProducts.map((product, index) => (
+
+        <div
+          className="admin-top-product-row"
+          key={product.id}
+        >
+
+          <div className="admin-top-product-rank">
+            #{index + 1}
+          </div>
+
+          <div className="admin-top-product-info">
+
+            <strong>
+              {product.name}
+            </strong>
+
+            <span>
+              {product.quantity}{" "}
+              {product.quantity === 1
+                ? "item"
+                : "items"} sold
+            </span>
+
+          </div>
+
+          <div className="admin-top-product-revenue">
+
+            <strong>
+              ₹
+              {product.revenue.toLocaleString(
+                "en-IN"
+              )}
+            </strong>
+
+            <span>
+              Revenue
+            </span>
+
+          </div>
+
+        </div>
+
+      ))
+
+    )}
+
+  </div>
+
+</section>
+
       <section className="admin-order-overview">
         <div className="admin-section-heading">
+
+
           <div>
             <span>ORDER ACTIVITY</span>
             <h2>ORDER OVERVIEW</h2>
@@ -2355,6 +3074,121 @@ const sendSupportMessage = async () => {
         )}
       </section>
 
+      {/* =========================================================
+    CUSTOMER MANAGEMENT
+========================================================= */}
+
+<section className="admin-customers-section">
+
+  <div className="admin-section-heading">
+
+    <div>
+      <p>CUSTOMER MANAGEMENT</p>
+
+      <h2>ALL CUSTOMERS</h2>
+    </div>
+
+    <span>
+      {totalCustomers}{" "}
+      {totalCustomers === 1 ? "CUSTOMER" : "CUSTOMERS"}
+    </span>
+
+  </div>
+
+  {customers.length === 0 ? (
+
+    <div className="admin-empty-state">
+
+      <span>NO CUSTOMERS</span>
+
+      <h2>No customers found</h2>
+
+      <p>
+        Customers with orders will appear here.
+      </p>
+
+    </div>
+
+  ) : (
+
+    <div className="admin-customers-grid">
+
+      {customers.map((customer) => (
+
+        <article
+          className="admin-customer-card"
+          key={customer.id}
+        >
+
+          <div className="admin-customer-avatar">
+            {customer.name
+              .charAt(0)
+              .toUpperCase()}
+          </div>
+
+          <div className="admin-customer-main">
+
+            <span className="admin-customer-label">
+              CUSTOMER
+            </span>
+
+            <h3>
+              {customer.name}
+            </h3>
+
+            <p>
+              {customer.email}
+            </p>
+
+          </div>
+
+          <div className="admin-customer-stats">
+
+            <div>
+              <span>ORDERS</span>
+
+              <strong>
+                {customer.orders}
+              </strong>
+            </div>
+
+            <div>
+              <span>TOTAL SPENT</span>
+
+              <strong>
+                ₹
+                {customer.totalSpent.toLocaleString(
+                  "en-IN"
+                )}
+              </strong>
+            </div>
+
+            <div>
+              <span>LAST ORDER</span>
+
+              <strong>
+                {new Date(
+                  customer.lastOrder
+                ).toLocaleDateString("en-IN", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                })}
+              </strong>
+            </div>
+
+          </div>
+
+        </article>
+
+      ))}
+
+    </div>
+
+  )}
+
+</section>
+
       {/* PRODUCTS */}
       <section className="admin-products-section">
         <div className="admin-section-heading">
@@ -2392,6 +3226,41 @@ const sendSupportMessage = async () => {
             </button>
           </div>
         </div>
+
+        <div className="admin-product-filters">
+
+  <input
+    type="text"
+    placeholder="Search products..."
+    value={productSearch}
+    onChange={(e) => setProductSearch(e.target.value)}
+  />
+
+  <select
+    value={productCategoryFilter}
+    onChange={(e) =>
+      setProductCategoryFilter(e.target.value)
+    }
+  >
+    <option value="all">All Categories</option>
+    <option value="hoodies">Hoodies</option>
+    <option value="shirts">Shirts</option>
+    <option value="pants">Pants</option>
+  </select>
+
+  <select
+    value={productStockFilter}
+    onChange={(e) =>
+      setProductStockFilter(e.target.value)
+    }
+  >
+    <option value="all">All Stock</option>
+    <option value="available">In Stock</option>
+    <option value="low">Low Stock</option>
+    <option value="out">Out of Stock</option>
+  </select>
+
+</div>
 
         {showProductForm && (
           <form
@@ -2765,7 +3634,7 @@ const sendSupportMessage = async () => {
           </div>
         ) : (
           <div className="admin-products-list">
-            {filteredInventoryProducts.map((product) => (
+            {filteredProducts.map((product) => (
               <article
                 className="admin-product-card"
                 key={product._id}
