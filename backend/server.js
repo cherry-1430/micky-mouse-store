@@ -64,7 +64,7 @@ app.use("/api/messages", messageRoutes);
 
 app.get("/", (req, res) => {
   res.json({
-    message: "Micky Mouse API is running!",
+    message: "Space Wear API is running!",
   });
 });
 

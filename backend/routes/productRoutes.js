@@ -1,6 +1,6 @@
 const express = require("express");
 const Product = require("../models/Product");
-
+const mongoose = require("mongoose");
 const authMiddleware = require("../middleware/authMiddleware");
 const adminMiddleware = require("../middleware/adminMiddleware");
 const cloudinary = require("../config/cloudinary");
@@ -45,17 +45,27 @@ router.get("/", async (req, res) => {
       productsCache !== null &&
       now - productsCacheTime < CACHE_DURATION
     ) {
+      console.log("CACHE HIT");
       return res.status(200).json(productsCache);
     }
+    console.log("CACHE MISS - QUERYING MONGODB");
 
     // Query MongoDB only when cache is empty or expired
-    const products = await Product.find({
-      isActive: true,
-    })
-      .select(
-        "name category gender price originalPrice description image images sizes colors stock rating reviewCount isFeatured isActive salePrice saleStart saleEnd isFlashSale"
-      )
-      .lean();
+    const dbStart = Date.now();
+
+const products = await Product.find({
+  isActive: true,
+})
+  .select(
+    "name category gender price originalPrice description image images sizes colors stock rating reviewCount isFeatured isActive salePrice saleStart saleEnd isFlashSale"
+  )
+  .lean();
+
+console.log(
+  "MongoDB query time:",
+  Date.now() - dbStart,
+  "ms"
+);
 
     // Store result in cache
     productsCache = products;
@@ -192,7 +202,17 @@ router.get("/flash-sales", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id).lean();
+    const { id } = req.params;
+
+    console.log("PRODUCT ID RECEIVED BY BACKEND:", id);
+
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        message: "Invalid product ID",
+      });
+    }
+
+    const product = await Product.findById(id).lean();
 
     if (!product) {
       return res.status(404).json({
