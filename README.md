@@ -1,16 +1,76 @@
-# React + Vite
+# Micky Mouse Store — Full-Stack E-commerce Website
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern men's clothing e-commerce website built to provide a smooth and user-friendly online shopping experience.
 
-Currently, two official plugins are available:
+## Live Demo
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+[Visit Micky Mouse Store](https://micky-mouse-store.vercel.app/)
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+**Frontend**
+- React.js
+- JavaScript
+- HTML5
+- CSS3
+- Vite
 
-## Expanding the ESLint configuration
+**Backend**
+- Node.js
+- Express.js
+- MongoDB
+- REST APIs
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Features
+
+- Product listing and product details
+- Product search and category filtering
+- Shopping cart and wishlist
+- Size selection and quantity management
+- Backend API integration
+- MongoDB database connectivity
+- Responsive shopping interface
+
+## Project Structure
+
+- `src/` — Frontend application
+- `backend/` — Backend API and database integration
+- `public/` — Static assets
+
+## Getting Started
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/cherry-1430/micky-mouse-store.git
+cd micky-mouse-store
+```
+
+### 2. Install frontend dependencies
+
+```bash
+npm install
+npm run dev
+```
+
+### 3. Run the backend
+
+Open another terminal:
+
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+Configure the required environment variables in a local `.env` file before starting the backend.
+
+## Developer
+
+**Charan**
+
+GitHub: [@cherry-1430](https://github.com/cherry-1430)
+
+## Note
+
+This project is being developed as a practical full-stack web development project.
